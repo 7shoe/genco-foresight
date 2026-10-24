@@ -1,0 +1,144 @@
+{
+  "scientific_settings_frozen": true,
+  "implementation_status": "A and ridge are not implemented yet",
+  "settings": {
+    "training_origin_stride_hours": 1,
+    "evaluation_origin_stride_hours": 24,
+    "forecast_samples": 64,
+    "training_samples": 8,
+    "forecast_batch_size": 1,
+    "graph_microbatch_size": 8,
+    "training_budget_seconds": 21600,
+    "coordinate_scales": "reports/stage_a_followup/train_coordinate_scales.json",
+    "energy_score": {
+      "estimator": "fair_u_statistic",
+      "distance": "scaled_euclidean_div_sqrt_observed_dimension",
+      "pairs": "all_distinct_ordered_sample_pairs"
+    },
+    "history_inputs": {
+      "bus": [
+        "pd_mw",
+        "qd_mvar",
+        "vm",
+        "va_rad"
+      ],
+      "gen": [
+        "pg_mw",
+        "qg_mvar"
+      ],
+      "include_availability_masks": true,
+      "branch_flows": false
+    },
+    "ridge": {
+      "sharing": "separate_per_active_demand_bus",
+      "strategy": "direct_24_horizon_heads",
+      "alpha": 1.0,
+      "standardize_features_on_train": true,
+      "lags_hours": [
+        1,
+        2,
+        24,
+        48
+      ],
+      "observed_covariates": [
+        "pd_mw",
+        "qd_mvar",
+        "vm",
+        "va_rad",
+        "bus_pg_mw",
+        "bus_qg_mvar"
+      ],
+      "calendar": [
+        "hour_sin",
+        "hour_cos",
+        "dow_sin",
+        "dow_cos",
+        "weekend"
+      ],
+      "residual_initial_fit_hours": 168,
+      "residual_origin_stride_hours": 24,
+      "residual_refit": "all_train_episode_prefixes_strictly_before_each_origin",
+      "residual_sampling": "whole_24_hour_all_bus_blocks_with_replacement",
+      "demand_bound": "clip_at_zero_and_report_clipped_mass"
+    },
+    "adapter": {
+      "embedding_width": 384,
+      "observed_projection_width": 32,
+      "gru_input_width": 416,
+      "gru_hidden_width": 32,
+      "gru_layers": 1,
+      "gru_bias": true,
+      "conditioning_output_width": 48,
+      "future_features": [
+        "hour_sin",
+        "hour_cos",
+        "dow_sin",
+        "dow_cos",
+        "weekend",
+        "lead_div_24"
+      ],
+      "future_projection": "shared_linear_6_to_32_added_to_node_memory",
+      "covariance_rank": 8,
+      "bus_head_width": 28,
+      "gen_head_width": 9,
+      "head_design": "shared_linear_per_type_no_hidden_layer",
+      "bus_head_coordinates": [
+        "demand_mean",
+        "demand_diag_and_8_factors",
+        "vm_diag_and_8_factors",
+        "va_diag_and_8_factors"
+      ],
+      "gen_head_coordinates": [
+        "pg_diag_and_8_factors"
+      ],
+      "innovations": "zero_mean_state_innovations_before_bounds",
+      "joint_factor": "one_independent_8_vector_per_trajectory_shared_across_nodes_and_hours",
+      "mask_constants": true
+    },
+    "loss": {
+      "energy_score_weight": 1.0,
+      "power_balance_weight": 0.01,
+      "power_balance_definition": "mean_squared_P_and_Q_bus_residuals_div_checkpoint_baseMVA_squared",
+      "opfdata_replay": false
+    },
+    "figures": {
+      "png_backend": "matplotlib"
+    }
+  },
+  "training_origins_per_episode": 409,
+  "training_origins": 4908,
+  "training_origin_first": 72,
+  "training_origin_last": 480,
+  "residual_blocks_planned": 168,
+  "residual_blocks_generated": 0,
+  "residual_origin_first": 168,
+  "residual_origin_last": 480,
+  "residual_protocol": "At each midnight from hour168, fit only targets ending before the cutoff from all12 train prefixes; predict each next24h; retain one complete joint residual block per episode/origin.",
+  "coordinate_scale_sha256": "86dbc8a128ef6fa13d36768c56ed241f54acf6fc87ad698548da2837cbbf9274",
+  "joint_score_dimension_24h": 6048,
+  "energy_score_formula": "mean_k d(Xk,y) - sum_{k!=l} d(Xk,Xl)/(2*K*(K-1)); d=norm((x-y)/scale)/sqrt(observed_dimension)",
+  "parameter_count_design": {
+    "bus_observed_linear_8_to_32": 288,
+    "gen_observed_linear_4_to_32": 160,
+    "bus_gru_416_to_32": 43200,
+    "gen_gru_416_to_32": 43200,
+    "bus_conditioning_32_to_48": 1584,
+    "gen_conditioning_32_to_48": 1584,
+    "shared_future_projection_6_to_32": 224,
+    "bus_head_32_to_28": 924,
+    "gen_head_32_to_9": 297
+  },
+  "expected_trainable_parameters": 91461,
+  "parameter_count_is_measured_on_A": false,
+  "throughput": {
+    "status": "unmeasured_A_not_implemented",
+    "cpu_seconds_per_minibatch": null,
+    "xpu_seconds_per_minibatch": null,
+    "feasible_epochs_in_six_hours": null,
+    "forecast_batch_size": 1,
+    "training_samples": 8,
+    "steps_per_epoch": 4908,
+    "epoch_budget_formula": "floor((21600-setup_evaluation_seconds)/(4908*measured_seconds_per_step))",
+    "required_measurement": "cached-history full adapter sampling+GENCO+loss+backward+optimizer; synchronize XPU; record peak memory; no substitution of Stage A smoke timing"
+  }
+}

@@ -1,0 +1,5 @@
+# Direct additions only for an environment with working CUDA torch + PyG.
+# Always --no-deps to preserve its existing torch/transformers stack.
+# torch-scatter needs a wheel matching that exact Torch/CUDA build, or a local
+# --no-deps --no-build-isolation source build. This profile is not tested here.
+-r ../requirements.txt

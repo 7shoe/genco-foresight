@@ -1,0 +1,31 @@
+{
+  "hostname": "x4418c3s0b0n0",
+  "python": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/bin/python",
+  "loaded_after_import": [
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_scatter/_scatter_cpu.so",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_scatter/_segment_coo_cpu.so",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_scatter/_segment_csr_cpu.so",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_scatter/_version_cpu.so"
+  ],
+  "xpu_available": true,
+  "scatter_operator_names": [
+    "aten::scatter_",
+    "aten::scatter_add_",
+    "aten::scatter_reduce_"
+  ],
+  "extension_operator_names": [],
+  "loaded_after_forward": [
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_scatter/_scatter_cpu.so",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_scatter/_segment_coo_cpu.so",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_scatter/_segment_csr_cpu.so",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_scatter/_version_cpu.so"
+  ],
+  "mapped_shared_libraries": [
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_scatter/_scatter_cpu.so",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_scatter/_segment_coo_cpu.so",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_scatter/_segment_csr_cpu.so",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_scatter/_version_cpu.so"
+  ],
+  "native_scatter_add_seen": true,
+  "xpu_forward_passed": true
+}

@@ -1,0 +1,3 @@
+# Direct additions only. Always --no-deps; preserve vendor torch/transformers.
+# See code/install_on_aurora.md (or ../install_on_aurora.md in the checkout).
+-r ../requirements.txt

@@ -1,0 +1,7 @@
+{
+  "isolated_target": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/assets/cli_deps",
+  "plotly_png": false,
+  "plotly_error": "\nImage export requires the Kaleido package, v1.0.0 or greater,\nwhich can be installed using pip:\n\n    $ pip install --upgrade \"kaleido>=1\"\n",
+  "matplotlib_png": true,
+  "decision": "matplotlib for all submission PNGs"
+}

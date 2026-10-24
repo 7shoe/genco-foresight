@@ -1,0 +1,964 @@
+{
+  "benchmark_id": "06d21f08a91a062901b8fa1c28361d8a5c9de56f2872c3744526ea14d61be322",
+  "dataset_manifest_sha256": "d89461cadc8862932b66eff3302aa7c802049580b0e41a5b13e35ea5efaeecfb",
+  "headline_bus_ids": [
+    1,
+    9,
+    11,
+    13,
+    15,
+    21,
+    22
+  ],
+  "definition": "hourly/daily_any use target hours72..503; hourly_all includes initial history",
+  "prevalence": [
+    {
+      "event": "voltage_bus_1",
+      "resolution": "hourly_all",
+      "partition": "train",
+      "positive": 4023,
+      "total": 6048,
+      "prevalence": 0.6651785714285714
+    },
+    {
+      "event": "voltage_bus_1",
+      "resolution": "hourly",
+      "partition": "train",
+      "positive": 3562,
+      "total": 5184,
+      "prevalence": 0.6871141975308642
+    },
+    {
+      "event": "voltage_bus_1",
+      "resolution": "daily_any",
+      "partition": "train",
+      "positive": 206,
+      "total": 216,
+      "prevalence": 0.9537037037037037
+    },
+    {
+      "event": "voltage_bus_9",
+      "resolution": "hourly_all",
+      "partition": "train",
+      "positive": 547,
+      "total": 6048,
+      "prevalence": 0.09044312169312169
+    },
+    {
+      "event": "voltage_bus_9",
+      "resolution": "hourly",
+      "partition": "train",
+      "positive": 490,
+      "total": 5184,
+      "prevalence": 0.09452160493827161
+    },
+    {
+      "event": "voltage_bus_9",
+      "resolution": "daily_any",
+      "partition": "train",
+      "positive": 142,
+      "total": 216,
+      "prevalence": 0.6574074074074074
+    },
+    {
+      "event": "voltage_bus_11",
+      "resolution": "hourly_all",
+      "partition": "train",
+      "positive": 2174,
+      "total": 6048,
+      "prevalence": 0.359457671957672
+    },
+    {
+      "event": "voltage_bus_11",
+      "resolution": "hourly",
+      "partition": "train",
+      "positive": 1949,
+      "total": 5184,
+      "prevalence": 0.3759645061728395
+    },
+    {
+      "event": "voltage_bus_11",
+      "resolution": "daily_any",
+      "partition": "train",
+      "positive": 144,
+      "total": 216,
+      "prevalence": 0.6666666666666666
+    },
+    {
+      "event": "voltage_bus_13",
+      "resolution": "hourly_all",
+      "partition": "train",
+      "positive": 1899,
+      "total": 6048,
+      "prevalence": 0.31398809523809523
+    },
+    {
+      "event": "voltage_bus_13",
+      "resolution": "hourly",
+      "partition": "train",
+      "positive": 1705,
+      "total": 5184,
+      "prevalence": 0.3288966049382716
+    },
+    {
+      "event": "voltage_bus_13",
+      "resolution": "daily_any",
+      "partition": "train",
+      "positive": 139,
+      "total": 216,
+      "prevalence": 0.6435185185185185
+    },
+    {
+      "event": "voltage_bus_15",
+      "resolution": "hourly_all",
+      "partition": "train",
+      "positive": 357,
+      "total": 6048,
+      "prevalence": 0.059027777777777776
+    },
+    {
+      "event": "voltage_bus_15",
+      "resolution": "hourly",
+      "partition": "train",
+      "positive": 302,
+      "total": 5184,
+      "prevalence": 0.058256172839506175
+    },
+    {
+      "event": "voltage_bus_15",
+      "resolution": "daily_any",
+      "partition": "train",
+      "positive": 54,
+      "total": 216,
+      "prevalence": 0.25
+    },
+    {
+      "event": "voltage_bus_21",
+      "resolution": "hourly_all",
+      "partition": "train",
+      "positive": 273,
+      "total": 6048,
+      "prevalence": 0.04513888888888889
+    },
+    {
+      "event": "voltage_bus_21",
+      "resolution": "hourly",
+      "partition": "train",
+      "positive": 229,
+      "total": 5184,
+      "prevalence": 0.044174382716049385
+    },
+    {
+      "event": "voltage_bus_21",
+      "resolution": "daily_any",
+      "partition": "train",
+      "positive": 43,
+      "total": 216,
+      "prevalence": 0.19907407407407407
+    },
+    {
+      "event": "voltage_bus_22",
+      "resolution": "hourly_all",
+      "partition": "train",
+      "positive": 390,
+      "total": 6048,
+      "prevalence": 0.06448412698412699
+    },
+    {
+      "event": "voltage_bus_22",
+      "resolution": "hourly",
+      "partition": "train",
+      "positive": 316,
+      "total": 5184,
+      "prevalence": 0.06095679012345679
+    },
+    {
+      "event": "voltage_bus_22",
+      "resolution": "daily_any",
+      "partition": "train",
+      "positive": 53,
+      "total": 216,
+      "prevalence": 0.24537037037037038
+    },
+    {
+      "event": "thermal_line_1",
+      "resolution": "hourly_all",
+      "partition": "train",
+      "positive": 1844,
+      "total": 6048,
+      "prevalence": 0.3048941798941799
+    },
+    {
+      "event": "thermal_line_1",
+      "resolution": "hourly",
+      "partition": "train",
+      "positive": 1654,
+      "total": 5184,
+      "prevalence": 0.31905864197530864
+    },
+    {
+      "event": "thermal_line_1",
+      "resolution": "daily_any",
+      "partition": "train",
+      "positive": 138,
+      "total": 216,
+      "prevalence": 0.6388888888888888
+    },
+    {
+      "event": "voltage_bus_1",
+      "resolution": "hourly_all",
+      "partition": "model_selection",
+      "positive": 516,
+      "total": 1008,
+      "prevalence": 0.5119047619047619
+    },
+    {
+      "event": "voltage_bus_1",
+      "resolution": "hourly",
+      "partition": "model_selection",
+      "positive": 410,
+      "total": 864,
+      "prevalence": 0.47453703703703703
+    },
+    {
+      "event": "voltage_bus_1",
+      "resolution": "daily_any",
+      "partition": "model_selection",
+      "positive": 32,
+      "total": 36,
+      "prevalence": 0.8888888888888888
+    },
+    {
+      "event": "voltage_bus_9",
+      "resolution": "hourly_all",
+      "partition": "model_selection",
+      "positive": 82,
+      "total": 1008,
+      "prevalence": 0.08134920634920635
+    },
+    {
+      "event": "voltage_bus_9",
+      "resolution": "hourly",
+      "partition": "model_selection",
+      "positive": 61,
+      "total": 864,
+      "prevalence": 0.07060185185185185
+    },
+    {
+      "event": "voltage_bus_9",
+      "resolution": "daily_any",
+      "partition": "model_selection",
+      "positive": 17,
+      "total": 36,
+      "prevalence": 0.4722222222222222
+    },
+    {
+      "event": "voltage_bus_11",
+      "resolution": "hourly_all",
+      "partition": "model_selection",
+      "positive": 189,
+      "total": 1008,
+      "prevalence": 0.1875
+    },
+    {
+      "event": "voltage_bus_11",
+      "resolution": "hourly",
+      "partition": "model_selection",
+      "positive": 159,
+      "total": 864,
+      "prevalence": 0.1840277777777778
+    },
+    {
+      "event": "voltage_bus_11",
+      "resolution": "daily_any",
+      "partition": "model_selection",
+      "positive": 19,
+      "total": 36,
+      "prevalence": 0.5277777777777778
+    },
+    {
+      "event": "voltage_bus_13",
+      "resolution": "hourly_all",
+      "partition": "model_selection",
+      "positive": 139,
+      "total": 1008,
+      "prevalence": 0.1378968253968254
+    },
+    {
+      "event": "voltage_bus_13",
+      "resolution": "hourly",
+      "partition": "model_selection",
+      "positive": 122,
+      "total": 864,
+      "prevalence": 0.1412037037037037
+    },
+    {
+      "event": "voltage_bus_13",
+      "resolution": "daily_any",
+      "partition": "model_selection",
+      "positive": 15,
+      "total": 36,
+      "prevalence": 0.4166666666666667
+    },
+    {
+      "event": "voltage_bus_15",
+      "resolution": "hourly_all",
+      "partition": "model_selection",
+      "positive": 97,
+      "total": 1008,
+      "prevalence": 0.09623015873015874
+    },
+    {
+      "event": "voltage_bus_15",
+      "resolution": "hourly",
+      "partition": "model_selection",
+      "positive": 94,
+      "total": 864,
+      "prevalence": 0.1087962962962963
+    },
+    {
+      "event": "voltage_bus_15",
+      "resolution": "daily_any",
+      "partition": "model_selection",
+      "positive": 17,
+      "total": 36,
+      "prevalence": 0.4722222222222222
+    },
+    {
+      "event": "voltage_bus_21",
+      "resolution": "hourly_all",
+      "partition": "model_selection",
+      "positive": 72,
+      "total": 1008,
+      "prevalence": 0.07142857142857142
+    },
+    {
+      "event": "voltage_bus_21",
+      "resolution": "hourly",
+      "partition": "model_selection",
+      "positive": 67,
+      "total": 864,
+      "prevalence": 0.0775462962962963
+    },
+    {
+      "event": "voltage_bus_21",
+      "resolution": "daily_any",
+      "partition": "model_selection",
+      "positive": 13,
+      "total": 36,
+      "prevalence": 0.3611111111111111
+    },
+    {
+      "event": "voltage_bus_22",
+      "resolution": "hourly_all",
+      "partition": "model_selection",
+      "positive": 100,
+      "total": 1008,
+      "prevalence": 0.0992063492063492
+    },
+    {
+      "event": "voltage_bus_22",
+      "resolution": "hourly",
+      "partition": "model_selection",
+      "positive": 94,
+      "total": 864,
+      "prevalence": 0.1087962962962963
+    },
+    {
+      "event": "voltage_bus_22",
+      "resolution": "daily_any",
+      "partition": "model_selection",
+      "positive": 17,
+      "total": 36,
+      "prevalence": 0.4722222222222222
+    },
+    {
+      "event": "thermal_line_1",
+      "resolution": "hourly_all",
+      "partition": "model_selection",
+      "positive": 138,
+      "total": 1008,
+      "prevalence": 0.13690476190476192
+    },
+    {
+      "event": "thermal_line_1",
+      "resolution": "hourly",
+      "partition": "model_selection",
+      "positive": 123,
+      "total": 864,
+      "prevalence": 0.1423611111111111
+    },
+    {
+      "event": "thermal_line_1",
+      "resolution": "daily_any",
+      "partition": "model_selection",
+      "positive": 15,
+      "total": 36,
+      "prevalence": 0.4166666666666667
+    },
+    {
+      "event": "voltage_bus_1",
+      "resolution": "hourly_all",
+      "partition": "risk_calibration",
+      "positive": 364,
+      "total": 1008,
+      "prevalence": 0.3611111111111111
+    },
+    {
+      "event": "voltage_bus_1",
+      "resolution": "hourly",
+      "partition": "risk_calibration",
+      "positive": 300,
+      "total": 864,
+      "prevalence": 0.3472222222222222
+    },
+    {
+      "event": "voltage_bus_1",
+      "resolution": "daily_any",
+      "partition": "risk_calibration",
+      "positive": 30,
+      "total": 36,
+      "prevalence": 0.8333333333333334
+    },
+    {
+      "event": "voltage_bus_9",
+      "resolution": "hourly_all",
+      "partition": "risk_calibration",
+      "positive": 56,
+      "total": 1008,
+      "prevalence": 0.05555555555555555
+    },
+    {
+      "event": "voltage_bus_9",
+      "resolution": "hourly",
+      "partition": "risk_calibration",
+      "positive": 40,
+      "total": 864,
+      "prevalence": 0.046296296296296294
+    },
+    {
+      "event": "voltage_bus_9",
+      "resolution": "daily_any",
+      "partition": "risk_calibration",
+      "positive": 15,
+      "total": 36,
+      "prevalence": 0.4166666666666667
+    },
+    {
+      "event": "voltage_bus_11",
+      "resolution": "hourly_all",
+      "partition": "risk_calibration",
+      "positive": 77,
+      "total": 1008,
+      "prevalence": 0.0763888888888889
+    },
+    {
+      "event": "voltage_bus_11",
+      "resolution": "hourly",
+      "partition": "risk_calibration",
+      "positive": 55,
+      "total": 864,
+      "prevalence": 0.06365740740740741
+    },
+    {
+      "event": "voltage_bus_11",
+      "resolution": "daily_any",
+      "partition": "risk_calibration",
+      "positive": 19,
+      "total": 36,
+      "prevalence": 0.5277777777777778
+    },
+    {
+      "event": "voltage_bus_13",
+      "resolution": "hourly_all",
+      "partition": "risk_calibration",
+      "positive": 40,
+      "total": 1008,
+      "prevalence": 0.03968253968253968
+    },
+    {
+      "event": "voltage_bus_13",
+      "resolution": "hourly",
+      "partition": "risk_calibration",
+      "positive": 25,
+      "total": 864,
+      "prevalence": 0.028935185185185185
+    },
+    {
+      "event": "voltage_bus_13",
+      "resolution": "daily_any",
+      "partition": "risk_calibration",
+      "positive": 8,
+      "total": 36,
+      "prevalence": 0.2222222222222222
+    },
+    {
+      "event": "voltage_bus_15",
+      "resolution": "hourly_all",
+      "partition": "risk_calibration",
+      "positive": 164,
+      "total": 1008,
+      "prevalence": 0.1626984126984127
+    },
+    {
+      "event": "voltage_bus_15",
+      "resolution": "hourly",
+      "partition": "risk_calibration",
+      "positive": 148,
+      "total": 864,
+      "prevalence": 0.1712962962962963
+    },
+    {
+      "event": "voltage_bus_15",
+      "resolution": "daily_any",
+      "partition": "risk_calibration",
+      "positive": 28,
+      "total": 36,
+      "prevalence": 0.7777777777777778
+    },
+    {
+      "event": "voltage_bus_21",
+      "resolution": "hourly_all",
+      "partition": "risk_calibration",
+      "positive": 116,
+      "total": 1008,
+      "prevalence": 0.11507936507936507
+    },
+    {
+      "event": "voltage_bus_21",
+      "resolution": "hourly",
+      "partition": "risk_calibration",
+      "positive": 106,
+      "total": 864,
+      "prevalence": 0.12268518518518519
+    },
+    {
+      "event": "voltage_bus_21",
+      "resolution": "daily_any",
+      "partition": "risk_calibration",
+      "positive": 25,
+      "total": 36,
+      "prevalence": 0.6944444444444444
+    },
+    {
+      "event": "voltage_bus_22",
+      "resolution": "hourly_all",
+      "partition": "risk_calibration",
+      "positive": 168,
+      "total": 1008,
+      "prevalence": 0.16666666666666666
+    },
+    {
+      "event": "voltage_bus_22",
+      "resolution": "hourly",
+      "partition": "risk_calibration",
+      "positive": 154,
+      "total": 864,
+      "prevalence": 0.17824074074074073
+    },
+    {
+      "event": "voltage_bus_22",
+      "resolution": "daily_any",
+      "partition": "risk_calibration",
+      "positive": 29,
+      "total": 36,
+      "prevalence": 0.8055555555555556
+    },
+    {
+      "event": "thermal_line_1",
+      "resolution": "hourly_all",
+      "partition": "risk_calibration",
+      "positive": 32,
+      "total": 1008,
+      "prevalence": 0.031746031746031744
+    },
+    {
+      "event": "thermal_line_1",
+      "resolution": "hourly",
+      "partition": "risk_calibration",
+      "positive": 19,
+      "total": 864,
+      "prevalence": 0.02199074074074074
+    },
+    {
+      "event": "thermal_line_1",
+      "resolution": "daily_any",
+      "partition": "risk_calibration",
+      "positive": 9,
+      "total": 36,
+      "prevalence": 0.25
+    },
+    {
+      "event": "voltage_bus_1",
+      "resolution": "hourly_all",
+      "partition": "test",
+      "positive": 1278,
+      "total": 2016,
+      "prevalence": 0.6339285714285714
+    },
+    {
+      "event": "voltage_bus_1",
+      "resolution": "hourly",
+      "partition": "test",
+      "positive": 1015,
+      "total": 1728,
+      "prevalence": 0.5873842592592593
+    },
+    {
+      "event": "voltage_bus_1",
+      "resolution": "daily_any",
+      "partition": "test",
+      "positive": 70,
+      "total": 72,
+      "prevalence": 0.9722222222222222
+    },
+    {
+      "event": "voltage_bus_9",
+      "resolution": "hourly_all",
+      "partition": "test",
+      "positive": 159,
+      "total": 2016,
+      "prevalence": 0.07886904761904762
+    },
+    {
+      "event": "voltage_bus_9",
+      "resolution": "hourly",
+      "partition": "test",
+      "positive": 120,
+      "total": 1728,
+      "prevalence": 0.06944444444444445
+    },
+    {
+      "event": "voltage_bus_9",
+      "resolution": "daily_any",
+      "partition": "test",
+      "positive": 39,
+      "total": 72,
+      "prevalence": 0.5416666666666666
+    },
+    {
+      "event": "voltage_bus_11",
+      "resolution": "hourly_all",
+      "partition": "test",
+      "positive": 632,
+      "total": 2016,
+      "prevalence": 0.3134920634920635
+    },
+    {
+      "event": "voltage_bus_11",
+      "resolution": "hourly",
+      "partition": "test",
+      "positive": 461,
+      "total": 1728,
+      "prevalence": 0.2667824074074074
+    },
+    {
+      "event": "voltage_bus_11",
+      "resolution": "daily_any",
+      "partition": "test",
+      "positive": 39,
+      "total": 72,
+      "prevalence": 0.5416666666666666
+    },
+    {
+      "event": "voltage_bus_13",
+      "resolution": "hourly_all",
+      "partition": "test",
+      "positive": 547,
+      "total": 2016,
+      "prevalence": 0.27132936507936506
+    },
+    {
+      "event": "voltage_bus_13",
+      "resolution": "hourly",
+      "partition": "test",
+      "positive": 401,
+      "total": 1728,
+      "prevalence": 0.23206018518518517
+    },
+    {
+      "event": "voltage_bus_13",
+      "resolution": "daily_any",
+      "partition": "test",
+      "positive": 36,
+      "total": 72,
+      "prevalence": 0.5
+    },
+    {
+      "event": "voltage_bus_15",
+      "resolution": "hourly_all",
+      "partition": "test",
+      "positive": 128,
+      "total": 2016,
+      "prevalence": 0.06349206349206349
+    },
+    {
+      "event": "voltage_bus_15",
+      "resolution": "hourly",
+      "partition": "test",
+      "positive": 128,
+      "total": 1728,
+      "prevalence": 0.07407407407407407
+    },
+    {
+      "event": "voltage_bus_15",
+      "resolution": "daily_any",
+      "partition": "test",
+      "positive": 27,
+      "total": 72,
+      "prevalence": 0.375
+    },
+    {
+      "event": "voltage_bus_21",
+      "resolution": "hourly_all",
+      "partition": "test",
+      "positive": 83,
+      "total": 2016,
+      "prevalence": 0.04117063492063492
+    },
+    {
+      "event": "voltage_bus_21",
+      "resolution": "hourly",
+      "partition": "test",
+      "positive": 83,
+      "total": 1728,
+      "prevalence": 0.048032407407407406
+    },
+    {
+      "event": "voltage_bus_21",
+      "resolution": "daily_any",
+      "partition": "test",
+      "positive": 22,
+      "total": 72,
+      "prevalence": 0.3055555555555556
+    },
+    {
+      "event": "voltage_bus_22",
+      "resolution": "hourly_all",
+      "partition": "test",
+      "positive": 129,
+      "total": 2016,
+      "prevalence": 0.06398809523809523
+    },
+    {
+      "event": "voltage_bus_22",
+      "resolution": "hourly",
+      "partition": "test",
+      "positive": 129,
+      "total": 1728,
+      "prevalence": 0.07465277777777778
+    },
+    {
+      "event": "voltage_bus_22",
+      "resolution": "daily_any",
+      "partition": "test",
+      "positive": 26,
+      "total": 72,
+      "prevalence": 0.3611111111111111
+    },
+    {
+      "event": "thermal_line_1",
+      "resolution": "hourly_all",
+      "partition": "test",
+      "positive": 535,
+      "total": 2016,
+      "prevalence": 0.26537698412698413
+    },
+    {
+      "event": "thermal_line_1",
+      "resolution": "hourly",
+      "partition": "test",
+      "positive": 392,
+      "total": 1728,
+      "prevalence": 0.22685185185185186
+    },
+    {
+      "event": "thermal_line_1",
+      "resolution": "daily_any",
+      "partition": "test",
+      "positive": 36,
+      "total": 72,
+      "prevalence": 0.5
+    }
+  ],
+  "reporting_roles": [
+    {
+      "event": "voltage_bus_1",
+      "resolution": "hourly",
+      "calibration_prevalence": 0.3472222222222222,
+      "test_prevalence": 0.5873842592592593,
+      "ratio": 1.6916666666666667,
+      "ratio_infinite": false,
+      "exceeds_1p5": true,
+      "raw_frequency_role": "primary",
+      "posthoc_map_role": "sensitivity_only"
+    },
+    {
+      "event": "voltage_bus_1",
+      "resolution": "daily_any",
+      "calibration_prevalence": 0.8333333333333334,
+      "test_prevalence": 0.9722222222222222,
+      "ratio": 1.1666666666666667,
+      "ratio_infinite": false,
+      "exceeds_1p5": false,
+      "raw_frequency_role": "report_alongside_supported_map",
+      "posthoc_map_role": "eligible_with_support_rule"
+    },
+    {
+      "event": "voltage_bus_9",
+      "resolution": "hourly",
+      "calibration_prevalence": 0.046296296296296294,
+      "test_prevalence": 0.06944444444444445,
+      "ratio": 1.5,
+      "ratio_infinite": false,
+      "exceeds_1p5": false,
+      "raw_frequency_role": "report_alongside_supported_map",
+      "posthoc_map_role": "eligible_with_support_rule"
+    },
+    {
+      "event": "voltage_bus_9",
+      "resolution": "daily_any",
+      "calibration_prevalence": 0.4166666666666667,
+      "test_prevalence": 0.5416666666666666,
+      "ratio": 1.3,
+      "ratio_infinite": false,
+      "exceeds_1p5": false,
+      "raw_frequency_role": "report_alongside_supported_map",
+      "posthoc_map_role": "eligible_with_support_rule"
+    },
+    {
+      "event": "voltage_bus_11",
+      "resolution": "hourly",
+      "calibration_prevalence": 0.06365740740740741,
+      "test_prevalence": 0.2667824074074074,
+      "ratio": 4.1909090909090905,
+      "ratio_infinite": false,
+      "exceeds_1p5": true,
+      "raw_frequency_role": "primary",
+      "posthoc_map_role": "sensitivity_only"
+    },
+    {
+      "event": "voltage_bus_11",
+      "resolution": "daily_any",
+      "calibration_prevalence": 0.5277777777777778,
+      "test_prevalence": 0.5416666666666666,
+      "ratio": 1.0263157894736843,
+      "ratio_infinite": false,
+      "exceeds_1p5": false,
+      "raw_frequency_role": "report_alongside_supported_map",
+      "posthoc_map_role": "eligible_with_support_rule"
+    },
+    {
+      "event": "voltage_bus_13",
+      "resolution": "hourly",
+      "calibration_prevalence": 0.028935185185185185,
+      "test_prevalence": 0.23206018518518517,
+      "ratio": 8.02,
+      "ratio_infinite": false,
+      "exceeds_1p5": true,
+      "raw_frequency_role": "primary",
+      "posthoc_map_role": "sensitivity_only"
+    },
+    {
+      "event": "voltage_bus_13",
+      "resolution": "daily_any",
+      "calibration_prevalence": 0.2222222222222222,
+      "test_prevalence": 0.5,
+      "ratio": 2.25,
+      "ratio_infinite": false,
+      "exceeds_1p5": true,
+      "raw_frequency_role": "primary",
+      "posthoc_map_role": "sensitivity_only"
+    },
+    {
+      "event": "voltage_bus_15",
+      "resolution": "hourly",
+      "calibration_prevalence": 0.1712962962962963,
+      "test_prevalence": 0.07407407407407407,
+      "ratio": 2.3125,
+      "ratio_infinite": false,
+      "exceeds_1p5": true,
+      "raw_frequency_role": "primary",
+      "posthoc_map_role": "sensitivity_only"
+    },
+    {
+      "event": "voltage_bus_15",
+      "resolution": "daily_any",
+      "calibration_prevalence": 0.7777777777777778,
+      "test_prevalence": 0.375,
+      "ratio": 2.074074074074074,
+      "ratio_infinite": false,
+      "exceeds_1p5": true,
+      "raw_frequency_role": "primary",
+      "posthoc_map_role": "sensitivity_only"
+    },
+    {
+      "event": "voltage_bus_21",
+      "resolution": "hourly",
+      "calibration_prevalence": 0.12268518518518519,
+      "test_prevalence": 0.048032407407407406,
+      "ratio": 2.5542168674698793,
+      "ratio_infinite": false,
+      "exceeds_1p5": true,
+      "raw_frequency_role": "primary",
+      "posthoc_map_role": "sensitivity_only"
+    },
+    {
+      "event": "voltage_bus_21",
+      "resolution": "daily_any",
+      "calibration_prevalence": 0.6944444444444444,
+      "test_prevalence": 0.3055555555555556,
+      "ratio": 2.272727272727273,
+      "ratio_infinite": false,
+      "exceeds_1p5": true,
+      "raw_frequency_role": "primary",
+      "posthoc_map_role": "sensitivity_only"
+    },
+    {
+      "event": "voltage_bus_22",
+      "resolution": "hourly",
+      "calibration_prevalence": 0.17824074074074073,
+      "test_prevalence": 0.07465277777777778,
+      "ratio": 2.387596899224806,
+      "ratio_infinite": false,
+      "exceeds_1p5": true,
+      "raw_frequency_role": "primary",
+      "posthoc_map_role": "sensitivity_only"
+    },
+    {
+      "event": "voltage_bus_22",
+      "resolution": "daily_any",
+      "calibration_prevalence": 0.8055555555555556,
+      "test_prevalence": 0.3611111111111111,
+      "ratio": 2.230769230769231,
+      "ratio_infinite": false,
+      "exceeds_1p5": true,
+      "raw_frequency_role": "primary",
+      "posthoc_map_role": "sensitivity_only"
+    },
+    {
+      "event": "thermal_line_1",
+      "resolution": "hourly",
+      "calibration_prevalence": 0.02199074074074074,
+      "test_prevalence": 0.22685185185185186,
+      "ratio": 10.31578947368421,
+      "ratio_infinite": false,
+      "exceeds_1p5": true,
+      "raw_frequency_role": "primary",
+      "posthoc_map_role": "sensitivity_only"
+    },
+    {
+      "event": "thermal_line_1",
+      "resolution": "daily_any",
+      "calibration_prevalence": 0.25,
+      "test_prevalence": 0.5,
+      "ratio": 2.0,
+      "ratio_infinite": false,
+      "exceeds_1p5": true,
+      "raw_frequency_role": "primary",
+      "posthoc_map_role": "sensitivity_only"
+    }
+  ],
+  "selection": "User-frozen event family; no tuning on test prevalence",
+  "thermal_oracle_evidence": "reports/stage_a_followup/events.json"
+}

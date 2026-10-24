@@ -1,0 +1,186 @@
+# Stage A configuration; evidence and outcome flags live in reports/stage_a.json.
+# Preserve the installed framework packages. Accelerator use is a separate gate.
+# Stage B training selection from reports/stage_b_preflight.json; parity stays CPU.
+device: xpu
+seed: 42
+
+paths:
+  opfdata_root: /lus/flare/projects/FRAME-IDP/siebenschuh/acopf_datasets
+  n1_cache: /lus/flare/projects/FRAME-IDP/siebenschuh/acopf_datasets/processed/N1/pglib_opf_case30_ieee
+  t1_cache: /lus/flare/projects/FRAME-IDP/siebenschuh/acopf_datasets/processed/T1/pglib_opf_case30_ieee
+  n1_splits: /lus/flare/projects/FRAME-IDP/siebenschuh/acopf_datasets/processed/N1/splits/pglib_opf_case30_ieee
+  assets_root: /lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/assets
+  data_root: /lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/data
+  temporal_root: /lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/data/temporal_case30_v3
+  runs_root: /lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs
+  stage_a_run: /lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/stage_a_v3
+  evidence_root: /lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/stage_a_v3
+  training_run: /lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/adapter_v3
+  reference_solver_checkout: /home/siebenschuh/Projects/acopf
+
+upstream:
+  graphkit:
+    repository: https://github.com/gridfm/gridfm-graphkit.git
+    revision: f104900245cba26d1380037eea562cf633a97484
+    version: 0.9.0.3
+  datakit:
+    version: 1.1.0
+
+checkpoint:
+  repository: gridfm/genco-opfdata
+  revision: 74e19e1e210a175aa17023f4db161f0ae9f753cb
+  directory: case30_ieee/seed42
+  weights: best_model_state_dict.pt
+  normalizer: normalizer_stats.pt
+  configuration: HGNSQ_penalty_11_OPFData_case30_default.yaml
+
+asset_hashes:
+  ercot_2025_csv: fad80093ac6f84cda896101fe0d10a2c2a1bf7247c0e61465c1b80207dfaa522
+
+task:
+  canonical_case: pglib_opf_case30_ieee
+  fixed_topology: true
+  history_hours: 72
+  horizon_hours: 24
+  episodes: 20
+  days_per_episode: 21
+  split_episodes:
+    train: 10
+    model_selection: 2
+    risk_calibration: 4
+    test: 4
+  pilot_hours: 200
+
+solver:
+  # Repository-owned adapter verified against this existing Julia environment.
+  backend: powermodels_ipopt
+  transport: julia_subprocess
+  julia_executable: /lus/flare/projects/FRAME-IDP/siebenschuh/envs/rambo_julia/julia-1.10.10/bin/julia
+  julia_depot: /lus/flare/projects/FRAME-IDP/siebenschuh/envs/rambo_julia/depot
+  # Read-only provenance. Adapt the minimum source into this repository.
+  reference_source: /home/siebenschuh/Projects/lumina-sdk/distillation/RAMBO
+  reference_revision: e75ffcd74854c14e2960b9a9411ddd72377e5239
+  # Repository-owned Julia project with the retained resolved environment.
+  julia_project: solver/julia
+  budget:
+    seconds: 5.0
+    wall_seconds: 25.0
+    max_iter: 2000
+    tolerance: 1.0e-8
+
+dataset:
+  id: temporal_case30_v3
+  source_pool_method: final_calendar_round_robin_fixed_before_labeling
+  # One-based blocks; 7/2/4/4 disjoint source pools and 10/2/4/4 episodes.
+  source_blocks_one_based:
+    train: [1, 4, 8, 9, 12, 16, 17]
+    model_selection: [5, 13]
+    risk_calibration: [2, 6, 10, 14]
+    test: [3, 7, 11, 15]
+  assignment_note: Repeat train/calibration/test/train over 16 calendar blocks; reserve train slots 5 and 13 for selection; block 17 is training. Reuse only within pools. Final assignment; no further split iteration.
+  revision_reason: Calibration doubled to 72 days from four source blocks because a two-block partition cannot represent seasonal prevalence. All v1-v3 decisions preceded any forecasting score; preflight gradients/timing were not forecasting evaluation.
+
+generation:
+  profile: eia_erco_demand_2025
+  rho: 0.9
+  innovation_std: 0.02
+  sigma: 0.03
+  scale_low: 0.30
+  scale_high: 1.00
+  selection_note: Training-only pilot and six-point domain diagnostic; original 0.65-1.15 pilot retained separately. Freeze these settings before held-out labeling.
+
+# Scientific settings frozen by the user's Stage B amendments; device is measured.
+stage_b:
+  training_origin_stride_hours: 1
+  evaluation_origin_stride_hours: 24
+  forecast_samples: 64
+  training_samples: 8
+  forecast_batch_size: 1
+  future_graph_batch_size: 192
+  training_budget_seconds: 21600
+  coordinate_scales: /lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/stage_a_v3/stage_a_followup/train_coordinate_scales.json
+  early_stopping:
+    metric: model_selection_energy_score
+    patience: 3
+  checkpoint_each_epoch: true
+  checkpoint_tensor_device: cpu
+  checkpoint_interval_seconds: 900
+  job_training_guard_seconds: 3300
+  pbs_walltime_seconds: 3600
+  pbs_queue: debug
+  scheduler: constant
+  training_requires: stage_a_audit
+  prevalence_is_training_blocker: false
+  optimizer:
+    name: AdamW
+    lr: 0.0001
+    weight_decay: 0.01
+    gradient_clip_norm: 1.0
+  selection_noise_seed: 1042
+  max_epochs: 1000  # Early stopping or the six-hour cap stops first.
+  energy_score:
+    estimator: fair_u_statistic
+    distance: scaled_euclidean_div_sqrt_observed_dimension
+    pairs: all_distinct_ordered_sample_pairs
+  history_inputs:
+    bus: [pd_mw, qd_mvar, vm, va_rad]
+    gen: [pg_mw, qg_mvar]
+    include_availability_masks: true
+    branch_flows: false
+  ridge:
+    sharing: separate_per_active_demand_bus
+    strategy: direct_24_horizon_heads
+    alpha: 1.0
+    standardize_features_on_train: true
+    lags_hours: [1, 2, 24, 48]
+    observed_covariates: [pd_mw, qd_mvar, vm, va_rad, bus_pg_mw, bus_qg_mvar]
+    # Same observed-variable availability as A; Pg/Qg are zero at non-gen buses.
+    calendar: [hour_sin, hour_cos, dow_sin, dow_cos, weekend]
+    residual_initial_fit_hours: 168
+    residual_origin_stride_hours: 1
+    residual_refit: all_train_episode_prefixes_strictly_before_each_origin
+    residual_sampling: whole_24_hour_all_bus_blocks_with_replacement
+    demand_bound: clip_at_zero_and_report_clipped_mass
+  adapter:
+    embedding_width: 384
+    observed_projection_width: 32
+    gru_input_width: 416
+    gru_hidden_width: 32
+    gru_layers: 1
+    gru_bias: true
+    conditioning_output_width: 48
+    future_features: [hour_sin, hour_cos, dow_sin, dow_cos, weekend, lead_div_24]
+    future_projection: shared_linear_6_to_32_added_to_node_memory
+    covariance_rank: 8
+    bus_head_width: 28
+    gen_head_width: 9
+    head_design: shared_linear_per_type_no_hidden_layer
+    bus_head_coordinates: [demand_mean, demand_diag_and_8_factors, vm_diag_and_8_factors, va_diag_and_8_factors]
+    gen_head_coordinates: [pg_diag_and_8_factors]
+    innovations: zero_mean_state_innovations_before_bounds
+    joint_factor: one_independent_8_vector_per_trajectory_shared_across_nodes_and_hours
+    mask_constants: true
+  loss:
+    energy_score_weight: 1.0
+    power_balance_weight: 0.01
+    power_balance_definition: mean_squared_P_and_Q_bus_residuals_div_checkpoint_baseMVA_squared
+    opfdata_replay: false
+  figures:
+    png_backend: matplotlib
+  calibration:
+    headline_voltage_bus_ids: [1, 9, 11, 13, 15, 21, 22]
+    headline_event_resolutions: [hourly]
+    headline_thermal_line_ids: [1]
+    secondary_event_resolutions: [daily_any]
+    daily_calibration_prevalence_range: [0.20, 0.80]
+    continuous_diagnostics: [pit, coverage_50, coverage_90, interval_width_50, interval_width_90]
+    continuous_voltage_bus_ids: [1, 9, 11, 13, 15, 21, 22]
+    continuous_loading_line_ids: [1]
+    secondary_thermal_daily_line_ids: [1]
+    prevalence_shift_ratio: 1.5
+    prevalence_ratio_definition: max_calibration_test_rate_div_min_rate
+    posthoc_fit_partition: risk_calibration
+    test_display: raw_and_mapped_side_by_side
+    shifted_event_posthoc_role: report_side_by_side_with_shift_caption
+    prevalence_table_beside_every_reliability_diagram: true
+    suppress_panel_for_prevalence_shift: false

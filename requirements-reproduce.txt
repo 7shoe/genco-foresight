@@ -1,0 +1,4 @@
+# Optional fresh CPU environment only; never install into Aurora's vendor venv.
+# Torch is provisioned separately. The runner itself installs nothing.
+numpy==2.2.6
+matplotlib==3.10.3

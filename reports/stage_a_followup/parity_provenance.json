@@ -1,0 +1,31 @@
+{
+  "passed": true,
+  "snapshots": 1496,
+  "parameters": 20069187,
+  "normalizer_baseMVA": 75.95927429199219,
+  "max_abs": {
+    "Vm_pred": 0.0,
+    "Va_pred": 0.0,
+    "Pg_pred": 0.0,
+    "Qg_pred": 0.0
+  },
+  "protocol_sha256": "bbdc7f4fce0a898bf41cb41a4b186a556374b9407cad37ab02fffbc109834d09",
+  "source": "official Graphkit evaluate CLI",
+  "provenance": {
+    "hostname": "x4418c3s0b0n0",
+    "python": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/bin/python",
+    "python_binary_sha256": "c2e6a865e3448c932e3b57c74ef942410b8e29cf8bd1f55efec835734ed469ff",
+    "torch_version": "2.13.0a0+gitcf30153",
+    "torch_core": "/opt/aurora/26.181.0/frameworks/aurora_frameworks-2026.1.0/lib/python3.12/site-packages/torch/_C.cpython-312-x86_64-linux-gnu.so",
+    "torch_core_sha256": "c62672d4ee0a718da110417b311d65715f09c24cc5026114fe79c8093ff3366f",
+    "device": "cpu",
+    "model_dtype": "torch.float32",
+    "integration_output_dtype": "float32",
+    "official_output_dtype": "float32",
+    "same_node": true,
+    "same_python": true,
+    "execution": "official CLI is a local subprocess of the integration evaluator",
+    "bit_identical": true,
+    "scope": "bit-identical on the same node; no cross-machine/device claim"
+  }
+}

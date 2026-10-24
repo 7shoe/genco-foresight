@@ -1,0 +1,28 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Runtime artifacts belong at the external locations in config.yaml.
+/runs/
+/assets/
+/outputs/
+/checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.parquet
+*.arrow
+*.npz
+*.npy
+
+# Review figure symlink points to content-hashed PNG assets on Lustre.
+/submission/figures
