@@ -178,7 +178,7 @@ def reports():
     if check.exists():
         v=read_json(check);morning += [f"Passed: {v.get('passed')}; max relative difference: {v.get('max_relative_difference')}; evidence: {check}"]
     else:morning += ['Pending. New-seed scoring is gated on reproduction of released seed-0 values.']
-    if (check.parent/'blocked.json').exists():morning += [f'Reproduction blocked: {check.parent/"blocked.json"}; training continues, scoring remains parked.']
+    if (check.parent/'blocked.json').exists():morning += [f'Reproduction blocked: {check.parent/"blocked.json"}; new-seed scoring remains parked. Training state is shown above.']
     for version in ('v3','v4'):
         table=root/'case30_ieee'/version/'summary.md'
         morning += ['',table.read_text() if table.exists() else f'{version}: no new seed evaluation completed; no seed mean/SD or CI claimed.']
@@ -318,12 +318,12 @@ def job():
             launch(f'reproduce_cpu_{shard}','scripts.replication_evaluate',['reproduce-scores','--shard',str(shard),'--workers','4'],
                    4,gate/'logs'/f'{jid}_cpu_{shard}.log')
         for tile,v in enumerate(('v3','v4'),4):
-            launch(f'reproduce_forward_{v}','scripts.replication_evaluate',['reproduce-forward','--version',v,'--device','xpu'],
+            launch(f'reproduce_forward_{v}','scripts.replication_evaluate',['reproduce-forward','--version',v,'--device','xpu:0'],
                    tile,gate/'logs'/f'{jid}_forward_{v}.log')
     if phase=='evaluation':
         for c in work:
             out,_,_=paths(c)
-            launch(c['id'],'scripts.replication_evaluate',['evaluate','--chain',c['id'],'--device','xpu'],
+            launch(c['id'],'scripts.replication_evaluate',['evaluate','--chain',c['id'],'--device','xpu:0'],
                    c['tile'],out/'logs'/f'{jid}_evaluation.log')
     if phase=='mixture':
         for v in work:
