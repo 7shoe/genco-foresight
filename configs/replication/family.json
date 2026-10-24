@@ -1,0 +1,36 @@
+{
+  "family": "case30-seeds",
+  "root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/replication",
+  "release_commit": "521c34203d8edb6c2ed3966e50f0ca9ca9a9569e",
+  "release_tag_object": "42d5f9668375e023dafb915310a6eafd63768052",
+  "release_bundle": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/reproducibility/v0.1.0-rc",
+  "python": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/bin/python",
+  "queue": "debug-scaling",
+  "account": "EpiCalib",
+  "walltime_seconds": 3600,
+  "training_budget_seconds": 21600,
+  "seed_mapping": {"0": 42, "1": 1, "2": 2},
+  "forecast_rng_seed": 42,
+  "report_due_ct": "2026-10-24T07:30:00-05:00",
+  "decision_table_ct": "2026-10-25T11:30:00-05:00",
+  "inclusion_cutoff_ct": "2026-10-25T12:00:00-05:00",
+  "bootstrap": {"draws": 10000, "seed": 20261024, "confidence": 0.95, "unit": "paired forecast origin", "qualification": "72 correlated days from four episodes; origin bootstrap is descriptive and does not establish independent-day coverage."},
+  "ensemble": {"samples_per_seed": 64, "seeds": [0,1,2], "samples": 192, "weights": "equal", "qualification": "Stratified seed mixture with common evaluation innovations; unchanged fair scorer is used, without claiming IID-unbiasedness for the mixture."},
+  "chains": [
+    {"id": "v3_seed1", "version": "v3", "seed": 1, "tile": 0},
+    {"id": "v3_seed2", "version": "v3", "seed": 2, "tile": 1},
+    {"id": "v4_seed1", "version": "v4", "seed": 1, "tile": 2},
+    {"id": "v4_seed2", "version": "v4", "seed": 2, "tile": 3}
+  ],
+  "blocked_grids": ["case14_ieee", "case57_ieee", "case118_ieee", "case500_goc"],
+  "blockers": [
+    "data/loader/network.py:13,20 explicitly loads/requires case30",
+    "solver/adapter.py:30,87 fixes the casefile and requires 30 demands",
+    "scripts/parity.py:47,69,124,136 fixes case30 reference paths",
+    "training/inputs.py:43 fixes 30 buses, 6 generators and embedding width 384",
+    "models/temporal.py:41,75 fixes dimensions; released and immutable",
+    "training/loop.py:53,71,95 fixes 192 graphs, 24 hours, 30 buses and 6 generators; K=4 / 12-hour sub-sampling cannot run unchanged"
+  ],
+  "affinity_reference": "https://docs.alcf.anl.gov/aurora/data-science/frameworks/pytorch/",
+  "new_runner_authorized": true
+}
