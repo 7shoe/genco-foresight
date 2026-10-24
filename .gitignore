@@ -1,28 +1,38 @@
+# compiled python
 __pycache__/
+venv/
+htmlcov/
+
+# file artifacts
 *.py[cod]
 *.egg-info/
 .pytest_cache/
 .ruff_cache/
 .coverage
-htmlcov/
 .venv/
-venv/
 .env
 .env.*
 !.env.example
 
-# Runtime artifacts belong at the external locations in config.yaml.
+# runtime artifacts (belong in config.yaml)
 /runs/
-/assets/
 /outputs/
 /checkpoints/
-*.pt
+
+# model & data artifcats
 *.pth
+*.pt
 *.ckpt
 *.parquet
 *.arrow
 *.npz
 *.npy
 
-# Review figure symlink points to content-hashed PNG assets on Lustre.
+# keep figs less noisy
 /submission/figures
+
+# sketch README
+README_legacy.md
+
+# ignore plans of any sort
+PLAN*.md
