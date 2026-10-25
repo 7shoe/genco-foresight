@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "submitted",
+  "status": "running",
   "job_id": "8963092.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov",
   "source_commit": "1fec6e805c0eb2203c71df24ffbca3cdf426ca79",
   "snapshot": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/fleet_20261025_off_v1/source",
@@ -20,15 +20,34 @@
     2
   ],
   "queue": "debug-scaling",
-  "nodes": 2,
+  "nodes": [
+    "x4109c6s4b0n0",
+    "x4109c6s5b0n0"
+  ],
   "walltime_seconds": 3600,
   "training_budget_seconds_per_chain": 21600,
   "test_results": {
     "lightweight_controller_tests": "5 passed",
-    "model_and_compute_preflight": "pending"
+    "model_and_compute_preflight": "55 passed on compute, 56.53 seconds",
+    "evidence": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/fleet_20261025_off_v1/logs/tests.log",
+    "evidence_sha256": "d508254ceea90b3cabac53faa292a12d824f70bd47cb72071474902b6b803a45"
   },
   "adopted_deterministic_algorithms": false,
   "confirmation_job_8962843": "untouched",
   "results": "pending",
-  "commits_not_merged_to_main": true
+  "commits_not_merged_to_main": true,
+  "startup_observation": {
+    "case30_ieee": {
+      "data_ready": true,
+      "training_seeds_started": [
+        0,
+        1,
+        2
+      ],
+      "each_observed_at_least_steps": 200
+    },
+    "case14_ieee": "preparing data/parity",
+    "case57_ieee": "preparing data/parity",
+    "case118_ieee": "preparing data/parity"
+  }
 }

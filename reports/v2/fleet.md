@@ -1,6 +1,6 @@
 # Small-grid OFF fleet
 
-Submitted **8963092** to `debug-scaling`, two nodes, maximum one hour. This is the first allocation of a persistent resubmission chain. Runtime status is [runs/fleet/STATUS.md](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/fleet/STATUS.md); the [controller ledger](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/fleet_20261025_off_v1/controller.json) records subsequent job IDs and boundaries. Training and evaluation results are pending.
+Submitted **8963092** to `debug-scaling`, two nodes, maximum one hour. This is the first allocation of a persistent resubmission chain. Runtime status is [runs/fleet/STATUS.md](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/fleet/STATUS.md); the [controller ledger](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/fleet_20261025_off_v1/controller.json) records subsequent job IDs and boundaries. Both nodes are running. All 55 compute preflight tests passed in 56.53 seconds. The three case30 chains have each passed 200 optimizer steps; case14/57/118 are in data/parity preparation. Final training and evaluation results are pending.
 
 ## Frozen implementation and recipe
 
@@ -28,6 +28,6 @@ The [cross-grid table](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/f
 
 ## Verification and current limitations
 
-Five lightweight controller tests passed: placement/seeds, per-grid readiness, budget/evaluation scheduling, mechanical headline selection and rejection of changed pinned inputs. The first allocation runs the broader case-identity, multigrid and V2 harness/controller tests on compute before numerical work. Those results and production results are pending. The initial local test invocation needed its external temporary parent directory created; the corrected invocation passed all five tests.
+Five lightweight controller tests passed: placement/seeds, per-grid readiness, budget/evaluation scheduling, mechanical headline selection and rejection of changed pinned inputs. The first allocation runs the broader case-identity, multigrid and V2 harness/controller tests on compute before numerical work. All 55 tests passed on compute; evidence: `logs/tests.log` in the fleet root. Final production results remain pending. The initial local test invocation needed its external temporary parent directory created; the corrected invocation passed all five tests.
 
 No main merge or publication has occurred. Existing user edits, staged inventory and release tags were preserved. This report records submission and the predeclared workflow, not a training/evaluation pass.
