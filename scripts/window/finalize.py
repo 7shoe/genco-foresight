@@ -27,7 +27,9 @@ def stop_submitters(root):
         try:
             command=Path(f"/proc/{item['pid']}/cmdline").read_bytes().replace(b'\0',b' ').decode()
             if item['match'] in command:
-                os.kill(item['pid'],signal.SIGTERM);stopped.append(item)
+                group=os.getpgid(item['pid'])
+                if group!=item['pid']:raise RuntimeError('Submitter is not an isolated process group')
+                os.killpg(group,signal.SIGTERM);stopped.append(item)
         except (FileNotFoundError,ProcessLookupError):pass
     write(root/'submission_cutoff_guard.json',dict(at=time.time(),stopped=stopped,
           reason='Stop only these task-owned automatic submitters90 seconds before freeze so an in-flight qsub cannot cross the deadline. Running jobs continue. The release-window controller has its own identical submission guard.'))

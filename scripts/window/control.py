@@ -12,6 +12,8 @@ import subprocess
 import sys
 import time
 
+OPERATIONS = Path(__file__).resolve().parent
+
 
 def read(path, default=None):
     return json.loads(Path(path).read_text()) if Path(path).exists() else ({} if default is None else default)
@@ -50,7 +52,7 @@ def status(root):
     rows.extend(f"| {j.get('id', '')} | {j.get('state', '')} |" for j in state.get('jobs', []))
     rows += ['', 'Phase B/C/D task records are added only after their source snapshot and protocol are pinned.',
              f"Controller: {state.get('status', 'not started')}; protocol: {root / 'protocol.json'}."]
-    temporary = root / f'STATUS.{os.getpid()}.tmp'; temporary.write_text('\n'.join(rows)+'\n')
+    temporary = root / f'STATUS.{os.getpid()}.{time.time_ns()}.tmp'; temporary.write_text('\n'.join(rows)+'\n')
     os.replace(temporary, root / 'STATUS.md')
 
 
@@ -92,7 +94,7 @@ def invoke(root, task, deadline):
 
 
 def node(root):
-    for name, digest in read(root/'operations_pin.json')['sha256'].items():
+    for name, digest in read(OPERATIONS/'pin.json')['sha256'].items():
         if sha(name) != digest: raise ValueError(f'Allocation launcher changed: {name}')
     rank = int(next(os.environ[k] for k in ('PMI_RANK', 'PMIX_RANK', 'PALS_RANKID') if k in os.environ))
     protocol = read(root / 'protocol.json'); deadline = float(os.environ['WINDOW_START']) + 3300
@@ -155,7 +157,7 @@ def controller(root):
                     number = len(state['jobs'])+1
                     r = subprocess.run(['qsub', '-q', 'debug-scaling', '-A', 'EpiCalib', '-N', f'genco-window-{number}',
                         '-o', str(root/'logs'/f'job_{number:02d}.log'), '-v', f'WINDOW_ROOT={root}',
-                        str(root/'operations/job.pbs')], capture_output=True, text=True, timeout=45)
+                        str(OPERATIONS/'job.pbs')], capture_output=True, text=True, timeout=45)
                     if r.returncode == 0:
                         state['jobs'].append(dict(id=r.stdout.strip(), state='Q', submitted=time.time()))
                         print('Submitted', r.stdout.strip(), flush=True)
