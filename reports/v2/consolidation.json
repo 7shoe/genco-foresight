@@ -1,0 +1,34 @@
+{
+  "passed": true,
+  "gates": [
+    {
+      "stage": "replication",
+      "passed": true,
+      "tests": 59,
+      "commit": "a6ae620264ff4cdfda9e1b4f31eeca377cb6f938",
+      "gate": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/release_20261025_1420/phase_b/replication/gate.json",
+      "sha256": "1b2824b1709800e37b09fd98a7354fc3a1913b659b1e54614989bd054e8b633f"
+    },
+    {
+      "stage": "multigrid",
+      "passed": true,
+      "tests": 66,
+      "commit": "184b3c0f88fdfd2a8868d8dd25260add78ace53b",
+      "gate": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/release_20261025_1420/phase_b/multigrid/gate.json",
+      "sha256": "1d7f57d178c2118c9aaefa9adfb07dace5390bba1c812be4584fcabd950f75af"
+    },
+    {
+      "stage": "recovery",
+      "passed": true,
+      "tests": 87,
+      "commit": "a2c72bd4231a39455d4eaa03d1e9dd32f6d658c3",
+      "gate": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/release_20261025_1420/phase_b/recovery/gate.json",
+      "sha256": "08fbdbc1c2dd1b3285c027b7d0e477549232b92e42707a2644324300cd583a19"
+    }
+  ],
+  "protocol": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/release_20261025_1420/phase_b.protocol.json",
+  "protocol_sha256": "1a8702d2466d60f0633ec1b542e2d781dd65c32f719548456930e2dd09b521f4",
+  "inventory_check": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/release_20261025_1420/inventory_check.json",
+  "protected_tag": "42d5f9668375e023dafb915310a6eafd63768052",
+  "note": "Replication was already merged; no duplicate ancestry was manufactured. Existing multigrid working tree and its index were preserved."
+}

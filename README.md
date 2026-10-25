@@ -87,6 +87,19 @@ algorithm for large-scale nonlinear programming (Wächter, Biegler, 2005)
 }
 ```
 
+## V2 production policy
+
+Determinism OFF is **adopted with disclosure** for new V2 production runs; use
+`configs/v2/production.yaml`. Historical v3/v4 configurations and manifests retain
+ON, as do evaluation and resume-mechanism checks. The case30 OFF selection-ES mean
+is 0.290849888 versus 0.285553075 for historical ON seeds (Δ = +0.005296813).
+Mean test ES is 0.307292007 versus 0.300798303 (Δ = +0.006493704); the three-seed
+comparison does not establish statistical equivalence, and some voltage metrics
+also differ. Two OFF seeds exceed the historical selected-ES range. This operational
+adoption does not turn the earlier failed gates into passes. See the complete
+[Stage 1 verdict](reports/v2/stage1_verdict.md), including seed identities, stopping
+reasons, all test metrics and the separate confirmation-job exceedance.
+
 ## Multigrid CPU format support
 
 This repository supports case14, case30, case57, case118, case500, and case2000.
