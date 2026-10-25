@@ -58,6 +58,24 @@ def summaries(rows):
     return result
 
 
+def failure_status(error):
+    if isinstance(error, TimeoutError):
+        return "TIMEOUT"
+    if type(error).__name__ == "OutOfMemoryError" or any(
+            text in str(error).lower() for text in ("out of memory", "out of device memory")):
+        return "OOM"
+    return "RESOURCE_EXHAUSTED" if "UR_RESULT_ERROR_OUT_OF_RESOURCES" in str(error) else "ERROR"
+
+
+def run_status(groups):
+    statuses = {failure_status(RuntimeError(r.get("reason", ""))) if r["status"] == "ERROR" else r["status"]
+                for g in groups for r in g["records"]}
+    if statuses == {"OK"}:
+        return "complete"
+    return "complete_with_capacity_limits" if statuses <= {
+        "OK", "OOM", "RESOURCE_EXHAUSTED", "UNSUPPORTED_K1"} else "complete_with_failures"
+
+
 def fixture(args, record):
     import numpy as np
     import torch
@@ -255,8 +273,7 @@ def worker(args):
         if not record["backbone_unchanged"]:
             raise RuntimeError("Frozen backbone changed")
     except Exception as error:
-        oom = "out of memory" in str(error).lower() or type(error).__name__ == "OutOfMemoryError"
-        record.update(status="OOM" if oom else "TIMEOUT" if isinstance(error, TimeoutError) else "ERROR",
+        record.update(status=failure_status(error),
                       reason=f"{type(error).__name__}: {error}", traceback=traceback.format_exc())
     finally:
         record["elapsed_seconds"] = time.time() - started
@@ -339,9 +356,9 @@ def report(args, summary):
         p = row.get("phase_seconds", {}).get(key, {})
         return f"{number(p.get('median'))} / {number(p.get('p90'))}"
     lines = ["# Multigrid step and tile profile", "",
-             f"Job `{summary.get('job_id', 'not submitted')}`; status **{summary.get('status', 'pending')}**; "
-             f"[raw results]({args.output}/summary.json). Float32; unchanged `training.loop.training_step`; synthetic inputs/scales, no datasets.",
-             "Times are median / p90 seconds with XPU synchronization at phase boundaries. Forward includes the history encoder, sampling, GENCO and physics; optimizer includes gradient clipping and scheduling; total also includes transfers, RNG and the existing digest. Memory is peak allocated device GB; reserved/host memory and tile details are in JSON.",
+             f"Job `{summary.get('job_id', 'not submitted')}` on `{summary.get('node', 'see worker records')}`; status **{summary.get('status', 'pending')}**; "
+             f"[raw results]({args.output}/summary.json). Measured source `{summary.get('git_commit', 'see worker hashes')}`. Float32; unchanged `training.loop.training_step`; synthetic inputs/scales, no datasets.",
+             "Each XPU process uses one Intel Max 1550 tile; the CPU row uses 16 threads. Times are median / p90 seconds with XPU synchronization at phase boundaries. Forward includes the history encoder, sampling, GENCO and physics; optimizer includes gradient clipping and scheduling; total also includes transfers, RNG and the existing digest. Per-step JSON writes are outside timers; co-tenancy includes those gaps. Memory is peak allocated device GB; reserved/host memory and tile details are in JSON.",
              "Epoch estimates use 4,090 steps; 19-epoch estimates add measured 36×64 forward-only validation once per epoch when available († otherwise training only). Setup, checkpointing, validation scoring and queue wait are excluded. K=1 cannot train with the unchanged fair energy score; smaller K is not run after a larger K fits.", "",
              "## Table A", "",
              "| Grid | K | Device / deterministic | Status | Bus / branch / gen | Graphs/step | Fwd s | Loss s | Bwd s | Opt s | Step s | Peak GB | Train s/epoch | Validation s | Hours/19 epochs | Graphs/s |",
@@ -352,7 +369,7 @@ def report(args, summary):
             d = r.get("dims", {})
             dims = "/".join(str(d.get(key, "—")) for key in ("n_bus", "n_branch", "n_gen"))
             train, hours, speed = None, None, None
-            val = validation_by_mode.get((r["case"], g["device"], g["deterministic"]))
+            val = validation_by_mode.get((r["case"], g["device"], g["deterministic"])) if r["status"] == "OK" else None
             if r["status"] == "OK":
                 train, hours = estimate(r, val)
                 speed = 24 * r["K"] / r["phase_seconds"]["total"]["median"]
@@ -360,6 +377,20 @@ def report(args, summary):
             lines.append(f"| {r['case']} | {r['K']} | {g['device']} / {g['deterministic']} | {r['status']} | {dims} | {24*r['K']} | "
                          + " | ".join(phase(r, key) for key in PHASES)
                          + f" | {number(r.get('peak_device_bytes', 0)/1e9) if r.get('peak_device_bytes') is not None else '—'} | {number(train)} | {number(val)} | {number(hours)}{suffix} | {number(speed)} |")
+    for g in groups:
+        for r in g["records"]:
+            if r["status"] not in ("OK", "running"):
+                reason = r.get("reason", "See worker log")
+                if "UR_RESULT_ERROR_OUT_OF_RESOURCES" in reason:
+                    reason = "Level Zero OUT_OF_RESOURCES; retained original backend error"
+                elif r["status"] == "OOM":
+                    reason = "XPU memory exhausted; allocation details in raw JSON"
+                lines.extend(["", f"`{g['label']}` rank {r['rank']}: {reason}."])
+        r = best.get(g["case"])
+        if g["validation"] and r and g["K"] != r["K"]:
+            lines.extend(["", f"{g['case']} validation used K={g['K']} chunks for all 64 samples per origin; training used K={r['K']}."])
+    if summary.get("resource_retry"):
+        lines.extend(["", "The case2000 smaller-K retries used the same allocation with the suite controller paused; no concurrent timing overlapped the retries. The resource-error fallback was corrected after the step measurements; numerical code was unchanged."])
     lines.extend(["", "## Table B", "",
                   "| Grid | Fits one tile / K | Single-tile hours | Tiles: 1 h / 3 h / 6 h, ideal | Recommended mode |",
                   "|---|---|---:|---|---|"])
@@ -375,7 +406,7 @@ def report(args, summary):
         _, hours = estimate(r, validation.get(case))
         (under_hour if hours <= 1 else chained).append(case)
         if hours > 6: unviable.append(case)
-        mode = "many models per node" if hours <= 1 and r["K"] == 8 else "one tile per model" if hours <= 6 else "sample-parallel across tiles" if r["K"] < 8 else "DDP across tiles/nodes"
+        mode = "many models per node" if case == "case30_ieee" and hours <= 6 else "one tile per model" if hours <= 6 else "sample-parallel across tiles" if r["K"] < 8 else "DDP across tiles/nodes"
         tiles = " / ".join(str(math.ceil(hours / target)) for target in (1, 3, 6))
         lines.append(f"| {case} | Y / {r['K']} | {hours:.3f}{'†' if case not in validation else ''} | {tiles} | {mode} |")
     lines.extend(["", "The requested ‘upper bound under ideal scaling’ applies to speedup: ceil(hours/target) is an optimistic **lower bound on required tiles**, not measured scaling or a memory guarantee. Multi-tile recommendations are prospective; no model sharding or DDP was tested.",
@@ -433,7 +464,7 @@ def suite(args):
             if status == "OK":
                 chosen[case] = k
                 break
-            if status != "OOM": break
+            if status not in ("OOM", "RESOURCE_EXHAUSTED"): break
     for case in ("case30_ieee", "case118_ieee"):
         run(f"deterministic_{case}", case, 8, deterministic="on")
     run("cpu_case30_ieee", "case30_ieee", 8, device="cpu")
@@ -441,7 +472,7 @@ def suite(args):
         run(f"concurrent_{n}", "case30_ieee", 8, concurrent=n)
     for case in CASES:
         run(f"validation_{case}", case, chosen.get(case, 1), validation=True)
-    status = "complete_with_failures" if any(r["status"] != "OK" for g in summary["groups"] for r in g["records"]) else "complete"
+    status = run_status(summary["groups"])
     summary.update(status=status if time.time() < args.deadline - 30 else "walltime_guard_partial",
                    finished_epoch=time.time())
     save(args.output / "summary.json", summary)
@@ -532,7 +563,7 @@ def main():
                                     device=args.device, deterministic=args.deterministic, concurrent=args.concurrent))
             groups.append(group(args, f"validation_{args.case}", args.case, args.K,
                                 device=args.device, deterministic=args.deterministic, validation=True))
-            summary = dict(job_id=os.environ.get("PBS_JOBID"), status="complete", groups=groups)
+            summary = dict(job_id=os.environ.get("PBS_JOBID"), node=platform.node(), status=run_status(groups), groups=groups)
             save(args.output / "summary.json", summary)
             report(args, summary)
             print(args.output / "summary.json")
