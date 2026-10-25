@@ -133,6 +133,11 @@ class IpoptSolver:
             raise ValueError(f"Expected {self.grid.n_bus} finite bus Pd/Qd values")
 
         # forward solver limits and any supplied initial state to Julia
+        if initial_state is not None:
+            initial_state = {k: list(v) for k, v in initial_state.items()}
+            for key in ("pg_mw", "qg_mvar"):
+                for i in np.flatnonzero(~self.grid.online_gen):
+                    initial_state[key][i] = 0.0
         request = {"stage": "opf",
                    "casefile": self.casefile,
                    "pd_mw": pd.tolist(),

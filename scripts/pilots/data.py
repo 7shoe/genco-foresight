@@ -27,6 +27,9 @@ def command(module, cfg_path, log, *args):
     guard()
     log.parent.mkdir(parents=True, exist_ok=True)
     env = dict(os.environ, GENCO_CONFIG=str(cfg_path))
+    for key in list(env):
+        if key.startswith(('PMI_', 'PMIX_', 'PALS_', 'OMPI_', 'SLURM_')) or key in ('RANK', 'WORLD_SIZE', 'LOCAL_RANK', 'NODE_RANK', 'MASTER_ADDR', 'MASTER_PORT'):
+            env.pop(key)
     with log.open('a') as stream:
         process = subprocess.Popen([sys.executable, '-u', '-m', module, *args], cwd=ROOT, env=env,
             stdout=stream, stderr=subprocess.STDOUT, start_new_session=True)
@@ -149,10 +152,23 @@ def prepare_grid(root, case, cfg):
     from data.synthetic.generate import label, prepare_benchmark
     guard()
     if not (data / 'pilot_report.json').exists():
-        result = label(cfg, 200, deadline_epoch=float(os.environ['GENCO_PILOTS_DEADLINE'])-60)
+        if cfg['pilot'].get('solver_processes'):
+            from scripts.pilots.hour_shards import generate
+            generate(cfg, cfg_path, 200)
+            result = read_json(data / 'pilot_report.json')
+        else:
+            result = label(cfg, 200, deadline_epoch=float(os.environ['GENCO_PILOTS_DEADLINE'])-60)
         if result.get('incomplete'):
             raise PreparationGuard('200-hour data pilot continues next allocation')
     assert read_json(data / 'pilot_report.json')['accepted']
+    if (data / 'formulation_review_required.json').exists():
+        raise RuntimeError('Recorded formulation review must be resolved before expansion')
+    projection = data / 'generation_projection.json'
+    if projection.exists() and read_json(projection)['projected_solve_wall_seconds'] > 10800:
+        raise RuntimeError('Recorded full-size projection requires a new pilot half-size identity')
+    if cfg['pilot'].get('solver_processes') and not (data / 'generation_report.json').exists():
+        from scripts.pilots.hour_shards import generate
+        generate(cfg, cfg_path, 10080)
     if not (data / 'generation_report.json').exists():
         prepare_benchmark(cfg)
         with ThreadPoolExecutor(max_workers=4) as pool:
@@ -178,7 +194,7 @@ def prepare_grid(root, case, cfg):
     summary = read_json(audit / 'stage_a.json')
     assert summary['complete']
     summary['limitations'] = [f'{case}: fixed topology, costs and commitment; synthetic ERCOT profile mapping.',
-        'CPU parity covers the first32 sorted local/official intersection snapshots, all independently converted; unchanged tolerances.',
+        'CPU subset parity (200): seeded official/local test intersection, byte-identical; independent conversion checked separately on32 snapshots.',
         'All10080 temporal hours independently audited, including72 test origins; solver failures retain missing-label masks.',
         'Pilot only; no fleet evaluation, cross-grid result or Stage2 correctness claim.']
     write_json(audit / 'stage_a.json', summary)

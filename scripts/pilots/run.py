@@ -3,6 +3,7 @@ import argparse
 from copy import deepcopy
 from datetime import datetime, timezone
 import fcntl
+import json
 import os
 from pathlib import Path
 import shutil
@@ -101,6 +102,34 @@ def prepare(root, protocol_path):
         cfg['seed'] = 42
         cfg['pilot'] = dict(label='K=8 pilot' if case == 'case500_goc' else 'K=2 pilot',
             cross_grid_table=False, epoch_cap=6, training_seed=0, data_seed=42)
+        repair = protocol.get('repair')
+        if repair:
+            cfg['pilot']['solver_processes'] = repair['solver_processes'][case]
+            cfg['solver']['budget'] = repair['solver_budget'][case]
+            cfg['solver']['warm_start_base'] = case == 'case2000_goc'
+            resolved = OmegaConf.to_container(OmegaConf.create(cfg), resolve=True)
+            solver = resolved['solver']
+            network_file = source / 'networks' / Path(cfg['paths']['network_file']).name
+            env = dict(os.environ, LD_LIBRARY_PATH='', JULIA_DEPOT_PATH=solver['julia_depot'],
+                JULIA_PKG_OFFLINE='true', JULIA_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1')
+            output = subprocess.check_output([solver['julia_executable'], '--startup-file=no',
+                f'--project={ROOT / "solver/julia"}', str(ROOT / 'scripts/pilots/reference.jl'), str(network_file)],
+                env=env, text=True, timeout=120)
+            metadata = json.loads(next(line.removeprefix('REFERENCE_JSON ') for line in output.splitlines()
+                if line.startswith('REFERENCE_JSON ')))
+            metadata['case_sha256'] = sha256(network_file)
+            cfg['solver']['reference_network'] = metadata
+            write_json(grid / 'stage_a/reference_network.json', metadata)
+            previous = Path(repair['previous_root']) / case
+            write_json(grid / 'seed0/budget.json', read_json(previous / 'seed0/budget.json'))
+            parity_root = Path(repair['parity_root']) / case
+            gate = read_json(parity_root / 'gate.json')
+            if not gate['passed'] or not gate['bit_identical'] or gate['report_sha256'] != sha256(parity_root / 'stage_a/parity/parity_report.json'):
+                raise ValueError('Accepted subset parity evidence changed')
+            (grid / 'stage_a/parity').symlink_to(parity_root / 'stage_a/parity', target_is_directory=True)
+            write_json(grid / 'stage_a/parity_reuse.json', dict(gate=str(parity_root / 'gate.json'),
+                gate_sha256=sha256(parity_root / 'gate.json'), reason='Unchanged checkpoint and official snapshot inputs; new temporal graphs use corrected network reference and are checked in the solver round-trip'))
+            text_file(grid / 'data/DATASET_CARD.md', f'# {case} temporal pilot\n\nsubset parity (200): seed42, CPU, bit-identical; evidence {parity_root}.\n\nFull20 episodes, v4 demand law. GridSpec, temporal graph reference flag, angle mask and solver audit use the PowerModels parsed reference. The scorer code and physical equations are unchanged.\n')
         cfg['paths'].update(assets_root=str(assets), runs_root=str(grid), temporal_root=str(grid / 'data'), data_root=str(grid / 'data'),
             stage_a_run=str(grid / 'stage_a'), evidence_root=str(grid / 'stage_a'), training_run=str(grid / 'shared'))
         cfg['paths']['network_file'] = str(assets / 'networks' / Path(cfg['paths']['network_file']).name)
@@ -149,9 +178,9 @@ def prepare(root, protocol_path):
         files=files, configuration_sha256={str(p): sha256(p) for p in [*configs, root / 'protocol.json']},
         protected_sha256=protected, release_tag=subprocess.check_output(['git', 'rev-parse', 'refs/tags/v0.1.0'], cwd=ROOT, text=True).strip())
     write_json(root / 'source_pin.json', pin)
-    alias = GENCO / 'runs/pilots'
+    alias = GENCO / protocol.get('status_alias', 'runs/pilots')
     if alias.exists() or alias.is_symlink():
-        raise ValueError('runs/pilots already exists; refusing to replace it')
+        raise ValueError(f'{alias} already exists; refusing to replace it')
     alias.symlink_to(root, target_is_directory=True)
     status(root)
     return dict(root=str(root), snapshot=str(snapshot), protocol_sha256=protocol_hash)
@@ -175,9 +204,9 @@ def status(root):
     for j in state.get('jobs', []):
         rows.append(f"| {j.get('job_id', 'submission pending')} | {j.get('state', '')} | 1 |")
     rows += ['', f"Controller: {state.get('status', 'prepared')}; source: {root / 'source'}.",
-        f"Protocol: {root / 'protocol.json'}. Maximum 24 allocations / 24 reserved node-hours.",
+        f"Protocol: {root / 'protocol.json'}. Maximum {read(root / 'protocol.json').get('job', {}).get('max_allocations', 24)} one-hour allocations.",
         'Worker wall costs include startup and checkpoint/audit overhead, exclude queue wait, and finalize at job boundaries.',
-        'Four Ipopt processes per grid; data gates must pass before that grid trains. No full fleet evaluation or cross-grid table entry.']
+        'Solver process counts are recorded in each configuration; data gates must pass before that grid trains. No full fleet evaluation or cross-grid table entry.']
     text_file(root / 'STATUS.md', '\n'.join(rows) + '\n')
 
 
@@ -263,7 +292,7 @@ def node(root):
         log = root / 'logs/tests.log'
         with log.open('a') as stream:
             result = subprocess.run([PYTHON, '-m', 'pytest', '-q', '-p', 'no:cacheprovider',
-                'tests/test_pilots.py', 'tests/test_fleet.py', 'tests/test_case_identity.py', 'tests/test_multigrid.py',
+                'tests/test_pilots.py', 'tests/test_pilot_repair.py', 'tests/test_fleet.py', 'tests/test_case_identity.py', 'tests/test_multigrid.py',
                 'tests/test_v2_harness.py', 'tests/test_v2_stage1.py', '--basetemp', str(root / 'tmp/tests'), '--junitxml', str(root / 'tests.xml')],
                 cwd=ROOT, stdout=stream, stderr=subprocess.STDOUT, timeout=max(1, deadline-time.time()))
         write_json(root / 'tests.json', dict(passed=result.returncode == 0, log=str(log)))

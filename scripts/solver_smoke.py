@@ -33,13 +33,14 @@ def main():
         warm["checks"] = check_solution(network, pd, qd, warm)
         result["warm"] = warm
         graph = graph_for_demand(network, pd, qd)
-        round_trip = solver.solve(graph)
+        initial = cold["state"] if config["solver"].get("warm_start_base", False) else None
+        round_trip = solver.solve(graph, initial_state=initial)
         graph_pd, graph_qd = graph["bus"].x[:, 0].numpy(), graph["bus"].x[:, 1].numpy()
         round_trip["checks"] = check_solution(network, graph_pd, graph_qd, round_trip)
         result["graph_round_trip"] = round_trip
         bus = int(np.flatnonzero(pd > 0)[0])
         perturbed_pd = pd.copy(); perturbed_pd[bus] += result["perturbation_mw"]
-        perturbed = solver.solve(perturbed_pd, qd)
+        perturbed = solver.solve(perturbed_pd, qd, initial_state=initial)
         perturbed["checks"] = check_solution(network, perturbed_pd, qd, perturbed)
         result["perturbed"] = perturbed
         if perturbed["checks"]["valid"] and "dual_p_raw" in cold:

@@ -108,6 +108,12 @@ def prepare_benchmark(config):
              "start_utc": str(frame.time_utc.iloc[i*504]),
              "end_utc_inclusive": str(frame.time_utc.iloc[(i+1)*504-1])}
             for split, pool in pools.items() for i in pool]
+    if config.get('pilot', {}).get('solver_processes'):
+        descriptor['parallel_generation'] = dict(
+            source_sha256=sha256(ROOT / 'scripts/pilots/hour_shards.py'),
+            solver_processes=config['pilot']['solver_processes'],
+            initial_state='checked base' if config['solver'].get('warm_start_base') else 'cold',
+            reference_network=config['solver']['reference_network'])
     identifier = hashlib.sha256(json.dumps(descriptor, sort_keys=True).encode()).hexdigest()
     descriptor["benchmark_id"] = identifier
     root = Path(config["paths"].get("temporal_root", str(Path(config["paths"]["data_root"])/config["task"]["canonical_case"])))

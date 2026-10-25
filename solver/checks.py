@@ -109,6 +109,9 @@ def check_solution(network, pd_mw, qd_mvar, record, tolerance=1e-5):
     bound_error = lambda values, lower, upper: float(np.maximum(np.maximum(lower-values, values-upper), 0).max(initial=0))
     angle = state["va_rad"][e[:, 0].astype(int)] - state["va_rad"][e[:, 1].astype(int)]
     rated = q["rated"]
+    reference_bus = network.solver_reference_bus
+    if reference_bus is None:
+        reference_bus = network.reference_bus
 
     # quadratic cost structuee (c2 * Pg² + c1 * Pg + c0) assumed
     objective = float(np.sum((cost[:, 4]*state["pg_mw"]**2 + cost[:, 5]*state["pg_mw"] + cost[:, 6])[network.online_gen]))
@@ -122,7 +125,7 @@ def check_solution(network, pd_mw, qd_mvar, record, tolerance=1e-5):
         "qg_mvar": bound_error(state["qg_mvar"][network.online_gen], g[network.online_gen, 4], g[network.online_gen, 3]),
         "thermal_mva": float(np.maximum((q["loading"][rated]-1)*e[rated, 5], 0).max(initial=0)),
         "angle_rad": bound_error(angle[network.online_branch], np.deg2rad(e[network.online_branch, 11]), np.deg2rad(e[network.online_branch, 12])),
-        "reference_rad": float(abs(state["va_rad"][network["reference_bus"]])),
+        "reference_rad": float(abs(state["va_rad"][reference_bus])),
         "objective_relative": abs(objective-record.get("objective", objective))/max(1, abs(objective)),
     }
     # compare reported terminal flows
