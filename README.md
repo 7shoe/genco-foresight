@@ -102,6 +102,14 @@ reasons, all test metrics and the separate confirmation-job exceedance.
 
 ## Multigrid CPU format support
 
+The V2 A0 and λ ablations use separate run identities and a 3.3-hour worker cap.
+Apply `configs/v2/a0.yaml`, `lambda01.yaml`, or `lambda10.yaml` as overrides through
+`load_config`; they are not standalone complete configurations. A0 freezes latent
+conditioning and runs GENCO under `no_grad`, then adds final-state innovations and
+recomputes differentiable physics. Its demand head still receives direct demand-ES
+gradients. The conditioned adapter remains the production model. The frozen GENCO
+path and the default adapter forward were checked before these experiments.
+
 This repository supports case14, case30, case57, case118, case500, and case2000.
 Select a case with `GENCO_CONFIG=configs/multigrid/case118_ieee.yaml`; the selector
 uses the v4 recipe and separate output paths. `GridSpec` supplies dimensions,

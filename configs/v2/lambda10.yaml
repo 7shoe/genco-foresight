@@ -1,0 +1,6 @@
+# Merge through load_config(overrides=...) into a selected v4 grid recipe.
+stage_b:
+  deterministic_algorithms: false
+  training_budget_seconds: 11880
+  loss:
+    power_balance_weight: 10.0
