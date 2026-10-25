@@ -124,7 +124,7 @@ def prepare_benchmark(config):
     return root, descriptor, network, frame, scaled
 
 
-def label(config, maximum_hours=200, require_pilot=True):
+def label(config, maximum_hours=200, require_pilot=True, deadline_epoch=None):
     root, manifest, network, frame, scaled = prepare_benchmark(config)
     if maximum_hours > 200 and require_pilot:
         pilot_path = root / "pilot_report.json"
@@ -150,6 +150,9 @@ def label(config, maximum_hours=200, require_pilot=True):
                 np.testing.assert_array_equal(old["pd_mw"], pd_values[old["hour"]])
                 np.testing.assert_array_equal(old["qd_mvar"], qd_values[old["hour"]])
             for hour in range(len(shard["records"]), min(504, maximum_hours-completed)):
+                if deadline_epoch is not None and time.time() >= deadline_epoch - 40:
+                    write_json(path, shard)
+                    return {"incomplete": True, "reason": "allocation_guard"}
                 pd_mw, qd_mvar = pd_values[hour], qd_values[hour]
                 result = solver.solve(pd_mw, qd_mvar)
                 if result["status"] == "WORKER_UNRESOLVED":
