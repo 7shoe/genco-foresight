@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "stage": 1,
+  "gate_kind": "single_batch_gradient_diagnosis",
+  "passed": true,
+  "decision": "usable_gradient_requires_epoch_gate",
+  "all_30_group_cosines_at_least_0_99": true,
+  "minimum_ON_cosine": 0.9956632466867746,
+  "minimum_OFF_cosine": 0.9979905456990962,
+  "selective_fp64_triggered": false,
+  "production_epoch_acceptance": "pending_new_protocol",
+  "production_stage_gate_passed": false,
+  "stage2_started": false,
+  "adopted_candidate": "determinism_OFF_fp32_with_epoch_level_gate",
+  "local_main_merge": null,
+  "reason_no_merge": "Diagnostic is not the three-epoch production acceptance gate",
+  "protocol": "reports/v2/stage1_diagnosis.protocol.json",
+  "protocol_sha256": "6536529d037b7a792cebc441646b19f51ca2ab3583e86def5f9d26b4bf341d7e",
+  "evidence_root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_diagnosis_20261025_v1",
+  "evidence_sha256": {
+    "protocol.json": "6536529d037b7a792cebc441646b19f51ca2ab3583e86def5f9d26b4bf341d7e",
+    "prepared.json": "389ca43c7c364e6e43304cebaeee31d74792192ad4eef3a345b83f8474ac5f0f",
+    "manifest.json": "017bd3afc8c093d1d917f259dbf07d8e88526646c4fc21de1473a64737a09324",
+    "results.json": "0b292bacfa3c2905b39d7500fecd9bd93d9bd80ddfb4fcb3dfd80a05f106a4ff",
+    "groups.json": "a1d94a14ad4dc79d4de5860f6518f45da28fc7f8ff3132b83d105119987935be",
+    "fixture.pt": "de60511993ef276198c9eed248b61d01f6f7fc99ea7f0fda05aec2d8241880a9",
+    "template.pt": "9989a775937c9b8db4a39c2255cf3b533f1e9720aba116895c9ca10c2890ae2e",
+    "artifact_sha256.json": "4caf09935c964b3ec48486b082736c728e20709d46bfcb4d7b5628eb3f237ec0",
+    "job_status.json": "bacd6bbc2eee1b2133513d77c132aa69dc3c6344f888d662354e9d8391d5f13b",
+    "pbs_accounting.txt": "18a976c4a46ce3190aabcae082990f857a3b5a6273c705f85947e2f4a6ffe0f3",
+    "provenance_audit.json": "37e8617115a66ae49b5c2fb58c27f79a92de832babc1a85611e6bd9f73af6b95",
+    "historical_epochs.json": "5d17286e97b1d3f0d5a3503499fd9be14c9dc030e2e7962f45bb02cc8a6ef487",
+    "logs/tests.log": "cd954f0fe1ebf288d269d6f1a1c6235de0c07a3aa7746b83e485dfaa674cd773"
+  },
+  "job_ids": [
+    "8962527.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov"
+  ],
+  "budget": {
+    "allocations": 1,
+    "reserved_node_seconds": 1200,
+    "PBS_actual_node_seconds": 75,
+    "launcher_actual_seconds": 73.82206964492798,
+    "worker_seconds": 18.165191828040406
+  },
+  "limitations": [
+    "One initial case30 origin",
+    "One ON evaluation",
+    "No epoch-level acceptance or stopping comparison",
+    "Historical source differs from current production source; matching case30 data and recipe verified"
+  ]
+}
