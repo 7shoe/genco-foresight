@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "kind": "pilot_submission",
+  "recorded_utc": "2026-10-25T09:06:57.901146+00:00",
+  "run_identity": "large_grid_pilots_20261025_v1",
+  "source_commit": "a1d0730305837511d9592509f488e30f941344d7",
+  "root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/large_grid_pilots_20261025_v1",
+  "snapshot": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/large_grid_pilots_20261025_v1/source",
+  "protocol_sha256": "2c94249e53a0f16c8bdf9c87f7f0fa6abad382e3bf8f996f2f1dbd1387992995",
+  "source_pin_sha256": "821b0460dddf5686fc749d1f166ee9addb68f5fb61774bf7cb11eb9156093df9",
+  "source_files": 212,
+  "job_ids": [
+    "8963555.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov"
+  ],
+  "controller_pid": 4121869,
+  "controller_host": "aurora-uan-0012",
+  "controller_status": "running",
+  "automatic_resubmission": true,
+  "unchanged_fleet": {
+    "root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/fleet_20261025_off_v1",
+    "controller_pid": 3440483,
+    "second_job": "8963510",
+    "first_job": "8963092",
+    "automatic_resubmission": true
+  },
+  "queue": "debug",
+  "nodes": 1,
+  "walltime_seconds": 3600,
+  "max_allocations": 24,
+  "reserved_node_seconds_cap": 86400,
+  "budgets_per_pilot": {
+    "data_worker_seconds": 21600,
+    "training_worker_seconds": 43200
+  },
+  "pilots": [
+    {
+      "case": "case500_goc",
+      "seed": 0,
+      "K": 8,
+      "tile": 0,
+      "label": "K=8 pilot"
+    },
+    {
+      "case": "case2000_goc",
+      "seed": 0,
+      "K": 2,
+      "tile": 2,
+      "label": "K=2 pilot"
+    }
+  ],
+  "recipe": {
+    "deterministic_algorithms": false,
+    "B": 1,
+    "precision": "fp32",
+    "epoch_cap": 6,
+    "patience": 3,
+    "covariance_rank": 8,
+    "selection_K": 64
+  },
+  "cross_grid_table": false,
+  "local_controller_tests": {
+    "passed": 5,
+    "failed": 0,
+    "seconds": 4.39,
+    "xml": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/pilot_preparation_checks/tests.xml"
+  },
+  "gate": {
+    "compute_preflight": "pending",
+    "case500_stage_a": "pending",
+    "case2000_stage_a": "pending",
+    "training": "pending"
+  }
+}
