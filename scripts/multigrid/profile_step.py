@@ -261,8 +261,11 @@ def worker(args):
         record["elapsed_seconds"] = time.time() - started
         record["host_peak_rss_bytes"] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024
         if torch is not None and args.device == "xpu" and torch.xpu.is_initialized():
-            record["peak_device_bytes"] = torch.xpu.max_memory_allocated()
-            record["peak_reserved_bytes"] = torch.xpu.max_memory_reserved()
+            try:
+                record["peak_device_bytes"] = torch.xpu.max_memory_allocated()
+                record["peak_reserved_bytes"] = torch.xpu.max_memory_reserved()
+            except RuntimeError as error:
+                record["memory_query_error"] = str(error)
         save(path, record)
         print(json.dumps({k: record.get(k) for k in ("case", "K", "rank", "status", "reason", "phase_seconds")}), flush=True)
 
@@ -402,8 +405,11 @@ def report(args, summary):
 
 
 def suite(args):
-    summary = dict(job_id=os.environ.get("PBS_JOBID"), node=platform.node(), started_epoch=time.time(),
-                   status="running", groups=[], script_sha256=digest(__file__))
+    summary = read(args.output / "summary.json") if (args.output / "summary.json").exists() else {}
+    summary.update(job_id=os.environ.get("PBS_JOBID"), node=platform.node(), started_epoch=time.time(),
+                   status="running", groups=[], script_sha256=digest(__file__),
+                   git_commit=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip())
+    save(args.output / "summary.json", summary)
     def run(label, case, k, **kwargs):
         if time.time() > args.deadline - 30:
             return None
@@ -427,8 +433,8 @@ def suite(args):
     run("cpu_case30_ieee", "case30_ieee", 8, device="cpu")
     for n in (1, 4, 8, 12):
         run(f"concurrent_{n}", "case30_ieee", 8, concurrent=n)
-    for case, k in chosen.items():
-        run(f"validation_{case}", case, k, validation=True)
+    for case in CASES:
+        run(f"validation_{case}", case, chosen.get(case, 1), validation=True)
     status = "complete_with_failures" if any(r["status"] != "OK" for g in summary["groups"] for r in g["records"]) else "complete"
     summary.update(status=status if time.time() < args.deadline - 30 else "walltime_guard_partial",
                    finished_epoch=time.time())
