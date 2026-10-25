@@ -49,3 +49,9 @@ go to `GENCO/runs/multigrid/<case>/` under the configured base. Selectors suppor
 `load_config(path, overrides={"base": "/lus/flare/projects/example/user"})` and
 ordinary nested overrides. Interpolation resolves after overrides, and the returned
 configuration has no helper `base` key.
+
+Loading rejects disagreement between the configured case, parsed network name,
+snapshot manifest, and checkpoint YAML. Temporal manifests must match the network's
+`case_sha256`; existing v3/v4 manifests work unchanged. Graphs produced by the data
+loaders carry `case_id`, which GENCO checks before preprocessing; unlabelled graphs
+are rejected. These checks run before inference or training and do not change weights.

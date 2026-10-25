@@ -12,6 +12,7 @@ from gridfm_graphkit.io.param_handler import NestedNamespace
 from gridfm_graphkit.models.gnn_heterogeneous_gns import GNS_heterogeneous
 from gridfm_graphkit.datasets.normalizers import HeteroDataMVANormalizer
 from gridfm_graphkit.datasets.task_transforms import OptimalPowerFlowTransforms
+from data.grids import check_case
 
 
 class Genco:
@@ -30,6 +31,12 @@ class Genco:
         # assign model
         self.config = resolve_config(raw, config_path=str(config_path), conversion_mode="auto_inline")
         self.args = NestedNamespace(**self.config)
+        self.case = settings["directory"].split("/")[0]
+        networks = self.args.data.networks
+        if list(networks) != [self.case]:
+            raise ValueError(f"Case mismatch: checkpoint YAML has {networks!r}; expected {[self.case]!r}")
+        if grid is not None:
+            check_case(grid.case, self.case, "checkpoint YAML")
         self.device = torch.device(device)
         self.grid = grid
         self.model = GNS_heterogeneous(self.args)
@@ -40,12 +47,15 @@ class Genco:
 
         # data preprocessing
         stats = torch.load(folder / settings["normalizer"], map_location="cpu", weights_only=True)
+        if self.case not in stats:
+            raise ValueError(f"Case mismatch: normalizer has no statistics for {self.case!r}")
         self.normalizer = HeteroDataMVANormalizer(self.args)
         self.normalizer.fit_from_dict(stats[self.args.data.networks[0]])
         self.transform = OptimalPowerFlowTransforms(self.args)
 
     def prepare(self, graph):
         """Use Genco preprocessing"""
+        check_case(self.case, getattr(graph, "case_id", None), "input graph")
         graph = graph.clone()
         self.normalizer.transform(graph)
         graph = self.transform(graph)

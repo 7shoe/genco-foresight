@@ -11,6 +11,14 @@ def registry():
     return yaml.safe_load((ROOT / "configs/grids.yaml").read_text())
 
 
+def check_case(expected, actual, source):
+    """Reject missing or mismatched case identities before using an asset."""
+    expected = expected.removeprefix("pglib_opf_")
+    actual = actual.removeprefix("pglib_opf_") if isinstance(actual, str) else actual
+    if actual != expected:
+        raise ValueError(f"Case mismatch: {source} has {actual!r}; expected {expected!r}")
+
+
 def grid_config(case, config=None):
     """Select a case and isolate all generated artifacts from the released runs."""
     catalog = registry()

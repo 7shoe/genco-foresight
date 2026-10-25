@@ -9,6 +9,7 @@ import torch
 
 from common import ROOT,read_json,sha256,write_json
 from data.download.prepare import checkpoint_assets
+from data.loader.dataset import load_temporal_manifest
 from data.loader.network import graph_for_demand,load_network
 from models.genco import Genco
 from models.temporal import TemporalAdapter
@@ -40,7 +41,9 @@ def initialize(cfg,device):
     torch.use_deterministic_algorithms(True)
     seed_all(cfg["seed"])
     torch.set_num_threads(1 if device=="xpu" else 16)
-    net=load_network(config=cfg);base=Genco(checkpoint_assets(cfg),cfg["checkpoint"],device)
+    net=load_network(config=cfg)
+    load_temporal_manifest(cfg["paths"]["temporal_root"],net)
+    base=Genco(checkpoint_assets(cfg),cfg["checkpoint"],device,grid=net)
     scales=read_json(ROOT/cfg["stage_b"]["coordinate_scales"])
     model=TemporalAdapter(base,net,scales).to(device).train()
     opt_cfg=cfg["stage_b"]["optimizer"]
@@ -50,7 +53,7 @@ def initialize(cfg,device):
     graph=graph_for_demand(net,net["bus"][:,2],net["bus"][:,3])
     template=base.batch([graph]*cfg["stage_b"]["future_graph_batch_size"])
     assert template.num_graphs==cfg["stage_b"]["training_samples"]*cfg["task"]["horizon_hours"]
-    cache=CachedWindows(cfg)
+    cache=CachedWindows(cfg,net)
     return model,optimizer,scheduler,template,cache
 
 

@@ -18,6 +18,7 @@ import torch
 from common import ROOT, load_config, read_json, sha256, write_json
 from data.download.prepare import checkpoint_assets
 from data.coordinates import record_values
+from data.loader.dataset import load_temporal_manifest
 from data.loader.network import graph_for_demand, load_network
 from models.genco import Genco
 from models.temporal import TemporalAdapter
@@ -36,8 +37,9 @@ def tensor_digest(state):
 def fixture(cfg, root):
     """Only train_00; historical state is separate from target labels."""
     net = load_network(config=cfg)
+    load_temporal_manifest(cfg["paths"]["temporal_root"], net)
     assets = checkpoint_assets(cfg)
-    base = Genco(assets,cfg["checkpoint"])
+    base = Genco(assets,cfg["checkpoint"],grid=net)
     path = Path(cfg["paths"]["temporal_root"])/"episodes/train_00.json"
     rows = read_json(path)["records"]
     observed,targets = rows[:72],rows[72:96]

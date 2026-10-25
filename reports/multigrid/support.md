@@ -16,12 +16,12 @@ Generator/branch columns show total/online rows. Reference buses are original ne
 
 | Grid | CPU format | Buses | Generators | Branches | Reference bus | Bus-Qg coordinates | CPU check seconds | Step seconds | Peak device memory | Ipopt seconds/solve |
 |---|---|---:|---:|---:|---:|---:|---:|---|---|---|
-| case14_ieee | supported | 14 | 5/5 | 20/20 | 1 | 5 | 0.46 | — | — | — |
-| case30_ieee | supported | 30 | 6/6 | 41/41 | 1 | 6 | 0.39 | — | — | — |
-| case57_ieee | supported | 57 | 7/7 | 80/80 | 1 | 7 | 0.40 | — | — | — |
-| case118_ieee | supported | 118 | 54/54 | 186/186 | 69 | 54 | 0.71 | — | — | — |
-| case500_goc | supported | 500 | 224/171 | 733/728 | 311 | 113 | 0.44 | — | — | — |
-| case2000_goc | supported | 2000 | 384/238 | 3639/3633 | 551 | 178 | 0.56 | — | — | — |
+| case14_ieee | supported | 14 | 5/5 | 20/20 | 1 | 5 | 0.45 | — | — | — |
+| case30_ieee | supported | 30 | 6/6 | 41/41 | 1 | 6 | 0.42 | — | — | — |
+| case57_ieee | supported | 57 | 7/7 | 80/80 | 1 | 7 | 0.39 | — | — | — |
+| case118_ieee | supported | 118 | 54/54 | 186/186 | 69 | 54 | 0.41 | — | — | — |
+| case500_goc | supported | 500 | 224/171 | 733/728 | 311 | 113 | 0.45 | — | — | — |
+| case2000_goc | supported | 2000 | 384/238 | 3639/3633 | 551 | 178 | 0.53 | — | — | — |
 
 The CPU check time includes imports/loading/conversion; it is not an inference benchmark.
 Per-case evidence and SHA256s are in [evidence.json](evidence.json). Assets and all generated arrays remain under

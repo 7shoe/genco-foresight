@@ -6,6 +6,7 @@ import tempfile
 import numpy as np
 
 from common import read_json, sha256, write_json
+from data.loader.dataset import load_temporal_manifest
 from training.inputs import calendar_features
 
 
@@ -124,7 +125,7 @@ def prefix_fit_from_moments(count, sums, cross, targets, xy, alpha=1.):
 def prepare(cfg, network, output):
     """Save final ridge coefficients and residual blocks from rolling prefix fits."""
     output=Path(output);output.mkdir(parents=True,exist_ok=True)
-    root=Path(cfg["paths"]["temporal_root"]);dataset=read_json(root/"manifest.json")
+    root=Path(cfg["paths"]["temporal_root"]);dataset=load_temporal_manifest(root,network)
     episodes=[e for e in dataset["episodes"] if e["split"]=="train"]
 
     # fit demand models only for buses with nonzero baseline active demand

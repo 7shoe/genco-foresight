@@ -1,7 +1,7 @@
 {
   "case14_ieee": {
     "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/multigrid/case14_ieee/gate.json",
-    "sha256": "5d00d12729b214be3ed523a90d82f314a0820cec22ea17983f15d099604d8e38",
+    "sha256": "c200644fdb4665c8379964308e916f430770742b1c55be4ea36de68b55c51575",
     "report": {
       "case": "case14_ieee",
       "status": "supported",
@@ -47,12 +47,12 @@
       "reference_bus_from_network": true,
       "bus_qg_coordinates": 5,
       "negative_demand_buses": 0,
-      "cpu_check_seconds": 0.46471036900766194
+      "cpu_check_seconds": 0.44749742199201137
     }
   },
   "case30_ieee": {
     "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/multigrid/case30_ieee/gate.json",
-    "sha256": "edfab14d43c06e54d310ac692375796467f0109358fbb6606387fe4facc42bec",
+    "sha256": "8e732938cec3990f86a9a7d49124980e0d3a5707e3b6382e9460eb9a2654e51d",
     "report": {
       "case": "case30_ieee",
       "status": "supported",
@@ -98,12 +98,12 @@
       "reference_bus_from_network": true,
       "bus_qg_coordinates": 6,
       "negative_demand_buses": 0,
-      "cpu_check_seconds": 0.394734715053346
+      "cpu_check_seconds": 0.42005282401805744
     }
   },
   "case57_ieee": {
     "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/multigrid/case57_ieee/gate.json",
-    "sha256": "14078bed8745b9c2b33e81b974da8837031113b10df1a7570b214626770d963b",
+    "sha256": "1f4dda4cc8d99fd798af659a29e216b5c36e516ea1df0fd9b8f9cd8d226d5866",
     "report": {
       "case": "case57_ieee",
       "status": "supported",
@@ -149,12 +149,12 @@
       "reference_bus_from_network": true,
       "bus_qg_coordinates": 7,
       "negative_demand_buses": 0,
-      "cpu_check_seconds": 0.3970823569688946
+      "cpu_check_seconds": 0.3929418370244093
     }
   },
   "case118_ieee": {
     "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/multigrid/case118_ieee/gate.json",
-    "sha256": "b40944e3acc9d5d737b01a5fa38a2b3234b9916439394f1dacb0bad10035b753",
+    "sha256": "7a42f4ef51ce53dbd2b5671fb8073adfb77c54d8f3b589f63fb6382fb768fd1c",
     "report": {
       "case": "case118_ieee",
       "status": "supported",
@@ -200,12 +200,12 @@
       "reference_bus_from_network": true,
       "bus_qg_coordinates": 54,
       "negative_demand_buses": 0,
-      "cpu_check_seconds": 0.7080864160088822
+      "cpu_check_seconds": 0.40642183495219797
     }
   },
   "case500_goc": {
     "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/multigrid/case500_goc/gate.json",
-    "sha256": "d58e966ac0c31f9dff2bf02d6879f3dd243a0562f05814eceed7aa14c7da5d76",
+    "sha256": "4e235ca9bd4db7e66fae068193058230048e1334c0a5ac1e44235e8b721abc31",
     "report": {
       "case": "case500_goc",
       "status": "supported",
@@ -251,12 +251,12 @@
       "reference_bus_from_network": true,
       "bus_qg_coordinates": 113,
       "negative_demand_buses": 0,
-      "cpu_check_seconds": 0.43720807699719444
+      "cpu_check_seconds": 0.4484555969829671
     }
   },
   "case2000_goc": {
     "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/multigrid/case2000_goc/gate.json",
-    "sha256": "0c8a046c5a522a8dd51d08f75804798b75eb3255b5cf4ed0707d104dff84fce5",
+    "sha256": "0957a27dd378a0c623a404d52c3bd95655875b53b2a1245c59f5bb429dcc3ff0",
     "report": {
       "case": "case2000_goc",
       "status": "supported",
@@ -302,7 +302,7 @@
       "reference_bus_from_network": true,
       "bus_qg_coordinates": 178,
       "negative_demand_buses": 0,
-      "cpu_check_seconds": 0.5554212770075537
+      "cpu_check_seconds": 0.5331441450398415
     }
   }
 }

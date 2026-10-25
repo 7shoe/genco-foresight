@@ -10,12 +10,14 @@ import numpy as np
 import torch
 from torch import nn
 from torch.nn import functional as F
+from data.grids import check_case
 
 
 class TemporalAdapter(nn.Module):
     """Use grid history to condition GENCO and sample future trajectories."""
     def __init__(self, base, network, scales):
         super().__init__()
+        check_case(network.case, base.case, "adapter backbone")
 
         # freeze backbone weights
         self.backbone = base.model.eval().requires_grad_(False)

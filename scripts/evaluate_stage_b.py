@@ -15,6 +15,7 @@ import torch
 from common import ROOT,load_config,read_json,sha256,write_json
 from data.download.prepare import checkpoint_assets
 from data.coordinates import bus_qg, record_values
+from data.loader.dataset import load_temporal_manifest
 from data.loader.network import graph_for_demand,load_network
 from models.genco import Genco
 from models.temporal import TemporalAdapter
@@ -94,7 +95,9 @@ def frozen(base,network,pd,templates,qd=None):
 def load_model(cfg,device):
     torch.set_num_threads(1);torch.use_deterministic_algorithms(True)
     if device.startswith("xpu"):torch.xpu.set_device(torch.device(device))
-    net=load_network(config=cfg);base=Genco(checkpoint_assets(cfg),cfg["checkpoint"],device)
+    net=load_network(config=cfg)
+    load_temporal_manifest(cfg["paths"]["temporal_root"],net)
+    base=Genco(checkpoint_assets(cfg),cfg["checkpoint"],device,grid=net)
     scales=read_json(cfg["stage_b"]["coordinate_scales"])
     model=TemporalAdapter(base,net,scales).to(device).eval()
     train=Path(cfg["paths"]["training_run"])
@@ -110,7 +113,7 @@ def load_model(cfg,device):
 
 
 def cache_test(cfg,base,network):
-    root,data,_=locations(cfg);manifest=read_json(data/"manifest.json");files={}
+    root,data,_=locations(cfg);manifest=load_temporal_manifest(data,network);files={}
     for episode in manifest["episodes"]:
         if episode["split"]!="test":continue
         name=episode["episode_id"];path=data/f"episodes/{name}.json";dest=root/f"cache/{name}.pt"

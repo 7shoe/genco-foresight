@@ -306,7 +306,7 @@ def provenance(cfg):
     train = Path(cfg["paths"]["training_run"])
     base_root = Path(cfg["paths"]["assets_root"]) / "genco-opfdata"
     base = Genco(base_root, cfg["checkpoint"], "cpu")
-    model = TemporalAdapter(base, load_network(config=load_config()), read_json(cfg["stage_b"]["coordinate_scales"]))
+    model = TemporalAdapter(base, load_network(config=cfg), read_json(cfg["stage_b"]["coordinate_scales"]))
     checkpoint = torch.load(train / "best.pt", weights_only=True, map_location="cpu")
     state = checkpoint["model"]
     parameters = {k: p for k, p in model.named_parameters() if p.requires_grad}

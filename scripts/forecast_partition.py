@@ -15,6 +15,7 @@ import numpy as np
 import torch
 
 from common import ROOT, load_config, read_json, sha256, write_json
+from data.loader.dataset import load_temporal_manifest
 from data.loader.network import graph_for_demand, load_network
 from models.genco import Genco
 from models.temporal import TemporalAdapter
@@ -43,7 +44,8 @@ def components(cfg, device):
     if device.startswith("xpu"):
         torch.xpu.set_device(torch.device(device))
     net = load_network(config=cfg)
-    base = Genco(Path(cfg["paths"]["assets_root"]) / "genco-opfdata", cfg["checkpoint"], device)
+    load_temporal_manifest(cfg["paths"]["temporal_root"], net)
+    base = Genco(Path(cfg["paths"]["assets_root"]) / "genco-opfdata", cfg["checkpoint"], device, grid=net)
     scales = read_json(cfg["stage_b"]["coordinate_scales"])
     model = TemporalAdapter(base, net, scales).to(device).eval()
     train = Path(cfg["paths"]["training_run"])
@@ -85,7 +87,7 @@ def adapter_samples(base, model, net, cached, origin, templates, seed, device):
 
 def cache_partition(cfg, out, partition, base, net):
     data = Path(cfg["paths"]["temporal_root"])
-    manifest = read_json(data / "manifest.json")
+    manifest = load_temporal_manifest(data, net)
     files = {}
     for e in manifest["episodes"]:
         if e["split"] != partition:

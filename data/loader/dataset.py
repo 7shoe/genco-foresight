@@ -14,7 +14,17 @@ import torch
 from torch_geometric.data.separate import separate
 
 from common import read_json
-from data.grids import registry
+from data.grids import check_case, registry
+
+
+def load_temporal_manifest(root, grid):
+    """Match temporal data to the exact network file used to generate it."""
+    manifest = read_json(Path(root) / "manifest.json")
+    if manifest.get("case_sha256") != grid.case_sha256:
+        raise ValueError(f"Dataset/network mismatch: {root} was not generated with {grid.path}")
+    if "case" in manifest:
+        check_case(grid.case, manifest["case"], "temporal dataset")
+    return manifest
 
 
 def load_static_splits(path, count=300000):
@@ -35,8 +45,8 @@ class SnapshotDataset:
             raise ValueError("Unsupported cache schema/case")
         if m["count"] != len(m["groups"])*m["group_size"]:
             raise ValueError("Cache manifest count mismatch")
-        if grid is not None and m["case"] != grid.path.stem:
-            raise ValueError("Cache belongs to another GridSpec")
+        if grid is not None:
+            check_case(grid.case, m["case"], "snapshot dataset")
         self.grid = grid
         self._groups = {}
 
@@ -59,6 +69,7 @@ class SnapshotDataset:
         graph = separate(data.__class__, data, offset, slices, decrement=False)
         if graph.sample_id.item() != index:
             raise ValueError(f"Canonical ID mismatch: {index}")
+        graph.case_id = self.manifest["case"].removeprefix("pglib_opf_")
         return graph
 
 
@@ -119,13 +130,19 @@ def snapshot_tables(graph):
 
 def snapshot_graph(graph):
     from gridfm_graphkit.datasets.graph_builder import build_hetero_data
-    return build_hetero_data(*snapshot_tables(graph), scenario=int(graph.sample_id.item()))
+    converted = build_hetero_data(*snapshot_tables(graph), scenario=int(graph.sample_id.item()))
+    converted.case_id = graph.case_id
+    return converted
 
 
 class OfficialSnapshotDataset:
     """Read pinned downloaded Graphkit parquet when the Lustre cache is absent."""
-    def __init__(self, root):
+    def __init__(self, root, grid=None):
         self.root = Path(root)
+        manifest = read_json(self.root / "download_manifest.json")
+        self.case = manifest["repository"].removeprefix("gridfm/opfdata_")
+        if grid is not None:
+            check_case(grid.case, self.case, "official snapshot dataset")
         self._partitions = {}
 
     def __len__(self):
@@ -152,7 +169,9 @@ class OfficialSnapshotDataset:
         selected = [t[t.scenario == sample_id].reset_index(drop=True) for t in self._partitions[partition]]
         if any(t.empty for t in selected):
             raise ValueError(f"Canonical ID {sample_id} is missing from its pinned partition")
-        return build_hetero_data(*selected, scenario=sample_id)
+        graph = build_hetero_data(*selected, scenario=sample_id)
+        graph.case_id = self.case
+        return graph
 
 
 def daily_origins(hours=504, history=72, horizon=24):
@@ -161,9 +180,10 @@ def daily_origins(hours=504, history=72, horizon=24):
 
 class TemporalDataset:
     """Windows expose observed history and calendar separately from target labels."""
-    def __init__(self, root, partition, history=72, horizon=24):
+    def __init__(self, root, partition, history=72, horizon=24, grid=None):
         self.root = Path(root)
-        self.manifest = read_json(self.root / "manifest.json")
+        self.manifest = (load_temporal_manifest(self.root, grid) if grid is not None
+                         else read_json(self.root / "manifest.json"))
         self.history, self.horizon = history, horizon
         self.episodes = [e for e in self.manifest["episodes"] if e["split"] == partition]
         # Frozen Stage B protocol: all causal training windows; midnight evaluation.
@@ -190,29 +210,31 @@ class TemporalDataset:
 
 def load_snapshot(sample_id, config=None):
     from common import load_config
+    from data.loader.network import load_network
     config = config or load_config()
+    grid = load_network(config=config)
     local = Path(config["paths"]["n1_cache"])
     if (local/"manifest.json").exists():
-        return snapshot_graph(SnapshotDataset(local)[sample_id])
-    return OfficialSnapshotDataset(Path(config["paths"]["assets_root"])/("official_"+config["task"]["canonical_case"].removeprefix("pglib_opf_")))[sample_id]
+        return snapshot_graph(SnapshotDataset(local, grid=grid)[sample_id])
+    return OfficialSnapshotDataset(Path(config["paths"]["assets_root"])/("official_"+config["task"]["canonical_case"].removeprefix("pglib_opf_")), grid=grid)[sample_id]
 
 
 def load_window(episode_id, origin, history=72, horizon=24, config=None):
     from common import load_config
     from data.loader.network import graph_for_demand, load_network
     config = config or load_config()
+    network = load_network(config=config)
     root = Path(config["paths"].get("temporal_root", str(Path(config["paths"]["data_root"])/config["task"]["canonical_case"])))
-    manifest = read_json(root/"manifest.json")
+    manifest = load_temporal_manifest(root, network)
     matches = [e for e in manifest["episodes"] if e["episode_id"] == episode_id]
     if len(matches) != 1:
         raise KeyError(episode_id)
-    dataset = TemporalDataset(root, matches[0]["split"], history, horizon)
+    dataset = TemporalDataset(root, matches[0]["split"], history, horizon, grid=network)
     try:
         index = dataset.index.index((episode_id, origin))
     except ValueError as error:
         raise ValueError("Origin is not a complete window on this partition's forecast schedule") from error
     window = dataset[index]
-    network = load_network(config=config)
     window["history_graphs"] = [graph_for_demand(network, r["pd_mw"], r["qd_mvar"],
                                 r["target_state"], scenario=r["hour"]) for r in window["history"]]
     return window

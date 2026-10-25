@@ -9,6 +9,7 @@ import torch
 from common import ROOT,read_json,sha256,write_json
 from data.download.prepare import checkpoint_assets
 from data.coordinates import record_values
+from data.loader.dataset import load_temporal_manifest
 from data.loader.network import graph_for_demand,load_network
 from models.genco import Genco
 from solver.checks import physical_quantities
@@ -25,9 +26,10 @@ def build_cache(cfg, device):
     started=time.perf_counter()
     root=Path(cfg["paths"]["temporal_root"]);out=Path(cfg["paths"]["training_run"])/"cache"
     out.mkdir(parents=True,exist_ok=True)
-    manifest=read_json(root/"manifest.json");scales=read_json(ROOT/cfg["stage_b"]["coordinate_scales"])
+    net=load_network(config=cfg)
+    manifest=load_temporal_manifest(root,net);scales=read_json(ROOT/cfg["stage_b"]["coordinate_scales"])
     assert scales["benchmark_id"]==manifest["benchmark_id"]
-    net=load_network(config=cfg);base=Genco(checkpoint_assets(cfg),cfg["checkpoint"],device)
+    base=Genco(checkpoint_assets(cfg),cfg["checkpoint"],device,grid=net)
     hashes={r["file"]:r["sha256"] for r in manifest["shards"]}
     files={}
     # Training setup never reads calibration/test solved data.
@@ -81,15 +83,16 @@ def causal_window(data, origin):
 
 
 class CachedWindows:
-    def __init__(self,cfg):
+    def __init__(self,cfg,grid):
         root=Path(cfg["paths"]["training_run"])/"cache"
         self.manifest=read_json(root/"manifest.json")
-        expected=read_json(Path(cfg["paths"]["temporal_root"])/"manifest.json")["benchmark_id"]
+        expected=load_temporal_manifest(cfg["paths"]["temporal_root"],grid)["benchmark_id"]
         if self.manifest["benchmark_id"]!=expected:raise ValueError("Wrong dataset cache")
         self.data={};self.indices={"train":[],"model_selection":[]}
         for name,row in self.manifest["files"].items():
             if sha256(row["path"])!=row["sha256"]:raise ValueError("Embedding cache checksum changed")
             value=torch.load(row["path"],mmap=True,map_location="cpu",weights_only=True)
+            if value["key"]["checkpoint"]!=cfg["checkpoint"]:raise ValueError("Wrong checkpoint in embedding cache")
             self.data[name]=value["data"]
             stride=1 if row["partition"]=="train" else 24
             self.indices[row["partition"]].extend((name,o) for o in range(72,len(self.data[name]["calendar"])-24+1,stride))

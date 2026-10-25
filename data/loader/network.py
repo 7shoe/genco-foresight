@@ -11,7 +11,7 @@ from gridfm_datakit.network import Network, makeYbus
 from scipy.sparse.csgraph import connected_components
 
 from common import ROOT, sha256
-from data.grids import network_path
+from data.grids import check_case, network_path
 
 
 @dataclass
@@ -34,6 +34,9 @@ class GridSpec:
 
     def __getitem__(self, key):
         return getattr(self, key)
+
+    @property
+    def case(self): return self.path.stem.removeprefix("pglib_opf_")
 
     @property
     def n_bus(self): return len(self.bus)
@@ -76,7 +79,11 @@ class GridSpec:
 
 def load_network(path=None, config=None):
     path = Path(path) if path is not None else network_path(config)
+    if config is not None:
+        check_case(config["task"]["canonical_case"], path.stem, "network file")
+        check_case(path.stem, config["checkpoint"]["directory"].split("/")[0], "checkpoint directory")
     frames = CaseFrames(str(path))
+    check_case(path.stem, frames.name, "parsed network")
     mpc = {name: (getattr(frames, name).values if isinstance(getattr(frames, name), pd.DataFrame)
                   else getattr(frames, name)) for name in frames._attributes}
     net = Network(mpc)
@@ -140,6 +147,7 @@ def graph_for_demand(network, pd_mw, qd_mvar, state=None, scenario=0):
     from gridfm_graphkit.datasets.graph_builder import build_hetero_data
     tables = graph_tables(network, pd_mw, qd_mvar, state, scenario)
     graph = build_hetero_data(*tables, scenario=scenario)
+    graph.case_id = network.case
     for key in ("bus", "gen"):
         graph[key].label_available = torch.isfinite(graph[key].y)
     graph.baseMVA = torch.tensor(network["baseMVA"], dtype=torch.float32)

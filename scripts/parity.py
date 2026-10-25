@@ -16,10 +16,13 @@ import yaml
 from common import load_config, read_json, sha256, write_json
 from data.download.prepare import checkpoint_assets, converted_partitions
 from data.loader.dataset import SnapshotDataset, load_static_splits, snapshot_tables
+from data.loader.network import load_network
 from models.genco import Genco
 
 
 def prepare(config, download=False, spot_count=32):
+    grid = load_network(config=config)
+    cache = SnapshotDataset(config["paths"]["n1_cache"], grid=grid)
     assets = checkpoint_assets(config, download)
     root = Path(config["paths"]["runs_root"]) / "stage_a/parity"
     root.mkdir(parents=True, exist_ok=True)
@@ -36,7 +39,6 @@ def prepare(config, download=False, spot_count=32):
         "spot_check_ids": ids[:spot_count].tolist(), "batch_size": 32,
         "reference": "unmodified pinned Graphkit evaluate CLI; derived contiguous IDs map to canonical IDs"}
     write_json(root / "protocol.json", protocol)  # Freeze before comparing results.
-    cache = SnapshotDataset(config["paths"]["n1_cache"])
     for record in cache.manifest["groups"]:
         path = cache.folder / f"group_{record['group']}.pt"
         if sha256(path) != record["sha256"]:
@@ -99,6 +101,9 @@ def evaluate(config):
     root = Path(config["paths"]["runs_root"]) / "stage_a/parity"
     protocol = read_json(root / "protocol.json")
     assets = checkpoint_assets(config)
+    grid = load_network(config=config)
+    cache = SnapshotDataset(config["paths"]["n1_cache"], grid=grid)
+    model = Genco(assets, config["checkpoint"], device="cpu", grid=grid)
     folder = assets / config["checkpoint"]["directory"]
     command = [sys.executable, "-m", "gridfm_graphkit", "evaluate", "--config_conversion", "auto_inline",
         "--config", str(root/"evaluate.yaml"), "--data_path", str(root/"data"),
@@ -114,7 +119,6 @@ def evaluate(config):
     write_json(root / "command.json", {"argv": command, "extra_dependency_path": str(extra)})
     with (root / "official_cli.log").open("w") as stream:
         subprocess.run(command, env=env, stdout=stream, stderr=subprocess.STDOUT, check=True)
-    model = Genco(assets, config["checkpoint"], device="cpu")
     tables = [pd.read_parquet(root/"data"/config["checkpoint"]["directory"].split("/")[0]/"raw"/f"{name}_data.parquet") for name in ("bus", "gen", "branch")]
     # Match the upstream raw-table aggregation exactly.
     limits = tables[1].groupby(["scenario", "bus"])[["min_q_mvar", "max_q_mvar"]].sum().reset_index()
@@ -124,6 +128,8 @@ def evaluate(config):
     for lo in range(0, protocol["count"], protocol["batch_size"]):
         graphs = [build_hetero_data(*(group[i] for group in groups), scenario=i)
                   for i in range(lo, min(lo+protocol["batch_size"], protocol["count"]))]
+        for graph in graphs:
+            graph.case_id = cache.manifest["case"].removeprefix("pglib_opf_")
         output = model.predict(graphs)
         predictions.append(output["bus"].cpu().numpy())
     ours = np.concatenate(predictions)
