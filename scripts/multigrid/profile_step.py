@@ -328,10 +328,12 @@ def report(args, summary):
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     groups = summary.get("groups", [])
-    validation = {g["case"]: g["records"][0].get("validation_seconds") for g in groups
-                  if g["validation"] and g["records"][0]["status"] == "OK"}
+    validation_by_mode = {(g["case"], g["device"], g["deterministic"]): g["records"][0].get("validation_seconds")
+                          for g in groups if g["validation"] and g["records"][0]["status"] == "OK"}
+    validation = {case: value for (case, device, deterministic), value in validation_by_mode.items()
+                  if device == "xpu" and deterministic == "off"}
     solo = [g["records"][0] for g in groups if g["label"].startswith("solo_")]
-    best = {r["case"]: r for r in solo if r["status"] == "OK"}
+    best = {r["case"]: r for r in solo if r["status"] == "OK" and r["device"] == "xpu" and r["deterministic"] == "off"}
     def number(value): return "—" if value is None else f"{value:.3f}"
     def phase(row, key):
         p = row.get("phase_seconds", {}).get(key, {})
@@ -350,13 +352,14 @@ def report(args, summary):
             d = r.get("dims", {})
             dims = "/".join(str(d.get(key, "—")) for key in ("n_bus", "n_branch", "n_gen"))
             train, hours, speed = None, None, None
+            val = validation_by_mode.get((r["case"], g["device"], g["deterministic"]))
             if r["status"] == "OK":
-                train, hours = estimate(r, validation.get(r["case"]))
+                train, hours = estimate(r, val)
                 speed = 24 * r["K"] / r["phase_seconds"]["total"]["median"]
-            suffix = "†" if r["case"] not in validation and hours is not None else ""
+            suffix = "†" if val is None and hours is not None else ""
             lines.append(f"| {r['case']} | {r['K']} | {g['device']} / {g['deterministic']} | {r['status']} | {dims} | {24*r['K']} | "
                          + " | ".join(phase(r, key) for key in PHASES)
-                         + f" | {number(r.get('peak_device_bytes', 0)/1e9) if r.get('peak_device_bytes') is not None else '—'} | {number(train)} | {number(validation.get(r['case']))} | {number(hours)}{suffix} | {number(speed)} |")
+                         + f" | {number(r.get('peak_device_bytes', 0)/1e9) if r.get('peak_device_bytes') is not None else '—'} | {number(train)} | {number(val)} | {number(hours)}{suffix} | {number(speed)} |")
     lines.extend(["", "## Table B", "",
                   "| Grid | Fits one tile / K | Single-tile hours | Tiles: 1 h / 3 h / 6 h, ideal | Recommended mode |",
                   "|---|---|---:|---|---|"])
