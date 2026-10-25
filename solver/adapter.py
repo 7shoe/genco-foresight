@@ -4,14 +4,14 @@ Personal codebase (luminabech, XPU branch)
     Subprocess/JSON protocol adapted from lumina-sdk distillation/RAMBO/backend.py,
     revision e75ffcd74854c14e2960b9a9411ddd72377e5239, Apache-2.0.
 
-Copyright 
+Copyright
     2026 University of Chicago, Argonne Nationa Laboratory, LLC.
-    
+
 References:
     RAMBO: https://github.com/SamChevalier/RAMBO
     LUMINA: https://github.com/argonne-gridfm/lumina-sdk
 
-See 
+See
     THIRD_PARTY_NOTICES.md.
 Changes:
     Explicit config, OPF-only requests, physical units, strict dimensions.
@@ -30,23 +30,25 @@ import json
 import numpy as np
 
 from common import ROOT
+from data.loader.network import load_network
 
 class IpoptSolver:
     """Manage a persistent Julia worker for sequential OPF solves."""
-    def __init__(self, config, log_path, startup_seconds=180):
+    def __init__(self, config, log_path, startup_seconds=180, network=None):
         startup_started = time.perf_counter()
         settings = config["solver"]
         self.settings = settings
-        self.casefile = str(ROOT / "data/networks/pglib_opf_case30_ieee.m")
+        self.grid = network if network is not None else load_network(config=config)
+        self.casefile = str(self.grid.path)
         executable = Path(settings["julia_executable"])
         project = ROOT / "solver/julia"
-        
+
         # require the configured executable
         if not executable.is_file():
             raise FileNotFoundError(f"Julia executable missing: {executable}; set solver.julia_executable")
         if not (project / "Manifest.toml").is_file():
             raise FileNotFoundError(f"Missing pinned Julia manifest: {project}")
-        
+
         # limit threads and use the configured depot
         env = dict(os.environ,
                    JULIA_NUM_THREADS="1",
@@ -55,7 +57,7 @@ class IpoptSolver:
                    LD_LIBRARY_PATH="",
                    JULIA_DEPOT_PATH=settings["julia_depot"],
                    JULIA_PKG_OFFLINE="true")
-        
+
         # a separate process group lets cleanup terminate
         self.process = subprocess.Popen([str(executable),
                                          "--startup-file=no",
@@ -74,7 +76,7 @@ class IpoptSolver:
         self.log_path.parent.mkdir(parents=True, exist_ok=True)
         self.thread = threading.Thread(target=self._reader, daemon=True)
         self.thread.start()
-        
+
         # check that Julia responds
         try:
             self.versions = self.request({"stage": "versions"}, startup_seconds)
@@ -94,8 +96,8 @@ class IpoptSolver:
                 else:
                     stream.write(line)
                     stream.flush()
-                    
-        # wake any waiting request 
+
+        # wake any waiting request
         self.lines.put(None)
 
     def request(self, request, timeout):
@@ -113,23 +115,23 @@ class IpoptSolver:
 
     def solve(self, pd_mw, qd_mvar=None, initial_state=None, budget=None):
         """Request an OPF solve using bus demands in MW and MVAr."""
-        
+
         if qd_mvar is None:
             graph = pd_mw
             if hasattr(graph, "is_normalized") and bool(graph.is_normalized.any()):
                 raise ValueError("Solver requires physical input units; inverse-normalize the graph first")
             values = graph["bus"].x.detach().cpu().numpy()
             pd_mw, qd_mvar = values[:, 0], values[:, 1]
-        
+
         budget = budget or self.settings.get("budget", {})
         seconds = float(budget.get("seconds", 5.0))
         pd = np.asarray(pd_mw, dtype=float)
         qd = np.asarray(qd_mvar, dtype=float)
-        
-        # TODO: hardcoded to case30, so far 
-        if pd.shape != (30,) or qd.shape != pd.shape or not np.isfinite([pd, qd]).all():
-            raise ValueError("case30 requires 30 finite bus Pd/Qd values")
-        
+
+        # Check the selected network's bus count.
+        if pd.shape != (self.grid.n_bus,) or qd.shape != pd.shape or not np.isfinite([pd, qd]).all():
+            raise ValueError(f"Expected {self.grid.n_bus} finite bus Pd/Qd values")
+
         # forward solver limits and any supplied initial state to Julia
         request = {"stage": "opf",
                    "casefile": self.casefile,
@@ -139,7 +141,7 @@ class IpoptSolver:
                    "max_iter": int(budget.get("max_iter", 2000)),
                    "tolerance": float(budget.get("tolerance", 1e-8)),
                    "initial_state": initial_state}
-        
+
         started = time.perf_counter()
         try:
             # wall deadline also covers communication and worker overhead
@@ -150,7 +152,7 @@ class IpoptSolver:
             result = {"success": False,
                       "status": "WORKER_UNRESOLVED",
                       "error": str(error)}
-        
+
         result["request_seconds"] = time.perf_counter() - started
         result["budget"] = {k: request[k] for k in ("seconds", "max_iter", "tolerance")}
         return result

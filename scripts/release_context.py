@@ -1,11 +1,12 @@
 """Record release facts from existing configurations and immutable evidence."""
 from pathlib import Path
+from data.loader.network import load_network
 from common import ROOT, load_config, read_json, sha256, write_json
 from scripts.finalize_release import check_frozen
 
 
 def main():
-    cfg = load_config(ROOT / "config.yaml")
+    cfg = load_config(ROOT / "configs/v3.yaml")
     other = load_config(ROOT / "configs/v4.yaml")
     runs = Path(cfg["paths"]["runs_root"])
     out = runs / "stage_d/final_release"
@@ -14,7 +15,7 @@ def main():
     def add(key, value, unit, source):
         claims[key] = {"value": value, "unit": unit, "source": source}
     for key, value, unit in (
-        ("setup.case_buses", 30, "buses"), ("setup.seed", cfg["seed"], "seed"),
+        ("setup.case_buses", load_network(config=cfg).n_bus, "buses"), ("setup.seed", cfg["seed"], "seed"),
         ("setup.history_hours", cfg["task"]["history_hours"], "hours"),
         ("setup.forecast_hours", cfg["task"]["horizon_hours"], "hours"),
         ("setup.episodes", cfg["task"]["episodes"], "episodes"),
@@ -47,7 +48,7 @@ def main():
         ("setup.buffer_elements", 884, "elements"),
         ("setup.state_elements", 92345, "parameters plus buffers"),
     ):
-        add(key, value, unit, "config.yaml / configs/v4.yaml / frozen evaluation contracts")
+        add(key, value, unit, "configs/v3.yaml / configs/v4.yaml / frozen evaluation contracts")
     frozen = check_frozen(runs)
     protected = {str(p.relative_to(ROOT)): sha256(p) for directory in ("models", "training")
                  for p in (ROOT / directory).rglob("*.py")}
@@ -57,7 +58,7 @@ def main():
         status = read_json(Path(config["paths"]["training_run"]) / "status.json")
         chain = read_json(Path(config["paths"]["training_run"]) / "chain.json")
         add(f"{version}.nominal_load_range", [config["generation"]["scale_low"], config["generation"]["scale_high"]], "nominal multiplier", config["paths"]["temporal_root"])
-        add(f"{version}.physics_weight", config["stage_b"]["loss"]["power_balance_weight"], "lambda", "config.yaml" if version == "v3" else "configs/v4.yaml")
+        add(f"{version}.physics_weight", config["stage_b"]["loss"]["power_balance_weight"], "lambda", "configs/v3.yaml" if version == "v3" else "configs/v4.yaml")
         for key in ("attempted", "valid"):
             add(f"{version}.labels.{key}", quality[key], "hours", config["paths"]["temporal_root"] + "/quality_report.json")
         add(f"{version}.labels.unresolved", quality["attempted"]-quality["valid"], "hours", config["paths"]["temporal_root"] + "/quality_report.json")
@@ -67,7 +68,7 @@ def main():
     ridge = read_json(runs / "stage_b/forecaster/manifest.json")
     add("setup.ridge_residual_blocks", 3130, "blocks; audited v3/v4 manifests", "stage_b/forecaster/manifest.json")
     add("setup.probe_horizons", [1, 24], "hours", "stage_b/probe/report.json#protocol/horizons")
-    add("setup.test_source_episodes", 4, "episodes", "config.yaml#task/split_episodes/test")
+    add("setup.test_source_episodes", 4, "episodes", "configs/v3.yaml#task/split_episodes/test")
     support = read_json(runs / "stage_a_v4/support_diagnostic.json")
     add("v4.test_bus_load_below_support_pct", 100*support["test"]["actual_bus_fraction_below_0p8"], "% of active bus-hours, including history", "stage_a_v4/support_diagnostic.json#test")
     inventory = {}

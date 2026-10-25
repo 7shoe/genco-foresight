@@ -89,8 +89,8 @@ def worker(cfg, shard, workers, device):
                 with torch.no_grad():
                     _, embeddings = base.model(base.batch(graphs), return_embeddings=True)
                 embedding_differences = {}
-                for kind, n in (("bus", 30), ("gen", 6)):
-                    timed = embeddings[kind].reshape(72, n, 384).cpu()
+                for kind, n in (("bus", net.n_bus), ("gen", net.n_online_gen)):
+                    timed = embeddings[kind].reshape(72, n, embeddings[kind].shape[-1]).cpu()
                     stored = cached[name][f"embedding_{kind}"][origin - 72:origin]
                     assert torch.isfinite(timed).all()
                     embedding_differences[kind] = {"max_abs": float((timed - stored).abs().max()),

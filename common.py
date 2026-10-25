@@ -21,6 +21,12 @@ def config_path(path=None):
 def load_config(path=None, *, overrides=None):
     """Apply optional mapping overrides, resolve references, and return plain containers."""
     config = OmegaConf.load(config_path(path))
+    if OmegaConf.is_dict(config) and "grid" in config and set(config) <= {"grid", "base"}:
+        from data.grids import grid_config
+        config = OmegaConf.merge(OmegaConf.load(ROOT / "configs/v4.yaml"), config)
+        if overrides is not None:
+            config = OmegaConf.merge(config, overrides)
+        config = OmegaConf.create(grid_config(config.grid, OmegaConf.to_container(config, resolve=False)))
     if overrides is not None:
         config = OmegaConf.merge(config, overrides)
     resolved = OmegaConf.to_container(config, resolve=True, throw_on_missing=True)

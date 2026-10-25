@@ -14,6 +14,7 @@ import torch
 
 from common import ROOT,load_config,read_json,sha256,write_json
 from data.download.prepare import checkpoint_assets
+from data.coordinates import bus_qg, record_values
 from data.loader.network import graph_for_demand,load_network
 from models.genco import Genco
 from models.temporal import TemporalAdapter
@@ -45,7 +46,7 @@ def physics(values,network):
     sf=v[...,f]*np.conj(yff*v[...,f]+yft*v[...,t])*network["baseMVA"]
     st=v[...,t]*np.conj(ytf*v[...,f]+ytt*v[...,t])*network["baseMVA"]
     result=dict(values,pf_mw=sf.real,qf_mvar=sf.imag,pt_mw=st.real,qt_mvar=st.imag)
-    rated=e[:,5]>0;loading=np.full(sf.shape,np.nan)
+    rated=network.rated_branches;loading=np.full(sf.shape,np.nan)
     loading[...,rated]=np.maximum(abs(sf[...,rated]),abs(st[...,rated]))/e[rated,5]
     injection=np.zeros(v.shape,dtype=complex)
     for line,(a,b) in enumerate(zip(f,t)):
@@ -53,8 +54,12 @@ def physics(values,network):
     bus=network["bus"]
     injection+=(bus[:,4]-1j*bus[:,5])*values["vm"]**2
     generation=np.zeros_like(injection)
-    generation[...,network["gen_bus"]]=values["pg_mw"]+1j*values["qg_mvar"]
+    for i in np.flatnonzero(network.online_gen):
+        generation[...,network.gen_bus[i]] += values["pg_mw"][...,i]
+    generation[...,network.qg_buses] += 1j*values["qg_mvar"]
     residual=generation-values["pd_mw"]-1j*values["qd_mvar"]-injection
+    for key in ("pf_mw","qf_mvar","pt_mw","qt_mvar"):
+        result[key] = np.where(network.online_branch, result[key], np.nan)
     return dict(result,loading=loading,residual_p_mw=residual.real,residual_q_mvar=residual.imag)
 
 
@@ -74,18 +79,22 @@ def frozen(base,network,pd,templates,qd=None):
         x[:,1]=torch.as_tensor(qd[start:start+count].reshape(-1),device=base.device,dtype=x.dtype)/base.normalizer.baseMVA
         batch["bus"].x=x
         with torch.no_grad():output=base.model(batch)
-        bus=output["bus"].reshape(count,h,30,4).cpu().numpy()
+        bus=output["bus"].reshape(count,h,network.n_bus,4).cpu().numpy()
         rows.append({"vm":bus[...,0],"va_rad":bus[...,1],
-            "pg_mw":output["gen"].reshape(count,h,6).cpu().numpy()*float(base.normalizer.baseMVA),
-            "qg_mvar":bus[:,:,network["gen_bus"],3]*float(base.normalizer.baseMVA)})
+            "pg_mw":output["gen"].reshape(count,h,network.n_online_gen).cpu().numpy()*float(base.normalizer.baseMVA),
+            "qg_mvar":bus[:,:,network.qg_buses,3]*float(base.normalizer.baseMVA)})
     values={key:np.concatenate([r[key] for r in rows]) for key in rows[0]}
+    if not network.online_gen.all():
+        full = np.full((k,h,network.n_gen),np.nan)
+        full[...,network.online_gen] = values["pg_mw"]
+        values["pg_mw"] = full
     return physics(dict(values,pd_mw=pd,qd_mvar=qd),network)
 
 
 def load_model(cfg,device):
     torch.set_num_threads(1);torch.use_deterministic_algorithms(True)
     if device.startswith("xpu"):torch.xpu.set_device(torch.device(device))
-    net=load_network();base=Genco(checkpoint_assets(cfg),cfg["checkpoint"],device)
+    net=load_network(config=cfg);base=Genco(checkpoint_assets(cfg),cfg["checkpoint"],device)
     scales=read_json(cfg["stage_b"]["coordinate_scales"])
     model=TemporalAdapter(base,net,scales).to(device).eval()
     train=Path(cfg["paths"]["training_run"])
@@ -94,7 +103,7 @@ def load_model(cfg,device):
     assert best["manifest"]==read_json(original if original.exists() else train/"manifest.json")
     missing,extra=model.load_state_dict(best["model"],strict=False)
     assert not extra and all(k.startswith("backbone.") for k in missing)
-    assert best["progress"]["best_epoch"]==18
+    assert best["progress"]["best_epoch"]==read_json(train/"status.json")["best_epoch"]
     graph=graph_for_demand(net,net["bus"][:,2],net["bus"][:,3])
     templates={n:base.batch([graph]*n) for n in (24,192)}
     return net,base,model,scales,templates
@@ -112,10 +121,10 @@ def cache_test(cfg,base,network):
             for lo in range(0,len(rows),192):
                 graphs=[graph_for_demand(network,r["pd_mw"],r["qd_mvar"]) for r in rows[lo:lo+192]]
                 with torch.no_grad():_,emb=base.model(base.batch(graphs),return_embeddings=True)
-                for kind,n in (("bus",30),("gen",6)):embedding[kind].append(emb[kind].reshape(-1,n,384).cpu())
+                for kind,n in (("bus",network.n_bus),("gen",network.n_online_gen)):embedding[kind].append(emb[kind].reshape(-1,n,emb[kind].shape[-1]).cpu())
             values={f"embedding_{k}":torch.cat(v) for k,v in embedding.items()}
             values["observed_bus"]=torch.tensor(np.stack([arrays[k] for k in ("pd","qd","vm","va_rad")],axis=-1),dtype=torch.float32)
-            values["observed_gen"]=torch.tensor(np.stack([arrays[k] for k in ("pg_mw","qg_mvar")],axis=-1),dtype=torch.float32)
+            values["observed_gen"]=torch.tensor(np.stack([arrays[k] for k in ("pg_mw","qg_mvar")],axis=-1),dtype=torch.float32)[:,network.online_gen]
             for kind in ("bus","gen"):values[f"available_{kind}"]=torch.isfinite(values[f"observed_{kind}"])
             values["calendar"]=torch.from_numpy(arrays["calendar"])
             # Targets are loaded separately by the evaluation worker.
@@ -149,7 +158,7 @@ def prepare(cfg,device):
              for e in dataset["episodes"] if e["split"]=="test" for o in range(72,481,24)]
     assert len(origins)==72
     pairs=variogram_pairs(scales,net);atomic_npz(root/"variogram_pairs.npz",pairs=pairs)
-    protocol={"dataset_id":"temporal_case30_v3","dataset_manifest_sha256":sha256(data/"manifest.json"),
+    protocol={"dataset_id":cfg["dataset"]["id"],"dataset_manifest_sha256":sha256(data/"manifest.json"),
         "origins":origins,"sample_counts":{"P":1,"S":64,"A":64,"D":64},
         "best_epoch":18,"checkpoint_sha256":sha256(train/"best.pt"),"seed":cfg["seed"],
         "ridge_manifest_sha256":sha256(root/"forecaster/manifest.json"),
@@ -170,8 +179,8 @@ def prepare(cfg,device):
 
 
 def target_values(rows,network):
-    a=episode_arrays(rows,network)
-    return physics({"pd_mw":a["pd"],"qd_mvar":a["qd"],**{k:a[k] for k in ("vm","va_rad","pg_mw","qg_mvar")}},network)
+    values = [record_values(network, r) for r in rows]
+    return physics({key:np.array([v[key] for v in values]) for key in values[0]},network)
 
 
 def audit_samples(folder,values,targets,network,solver):
@@ -181,7 +190,7 @@ def audit_samples(folder,values,targets,network,solver):
     references={};available={};audit={}
     for mode in ("P","S","A"):
         sample_ids=SAMPLE_IDS[mode];shape=(len(sample_ids),len(LEADS))
-        state={k:np.full((*shape,n),np.nan) for k,n in (("vm",30),("va_rad",30),("pg_mw",6),("qg_mvar",6))}
+        state={k:np.full((*shape,n),np.nan) for k,n in (("vm",network.n_bus),("va_rad",network.n_bus),("pg_mw",network.n_gen),("qg_mvar",network.n_gen))}
         valid=np.zeros(shape,dtype=bool)
         demand={k:values[mode][k][np.array(sample_ids)[:,None],np.array(LEADS)[None]] for k in ("pd_mw","qd_mvar")}
         for i,s in enumerate(sample_ids):
@@ -196,6 +205,7 @@ def audit_samples(folder,values,targets,network,solver):
                 r=records[key];valid[i,j]=r["check"]["valid"]
                 if valid[i,j]:
                     for k in state:state[k][i,j]=r["solver"]["state"][k]
+        state["qg_mvar"] = bus_qg(network,state["qg_mvar"])
         references[mode]=physics(dict(state,**demand),network);available[mode]=valid
     references["D"]=references["A"];available["D"]=available["A"]
     assert np.array_equal(values["D"]["pd_mw"],values["A"]["pd_mw"])
@@ -253,8 +263,8 @@ def worker(cfg,device,shard,shards):
                     generator=torch.Generator().manual_seed(seed);chunks=[]
                     with torch.no_grad():
                         for _ in range(8):
-                            noise={"factor":torch.randn(8,8,generator=generator),"bus":torch.randn(8,24,30,3,generator=generator),
-                                   "gen":torch.randn(8,24,6,1,generator=generator)}
+                            noise={"factor":torch.randn(8,8,generator=generator),"bus":torch.randn(8,24,net.n_bus,3,generator=generator),
+                                   "gen":torch.randn(8,24,net.n_online_gen,1,generator=generator)}
                             result=model(history,calendar,templates[192],{k:v.to(device) for k,v in noise.items()})
                             assert torch.equal(result["values"]["pd_mw"],result["demand_seen_by_physics_mw"]) or torch.allclose(result["values"]["pd_mw"],result["demand_seen_by_physics_mw"],atol=1e-5,rtol=1e-6)
                             chunks.append({k:v.cpu().numpy() for k,v in result["values"].items()})
@@ -303,7 +313,7 @@ def merge(cfg):
     table=["# Gate B — temporal_case30_v3","","72 held-out daily origins; P is deterministic; S/A/D use 64 joint samples. Raw forecasts only in the main table.","",
         "| Mode | Joint ES ↓ | Variogram ↓ | Active Pd MAE (MW) ↓ | Vm MAE (p.u.) ↓ | Vm CRPS ↓ | Vm 50% coverage | Vm 90% coverage | Vm 90% width | Line-1 loading MAE |",
         "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
-    results={};active=np.flatnonzero(load_network()["bus"][:,2]!=0)
+    results={};active=np.flatnonzero(load_network(config=cfg)["bus"][:,2]!=0)
     for mode in MODES:
         reports=[read_json(root/f"origins/{identity}/{mode}_scores.json") for identity in ids]
         result=merge_origin_scores(reports);audits=[read_json(root/f"origins/{identity}/{mode}_audit.json") for identity in ids]

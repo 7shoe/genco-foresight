@@ -1,0 +1,10 @@
+# Asset identities only; dimensions come from Datakit's parsed network.
+checkpoint_repository: gridfm/genco-opfdata
+checkpoint_revision: 74e19e1e210a175aa17023f4db161f0ae9f753cb
+grids:
+  case14_ieee: {pglib: pglib_opf_case14_ieee.m, yaml: HGNSQ_penalty_11_OPFData_case14_default.yaml}
+  case30_ieee: {pglib: pglib_opf_case30_ieee.m, yaml: HGNSQ_penalty_11_OPFData_case30_default.yaml}
+  case57_ieee: {pglib: pglib_opf_case57_ieee.m, yaml: HGNSQ_penalty_11_OPFData_case57_default.yaml}
+  case118_ieee: {pglib: pglib_opf_case118_ieee.m, yaml: HGNSQ_penalty_11_OPFData_case118_default.yaml}
+  case500_goc: {pglib: pglib_opf_case500_goc.m, yaml: HGNSQ_penalty_11_OPFData_case500_default.yaml}
+  case2000_goc: {pglib: pglib_opf_case2000_goc.m, yaml: HGNSQ_penalty_11_OPFData_case2000_default.yaml}

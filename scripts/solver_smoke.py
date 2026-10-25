@@ -12,12 +12,12 @@ from solver.checks import check_solution
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--config", default="config.yaml")
+    parser.add_argument("--config", default="configs/v3.yaml")
     args = parser.parse_args()
     config = load_config(args.config)
     root = Path(config["paths"].get("stage_a_run", Path(config["paths"]["runs_root"])/"stage_a"))
     root.mkdir(parents=True, exist_ok=True)
-    network = load_network()
+    network = load_network(config=config)
     pd, qd = network["bus"][:, 2], network["bus"][:, 3]
     result = {"case_sha256": network["case_sha256"], "perturbation_mw": 0.01,
               "independent_tolerance": 1e-5, "objective_convention": "benchmark cost per hour; one-hour snapshots"}

@@ -40,7 +40,7 @@ def initialize(cfg,device):
     torch.use_deterministic_algorithms(True)
     seed_all(cfg["seed"])
     torch.set_num_threads(1 if device=="xpu" else 16)
-    net=load_network();base=Genco(checkpoint_assets(cfg),cfg["checkpoint"],device)
+    net=load_network(config=cfg);base=Genco(checkpoint_assets(cfg),cfg["checkpoint"],device)
     scales=read_json(ROOT/cfg["stage_b"]["coordinate_scales"])
     model=TemporalAdapter(base,net,scales).to(device).train()
     opt_cfg=cfg["stage_b"]["optimizer"]
@@ -49,7 +49,7 @@ def initialize(cfg,device):
     scheduler=torch.optim.lr_scheduler.LambdaLR(optimizer,lr_lambda=lambda step:1.0)
     graph=graph_for_demand(net,net["bus"][:,2],net["bus"][:,3])
     template=base.batch([graph]*cfg["stage_b"]["future_graph_batch_size"])
-    assert template.num_graphs==192
+    assert template.num_graphs==cfg["stage_b"]["training_samples"]*cfg["task"]["horizon_hours"]
     cache=CachedWindows(cfg)
     return model,optimizer,scheduler,template,cache
 
@@ -90,8 +90,8 @@ def selection_score(model,template,cache,cfg,device,guard):
                 for _ in range(cfg["stage_b"]["forecast_samples"]//cfg["stage_b"]["training_samples"]):
                     guard()
                     k=cfg["stage_b"]["training_samples"]
-                    noise={"factor":torch.randn(k,8,generator=g),"bus":torch.randn(k,24,30,3,generator=g),
-                           "gen":torch.randn(k,24,6,1,generator=g)}
+                    noise={"factor":torch.randn(k,8,generator=g),"bus":torch.randn(k,24,model.grid.n_bus,3,generator=g),
+                           "gen":torch.randn(k,24,model.grid.n_online_gen,1,generator=g)}
                     result=model(history,calendar,template,{key:v.to(device) for key,v in noise.items()})
                     predictions.append(result["joint"])
                 score=fair_energy_score(torch.cat(predictions),target,model.coordinate_scale.repeat(24))

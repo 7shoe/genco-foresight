@@ -8,6 +8,7 @@ import torch
 
 from common import ROOT,read_json,sha256,write_json
 from data.download.prepare import checkpoint_assets
+from data.coordinates import record_values
 from data.loader.network import graph_for_demand,load_network
 from models.genco import Genco
 from solver.checks import physical_quantities
@@ -26,7 +27,7 @@ def build_cache(cfg, device):
     out.mkdir(parents=True,exist_ok=True)
     manifest=read_json(root/"manifest.json");scales=read_json(ROOT/cfg["stage_b"]["coordinate_scales"])
     assert scales["benchmark_id"]==manifest["benchmark_id"]
-    net=load_network();base=Genco(checkpoint_assets(cfg),cfg["checkpoint"],device)
+    net=load_network(config=cfg);base=Genco(checkpoint_assets(cfg),cfg["checkpoint"],device)
     hashes={r["file"]:r["sha256"] for r in manifest["shards"]}
     files={}
     # Training setup never reads calibration/test solved data.
@@ -47,15 +48,15 @@ def build_cache(cfg, device):
                 # Only demand/static topology reaches frozen embeddings; solved state is separate.
                 graphs=[graph_for_demand(net,r["pd_mw"],r["qd_mvar"]) for r in rows[lo:lo+192]]
                 with torch.no_grad():_,emb=base.model(base.batch(graphs),return_embeddings=True)
-                for kind,n in (("bus",30),("gen",6)):chunks[kind].append(emb[kind].reshape(-1,n,384).cpu())
+                for kind,n in (("bus",net.n_bus),("gen",net.n_online_gen)):chunks[kind].append(emb[kind].reshape(-1,n,emb[kind].shape[-1]).cpu())
             data={f"embedding_{k}":torch.cat(v) for k,v in chunks.items()}
             observed_bus=[];observed_gen=[];targets=[]
             for r in rows:
-                state=r["target_state"] or {"vm":[np.nan]*30,"va_rad":[np.nan]*30,"pg_mw":[np.nan]*6,"qg_mvar":[np.nan]*6}
+                state=r["target_state"] or {"vm":[np.nan]*net.n_bus,"va_rad":[np.nan]*net.n_bus,"pg_mw":[np.nan]*net.n_gen,"qg_mvar":[np.nan]*net.n_gen}
                 observed_bus.append(np.stack([r["pd_mw"],r["qd_mvar"],state["vm"],state["va_rad"]],axis=-1))
-                observed_gen.append(np.stack([state["pg_mw"],state["qg_mvar"]],axis=-1))
+                observed_gen.append(np.stack([state["pg_mw"],state["qg_mvar"]],axis=-1)[net.online_gen])
                 physics=physical_quantities(net,r["pd_mw"],r["qd_mvar"],state)
-                values=dict(physics,**state,pd_mw=r["pd_mw"],qd_mvar=r["qd_mvar"])
+                values=record_values(net,r)
                 targets.append(np.concatenate([np.asarray(values[k])[s["joint_score_mask"]]
                     for k,s in scales["features"].items() if any(s["joint_score_mask"])]))
             for kind,values in (("bus",observed_bus),("gen",observed_gen)):
@@ -91,7 +92,7 @@ class CachedWindows:
             value=torch.load(row["path"],mmap=True,map_location="cpu",weights_only=True)
             self.data[name]=value["data"]
             stride=1 if row["partition"]=="train" else 24
-            self.indices[row["partition"]].extend((name,o) for o in range(72,481,stride))
+            self.indices[row["partition"]].extend((name,o) for o in range(72,len(self.data[name]["calendar"])-24+1,stride))
 
     def window(self, identity, device):
         name,origin=identity

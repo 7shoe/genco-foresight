@@ -19,24 +19,25 @@ class Genco:
     Model class wrapper for GENCO
     (GEometric Neural Corrective Optimizer)
     """
-    
-    def __init__(self, checkpoint_root, settings, device="cpu"):
+
+    def __init__(self, checkpoint_root, settings, device="cpu", grid=None):
         """Load model config"""
         # check config
         folder = Path(checkpoint_root) / settings["directory"]
         config_path = folder / settings["configuration"]
         raw = yaml.safe_load(config_path.read_text())
-        
+
         # assign model
         self.config = resolve_config(raw, config_path=str(config_path), conversion_mode="auto_inline")
         self.args = NestedNamespace(**self.config)
         self.device = torch.device(device)
+        self.grid = grid
         self.model = GNS_heterogeneous(self.args)
         state = torch.load(folder / settings["weights"], map_location="cpu", weights_only=True)
         keys = {k.replace("model._orig_mod.", "model.").removeprefix("model."): v for k,v in state.items()}
         self.model.load_state_dict(keys, strict=True)
         self.model.to(self.device).eval().requires_grad_(False)
-        
+
         # data preprocessing
         stats = torch.load(folder / settings["normalizer"], map_location="cpu", weights_only=True)
         self.normalizer = HeteroDataMVANormalizer(self.args)
@@ -47,7 +48,10 @@ class Genco:
         """Use Genco preprocessing"""
         graph = graph.clone()
         self.normalizer.transform(graph)
-        return self.transform(graph)
+        graph = self.transform(graph)
+        for kind in ("bus", "gen"):
+            graph[kind].label_available = torch.isfinite(graph[kind].y)
+        return graph
 
     def batch(self, graphs):
         """Preps each graph, combines them into one PyTorch Geometric batc"""

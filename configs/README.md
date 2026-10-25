@@ -40,3 +40,12 @@ configs/v3.yaml — primary experiment.
 ## `configs/replication/`
 Repeats the v3/v4 recipes with seeds 1 and 2, using separate output directories. family.json controls their PBS scheduling, budgets and reporting. 
 Currently covers case30 only which should be sufficent as a proof of concept.
+
+## `configs/multigrid/`
+
+Each `grid: case118_ieee` selector expands the v4 recipe through `configs/grids.yaml`.
+The selected network determines checkpoint paths and dimensions; generated artifacts
+go to `GENCO/runs/multigrid/<case>/` under the configured base. Selectors support
+`load_config(path, overrides={"base": "/lus/flare/projects/example/user"})` and
+ordinary nested overrides. Interpolation resolves after overrides, and the returned
+configuration has no helper `base` key.

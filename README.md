@@ -86,3 +86,15 @@ algorithm for large-scale nonlinear programming (Wächter, Biegler, 2005)
   note   = {Accessed: 2026-10-24}
 }
 ```
+
+## Multigrid CPU format support
+
+This repository supports case14, case30, case57, case118, case500, and case2000.
+Select a case with `GENCO_CONFIG=configs/multigrid/case118_ieee.yaml`; the selector
+uses the v4 recipe and separate output paths. `GridSpec` supplies dimensions,
+reference buses, generator mappings, and offline masks.
+
+Run `python -m scripts.multigrid_smoke` for CPU loading and formatting checks, then
+`python -m scripts.multigrid_report` to refresh [the support report](reports/multigrid/support.md).
+These checks launch no solver, training, or PBS job. Bulk artifacts stay on `/lus/flare`;
+the existing Torch/Transformers environment is retained.

@@ -2,8 +2,9 @@
 from pathlib import Path
 import numpy as np
 
-from common import read_json, sha256, write_json
+from common import load_config, read_json, sha256, write_json
 from data.loader.network import load_network
+from data.coordinates import fit_scales
 from monitor import event_values, daily_union, component_support
 from scripts.evaluate_stage_b import target_values
 from scripts.stage_b_prevalence import reporting_policy
@@ -21,13 +22,14 @@ def run(cfg):
     root = Path(cfg["paths"]["temporal_root"])
     out = Path(cfg["paths"]["stage_a_run"])
     dest = out / "stage_a_followup"
-    manifest, net = read_json(root / "manifest.json"), load_network()
+    manifest, net = read_json(root / "manifest.json"), load_network(config=cfg)
     groups, train, train_hashes, unresolved = {}, {}, {}, []
+    train_records = []
     for e in manifest["episodes"]:
         path = root / f"episodes/{e['episode_id']}.json"
         records = read_json(path)["records"]
         values = target_values(records, net)
-        events = event_values(values, net, bus_ids=tuple(net["bus_ids"].tolist()), line_ids=tuple(range(1, 42)))
+        events = event_values(values, net, bus_ids=tuple(net["bus_ids"].tolist()), line_ids=tuple(range(1, net.n_branch+1)))
         record = {}
         for f, (event, valid) in events.items():
             hourly = np.where(valid, event.astype(float), np.nan)
@@ -40,6 +42,7 @@ def run(cfg):
             if not r["state_available"]:
                 unresolved.append({"episode_id": e["episode_id"], "hour": r["hour"], "status": r["solver"]["status"]})
         if e["split"] == "train":
+            train_records.extend(records)
             train_hashes[f"episodes/{e['episode_id']}.json"] = sha256(path)
             for key in ("pd_mw", "qd_mvar", "vm", "va_rad", "pg_mw", "qg_mvar", "pf_mw", "qf_mvar", "pt_mw", "qt_mvar"):
                 train.setdefault(key, []).append(values[key])
@@ -48,31 +51,16 @@ def run(cfg):
     scales = {"benchmark_id": manifest["benchmark_id"], "fit_partition": "train", "unique_hours": sum(len(x) for x in train["pd_mw"]),
         "training_shards_sha256": train_hashes, "rule": "max(population std of finite unique train coordinates, physical floor); tile over 24 hours",
         "coordinate_order": [], "scale_vector_one_hour": [], "features": {}}
-    for key, chunks in train.items():
-        v = np.concatenate(chunks)
-        floor = .01 if key in ("vm", "va_rad") else 1.
-        assert np.isfinite(v).any(0).all()
-        scale, mask = np.maximum(np.nanstd(v, axis=0), floor), np.ones(v.shape[1], bool)
-        if key == "pd_mw": mask = net["bus"][:, 2] != 0
-        elif key == "qd_mvar": mask[:] = False
-        elif key == "va_rad": mask[net["reference_bus"]] = False
-        elif key == "pg_mw": mask = net["gen"][:, 8] > net["gen"][:, 9]
-        scales["features"][key] = {"mean": np.nanmean(v, axis=0).tolist(), "population_std": np.nanstd(v, axis=0).tolist(),
-            "floor": floor, "scale": scale.tolist(), "joint_score_mask": mask.tolist(), "finite_train_counts": np.isfinite(v).sum(0).tolist()}
-        for i in np.flatnonzero(mask):
-            scales["coordinate_order"].append(f"{key}:{i + 1}")
-            scales["scale_vector_one_hour"].append(float(scale[i]))
-    scales["dimension_one_hour"] = len(scales["coordinate_order"])
-    scales["dimension_24_hours"] = 24 * scales["dimension_one_hour"]
+    scales.update(fit_scales(net, train_records))
     write_json(dest / "train_coordinate_scales.json", scales)
-    support = {f: component_support(combined["risk_calibration"][f]["hourly"].reshape(72, 24, -1), "hourly") for f in ("voltage", "thermal")}
+    support = {f: component_support(combined["risk_calibration"][f]["hourly"].reshape(-1, 24, combined["risk_calibration"][f]["hourly"].shape[-1]), "hourly") for f in ("voltage", "thermal")}
     daily_support = {f: component_support(combined["risk_calibration"][f]["daily_any"], "daily_any") for f in ("voltage", "thermal")}
     events = {"dataset_id": cfg["dataset"]["id"], "benchmark_id": manifest["benchmark_id"], "unresolved_labels": unresolved,
         "mask_policy": "Unavailable labels remain unknown, never negative; daily-any is known positive if any resolved positive, known negative only if all hours resolved negative.",
         "support": support, "daily_support": daily_support, "buses": [], "lines": [], "partitions": {}}
-    for f, key, n in (("voltage", "buses", 30), ("thermal", "lines", 41)):
+    for f, key, n in (("voltage", "buses", net.n_bus), ("thermal", "lines", net.n_branch)):
         for j in range(n):
-            row = {"id": j + 1, "partitions": {s: {r: counts(v[f][r][:, j]) for r in ("hourly_all", "hourly", "daily_any")} for s, v in combined.items()},
+            row = {"id": int(net.bus_ids[j]) if f == "voltage" else j + 1, "partitions": {s: {r: counts(v[f][r][:, j]) for r in ("hourly_all", "hourly", "daily_any")} for s, v in combined.items()},
                 "calibration_hourly_support": {k: v[j] for k, v in support[f].items()},
                 "calibration_daily_support": {k: v[j] for k, v in daily_support[f].items()}}
             if f == "thermal":
@@ -88,9 +76,12 @@ def run(cfg):
             any_event = np.where((x == 1).any(1), 1., np.where(np.isfinite(x).all(1), 0., np.nan))
             events["partitions"][s]["thermal_" + r] = counts(any_event)
     write_json(dest / "events.json", events)
-    ids = cfg["stage_b"]["calibration"]["headline_voltage_bus_ids"]
+    settings = cfg["stage_b"]["calibration"]
+    ids = settings.get("headline_voltage_bus_ids", [int(net.bus_ids[i]) for i, keep in enumerate(support["voltage"]["eligible"]) if keep])
+    line_ids = settings.get("continuous_loading_line_ids", [i+1 for i, keep in enumerate(support["thermal"]["eligible"]) if keep and net.rated_branches[i]])
+    write_json(dest/"headline_components.json", dict(voltage_bus_ids=ids, thermal_line_ids=line_ids, selection="calibration support only"))
     rows, lookup = [], {}
-    for f, names, indices in (("voltage", [f"voltage_bus_{b}" for b in ids], [b - 1 for b in ids]), ("thermal", ["thermal_line_1"], [0])):
+    for f, names, indices in (("voltage", [f"voltage_bus_{b}" for b in ids], [net.bus_ids.tolist().index(b) for b in ids]), ("thermal", [f"thermal_line_{i}" for i in line_ids], [i-1 for i in line_ids])):
         for event, j in zip(names, indices):
             for s, vals in combined.items():
                 for resolution, x in vals[f].items():
@@ -99,7 +90,7 @@ def run(cfg):
                     rows.append(row)
                     lookup[event, resolution, s] = row
     roles = []
-    for event in [f"voltage_bus_{b}" for b in ids] + ["thermal_line_1"]:
+    for event in [f"voltage_bus_{b}" for b in ids] + [f"thermal_line_{i}" for i in line_ids]:
         for r in ("hourly", "daily_any"):
             c, t = lookup[event, r, "risk_calibration"], lookup[event, r, "test"]
             roles.append({"event": event, "resolution": r, "calibration_prevalence": c["prevalence"], "test_prevalence": t["prevalence"],
@@ -107,7 +98,7 @@ def run(cfg):
     write_json(out / "stage_b_prevalence.json", {"prevalence": rows, "reporting_roles": roles, "unresolved_labels": unresolved,
         "manifest_sha256": sha256(root / "manifest.json"), "training_blocker": False, "selection": "User-frozen; no event/split tuning"})
     lines = ["# V4 event prevalence", "", "Unavailable solved labels remain masked. Rows are positive / resolved count (unknown count). No prevalence-based tuning.", "", "| Event | Resolution | Train | Selection | Calibration | Test |", "|---|---|---:|---:|---:|---:|"]
-    for event in [f"voltage_bus_{b}" for b in ids] + ["thermal_line_1"]:
+    for event in [f"voltage_bus_{b}" for b in ids] + [f"thermal_line_{i}" for i in line_ids]:
         for r in ("hourly", "daily_any"):
             cells = [lookup[event, r, s] for s in ("train", "model_selection", "risk_calibration", "test")]
             lines.append(f"| {event} | {r} | " + " | ".join(f"{v['positive']}/{v['total']} ({v['unknown']})" for v in cells) + " |")

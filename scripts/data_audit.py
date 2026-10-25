@@ -13,7 +13,7 @@ from solver.checks import check_solution, physical_quantities
 def audit(config):
     root = Path(config["paths"]["temporal_root"])
     manifest = read_json(root/"manifest.json")
-    net = load_network()
+    net = load_network(config=config)
     from data.synthetic.generate import prepare_benchmark
     _, descriptor, _, frame, scaled = prepare_benchmark(config)
     expected_hashes = {item["file"]: item["sha256"] for item in manifest["shards"]}
@@ -76,7 +76,7 @@ def audit(config):
                 if record["target_state"] is not None:
                     raise ValueError("Unresolved states must have missing targets")
                 thermal.append(np.zeros(len(net["branch"]), dtype=bool))
-                voltage.append(np.zeros(30, dtype=bool))
+                voltage.append(np.zeros(net.n_bus, dtype=bool))
         thermal, voltage, available = np.asarray(thermal), np.asarray(voltage), np.asarray(available)
         daily = []
         for origin in daily_origins():

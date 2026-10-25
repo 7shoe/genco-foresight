@@ -91,7 +91,7 @@ def main():
     artifacts["tests"] = test_summary
     conversion_path = root/"parity/conversion_check.json"
     artifacts["conversion"] = read_json(conversion_path) if conversion_path.exists() else None
-    temporal_root = Path(config["paths"].get("temporal_root", str(Path(config["paths"]["data_root"])/"temporal_case30")))
+    temporal_root = Path(config["paths"].get("temporal_root", str(Path(config["paths"]["data_root"])/config["task"]["canonical_case"])))
     for key,name in (("pilot", "pilot_report.json"), ("generation", "generation_report.json")):
         path = temporal_root/name
         artifacts[key] = read_json(path) if path.exists() else None
