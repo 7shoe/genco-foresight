@@ -35,3 +35,7 @@ Two lightweight tests passed: seeded unique sampling and removal of parent MPI r
 - Pilot continuation: original pilot `controller.json`, `logs/job_02.log` and budget ledgers.
 
 No scientific result is claimed until the per-grid gate is written. No merge to main or publication is part of this submission record.
+
+## Case118 result
+
+Subset parity (200) passed: CPU outputs Vm/Va/Pg/Qg are bit-identical, every maximum absolute difference0.0. Numerical work took88.49 seconds; full child-worker wall cost98.90 seconds, below1200 seconds. Gate SHA256: `edc236dd8aff866eef2d5fc16b681c9af27852c3f3e38cc9d0c9be8c53580181`. The three case118 slots were released in8963510 at09:24:16 UTC; data generation resumed and training continues automatically after the remaining Stage A gates and cache. The external dataset card records **subset parity (200)**.

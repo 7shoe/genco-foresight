@@ -3,7 +3,7 @@
   "recorded_utc": "2026-10-25T09:25:31.200563+00:00",
   "root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/subset200_20261025_v1",
   "implementation_commit": "4e37e2c46fe7d229be1e3e32cd713305e70e378b",
-  "status": "running",
+  "status": "case118_subset_passed_and_released; pilot_subset_checks_running",
   "fleet_job": "8963510",
   "pilot_prior_job": "8963555",
   "pilot_continuation_job": "8963648",
@@ -16,8 +16,14 @@
   "source_pin_sha256": "ef37740ce6d37e2b16d083babf3388a4d3324d40905fea46420c7ec76f2112f3",
   "subsets": {
     "case118_ieee": {
-      "status": "pending",
-      "protocol_sha256": "9e9665b2b6aafecefac8ebd6b482dc6b7a925c1ae4b77c6c99e4176f62b7051d"
+      "passed": true,
+      "label": "subset parity (200)",
+      "protocol_sha256": "9e9665b2b6aafecefac8ebd6b482dc6b7a925c1ae4b77c6c99e4176f62b7051d",
+      "report_sha256": "2cd388cd39017b23aeb6311810788a0b82a1a2dae6a030d259d949f18d31becd",
+      "wall_seconds": 88.48890113830566,
+      "bit_identical": true,
+      "job_id": "8963510.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov",
+      "host": "x4211c3s1b0n0"
     },
     "case500_goc": {
       "status": "pending",
@@ -46,5 +52,11 @@
   "local_tests": {
     "passed": 2,
     "seconds": 49.28
+  },
+  "case118_release": {
+    "job_id": "8963510.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov",
+    "deadline": 1792922264.0,
+    "time_epoch": 1792920256.6986532,
+    "gate_sha256": "edc236dd8aff866eef2d5fc16b681c9af27852c3f3e38cc9d0c9be8c53580181"
   }
 }
