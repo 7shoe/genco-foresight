@@ -14,6 +14,7 @@ import torch
 from torch_geometric.data.separate import separate
 
 from common import read_json
+from data.grids import registry
 
 
 def load_static_splits(path, count=300000):
@@ -26,14 +27,17 @@ def load_static_splits(path, count=300000):
 
 
 class SnapshotDataset:
-    def __init__(self, folder):
+    def __init__(self, folder, grid=None):
         self.folder = Path(folder)
         self.manifest = read_json(self.folder / "manifest.json")
         m = self.manifest
-        if m["format"] != "lumina-t1-data-v1" or m["case"] != "pglib_opf_case30_ieee":
+        if m["format"] != "lumina-t1-data-v1" or m["case"].removeprefix("pglib_opf_") not in registry()["grids"]:
             raise ValueError("Unsupported cache schema/case")
         if m["count"] != len(m["groups"])*m["group_size"]:
             raise ValueError("Cache manifest count mismatch")
+        if grid is not None and m["case"] != grid.path.stem:
+            raise ValueError("Cache belongs to another GridSpec")
+        self.grid = grid
         self._groups = {}
 
     def __len__(self):
@@ -190,14 +194,14 @@ def load_snapshot(sample_id, config=None):
     local = Path(config["paths"]["n1_cache"])
     if (local/"manifest.json").exists():
         return snapshot_graph(SnapshotDataset(local)[sample_id])
-    return OfficialSnapshotDataset(Path(config["paths"]["assets_root"])/"official_case30")[sample_id]
+    return OfficialSnapshotDataset(Path(config["paths"]["assets_root"])/("official_"+config["task"]["canonical_case"].removeprefix("pglib_opf_")))[sample_id]
 
 
 def load_window(episode_id, origin, history=72, horizon=24, config=None):
     from common import load_config
     from data.loader.network import graph_for_demand, load_network
     config = config or load_config()
-    root = Path(config["paths"].get("temporal_root", str(Path(config["paths"]["data_root"])/"temporal_case30")))
+    root = Path(config["paths"].get("temporal_root", str(Path(config["paths"]["data_root"])/config["task"]["canonical_case"])))
     manifest = read_json(root/"manifest.json")
     matches = [e for e in manifest["episodes"] if e["episode_id"] == episode_id]
     if len(matches) != 1:
@@ -208,7 +212,7 @@ def load_window(episode_id, origin, history=72, horizon=24, config=None):
     except ValueError as error:
         raise ValueError("Origin is not a complete window on this partition's forecast schedule") from error
     window = dataset[index]
-    network = load_network()
+    network = load_network(config=config)
     window["history_graphs"] = [graph_for_demand(network, r["pd_mw"], r["qd_mvar"],
                                 r["target_state"], scenario=r["hour"]) for r in window["history"]]
     return window

@@ -149,29 +149,29 @@ def main():
     table += ["", "Vm widths are p.u.; line loading widths are fractions of rating."]
     (out / "coverage_table.md").write_text("\n".join(table) + "\n")
 
-    net = load_network()
+    net = load_network(config=load_config())
     origin = read_json(b / "protocol.json")["origins"][0]
     folder = b / "origins" / origin["id"]
     a = npz(folder / "A.npz")
     peak = int(a["pd_mw"].mean(0).sum(1).argmax())
-    prob = event_probabilities(a, net, bus_ids=tuple(range(1, 31)), line_ids=tuple(range(1, 42)))
-    graph = nx.Graph(); graph.add_nodes_from(range(30)); graph.add_edges_from(net["branch"][:, :2].astype(int))
+    prob = event_probabilities(a, net, bus_ids=tuple(net.bus_ids), line_ids=tuple(np.flatnonzero(net.rated_branches)+1))
+    graph = nx.Graph(); graph.add_nodes_from(range(net.n_bus)); graph.add_edges_from(net["branch"][:, :2].astype(int))
     pos = nx.spring_layout(graph, seed=42)
     edge_list = [tuple(v) for v in net["branch"][:, :2].astype(int)]
     fig, axes = plt.subplots(1, 2, figsize=(12, 5.5))
     nx.draw_networkx_edges(graph, pos, ax=axes[0], edge_color="#bbbbbb")
     dots = nx.draw_networkx_nodes(graph, pos, ax=axes[0], node_color=prob["voltage"]["hourly"][peak], cmap="YlOrRd", vmin=0, vmax=1, node_size=260)
-    texts = nx.draw_networkx_labels(graph, pos, labels={i: i + 1 for i in range(30)}, ax=axes[0], font_size=8)
+    texts = nx.draw_networkx_labels(graph, pos, labels={i: int(net.bus_ids[i]) for i in range(net.n_bus)}, ax=axes[0], font_size=8)
     for i, text in texts.items():
         text.set_color("white" if prob["voltage"]["hourly"][peak, i] > .6 else "black")
     edges = nx.draw_networkx_edges(graph, pos, ax=axes[1], edgelist=edge_list, edge_color=prob["thermal"]["hourly"][peak], edge_cmap=plt.cm.YlOrRd, edge_vmin=0, edge_vmax=1, width=3)
     nx.draw_networkx_nodes(graph, pos, ax=axes[1], node_color="#eeeeee", node_size=200)
-    nx.draw_networkx_labels(graph, pos, labels={i: i + 1 for i in range(30)}, ax=axes[1], font_size=8)
+    nx.draw_networkx_labels(graph, pos, labels={i: int(net.bus_ids[i]) for i in range(net.n_bus)}, ax=axes[1], font_size=8)
     for ax, title in zip(axes, ("Raw voltage-stress probability", "Raw thermal-stress probability")):
         ax.set_title(title); ax.axis("off")
     fig.colorbar(dots, ax=axes, shrink=.6, label="A probability")
     fig.suptitle(f"Case30 schematic · {origin['id']} · forecast peak lead {peak + 1}")
-    save(fig, "figure_4_network", "Schematic, not geographic coordinates. First test origin fixed prospectively for illustration; peak chosen from A mean aggregate forecast demand. All buses/lines shown with raw probabilities; maps fit only to the frozen headline families are not extrapolated to other components.", [str(folder / "A.npz"), "data/networks/pglib_opf_case30_ieee.m"])
+    save(fig, "figure_4_network", "Schematic, not geographic coordinates. First test origin fixed prospectively for illustration; peak chosen from A mean aggregate forecast demand. All buses/lines shown with raw probabilities; maps fit only to the frozen headline families are not extrapolated to other components.", [str(folder / "A.npz"), str(net.path)])
     evidence.append(folder / "A.npz")
 
     if hybrid is not None:

@@ -42,7 +42,7 @@ def components(cfg, device):
     torch.use_deterministic_algorithms(True)
     if device.startswith("xpu"):
         torch.xpu.set_device(torch.device(device))
-    net = load_network()
+    net = load_network(config=cfg)
     base = Genco(Path(cfg["paths"]["assets_root"]) / "genco-opfdata", cfg["checkpoint"], device)
     scales = read_json(cfg["stage_b"]["coordinate_scales"])
     model = TemporalAdapter(base, net, scales).to(device).eval()
@@ -72,8 +72,8 @@ def adapter_samples(base, model, net, cached, origin, templates, seed, device):
     with torch.no_grad():
         for _ in range(8):
             noise = {"factor": torch.randn(8, 8, generator=generator),
-                     "bus": torch.randn(8, 24, 30, 3, generator=generator),
-                     "gen": torch.randn(8, 24, 6, 1, generator=generator)}
+                     "bus": torch.randn(8, 24, net.n_bus, 3, generator=generator),
+                     "gen": torch.randn(8, 24, net.n_online_gen, 1, generator=generator)}
             r = model(history, calendar, templates[192], {k: v.to(device) for k, v in noise.items()})
             torch.testing.assert_close(r["values"]["pd_mw"], r["demand_seen_by_physics_mw"], atol=1e-5, rtol=1e-6)
             chunks.append({k: v.cpu().numpy() for k, v in r["values"].items()})
@@ -103,11 +103,11 @@ def cache_partition(cfg, out, partition, base, net):
                 graphs = [graph_for_demand(net, r["pd_mw"], r["qd_mvar"]) for r in records[lo:lo + 192]]
                 with torch.no_grad():
                     _, emb = base.model(base.batch(graphs), return_embeddings=True)
-                for kind, count in (("bus", 30), ("gen", 6)):
-                    embedding[kind].append(emb[kind].reshape(-1, count, 384).cpu())
+                for kind, count in (("bus", net.n_bus), ("gen", net.n_online_gen)):
+                    embedding[kind].append(emb[kind].reshape(-1, count, emb[kind].shape[-1]).cpu())
             values = {f"embedding_{k}": torch.cat(v) for k, v in embedding.items()}
             values["observed_bus"] = torch.tensor(np.stack([arrays[k] for k in ("pd", "qd", "vm", "va_rad")], -1), dtype=torch.float32)
-            values["observed_gen"] = torch.tensor(np.stack([arrays[k] for k in ("pg_mw", "qg_mvar")], -1), dtype=torch.float32)
+            values["observed_gen"] = torch.tensor(np.stack([arrays[k] for k in ("pg_mw", "qg_mvar")], -1), dtype=torch.float32)[:,net.online_gen]
             for kind in ("bus", "gen"):
                 values[f"available_{kind}"] = torch.isfinite(values[f"observed_{kind}"])
             values["calendar"] = torch.from_numpy(arrays["calendar"])

@@ -8,13 +8,15 @@ RELIABILITY_EDGES = np.array([0., .1, .3, .5, .7, .9, 1.])
 LOGIT_EPS = 1e-4
 
 
-def event_values(values, network, bus_ids=(1, 9, 11, 13, 15, 21, 22), line_ids=(1,)):
+def event_values(values, network, bus_ids=None, line_ids=None):
+    bus_ids = network.bus_ids if bus_ids is None else bus_ids
+    line_ids = np.flatnonzero(network.rated_branches)+1 if line_ids is None else line_ids
     buses = [network["bus_ids"].tolist().index(b) for b in bus_ids]
     lines = np.array(line_ids) - 1
     b = network["bus"][buses]
     vm = np.asarray(values["vm"])[..., buses]
     loading = np.asarray(values["loading"])[..., lines]
-    rated = network["branch"][lines, 5] > 0
+    rated = network.rated_branches[lines]
     voltage = (vm <= b[:, 12] + .05 * (b[:, 11] - b[:, 12])) | (vm >= b[:, 11] - .05 * (b[:, 11] - b[:, 12]))
     thermal = loading > .95
     return {"voltage": (voltage, np.isfinite(vm)),
@@ -29,7 +31,7 @@ def daily_union(events, available):
     return positive, valid
 
 
-def event_probabilities(values, network, bus_ids=(1, 9, 11, 13, 15, 21, 22), line_ids=(1,), weights=None):
+def event_probabilities(values, network, bus_ids=None, line_ids=None, weights=None):
     result = {}
     m = len(values["vm"])
     weights = np.ones(m) / m if weights is None else np.asarray(weights, float)
@@ -44,7 +46,7 @@ def event_probabilities(values, network, bus_ids=(1, 9, 11, 13, 15, 21, 22), lin
     return result
 
 
-def event_targets(values, network, bus_ids=(1, 9, 11, 13, 15, 21, 22), line_ids=(1,)):
+def event_targets(values, network, bus_ids=None, line_ids=None):
     result = {}
     for family, (event, valid) in event_values(values, network, bus_ids, line_ids).items():
         daily, daily_valid = daily_union(event, valid)
@@ -68,7 +70,7 @@ def component_support(target, resolution):
     else:
         raise ValueError(resolution)
     rate = np.divide(positives, total, out=np.full(total.shape, np.nan), where=total > 0)
-    supported = (positive_days >= 5) & (negative_days >= 5)
+    supported = (positive_days >= 5) & (negative_days >= 5) & (rate < .95)
     if resolution == "daily_any":
         supported &= (rate >= .2) & (rate <= .8)
     return {"positive_days": positive_days.tolist(), "negative_days": negative_days.tolist(),

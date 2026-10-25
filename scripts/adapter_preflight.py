@@ -17,6 +17,7 @@ import torch
 
 from common import ROOT, load_config, read_json, sha256, write_json
 from data.download.prepare import checkpoint_assets
+from data.coordinates import record_values
 from data.loader.network import graph_for_demand, load_network
 from models.genco import Genco
 from models.temporal import TemporalAdapter
@@ -34,7 +35,7 @@ def tensor_digest(state):
 
 def fixture(cfg, root):
     """Only train_00; historical state is separate from target labels."""
-    net = load_network()
+    net = load_network(config=cfg)
     assets = checkpoint_assets(cfg)
     base = Genco(assets,cfg["checkpoint"])
     path = Path(cfg["paths"]["temporal_root"])/"episodes/train_00.json"
@@ -55,14 +56,14 @@ def fixture(cfg, root):
             graphs = [graph_for_demand(net,r["pd_mw"],r["qd_mvar"],r["target_state"]) for r in observed[lo:lo+24]]
             with torch.no_grad():
                 _,e = base.model(base.batch(graphs),return_embeddings=True)
-            for kind,count in (("bus",30),("gen",6)):
-                chunks[kind].append(e[kind].reshape(-1,count,384).detach().cpu())
+            for kind,count in (("bus",net.n_bus),("gen",net.n_online_gen)):
+                chunks[kind].append(e[kind].reshape(-1,count,e[kind].shape[-1]).detach().cpu())
         embeddings = {kind:torch.cat(parts) for kind,parts in chunks.items()}
         cache_seconds = time.perf_counter()-start
         torch.save({"key":cache_key,"embeddings":embeddings,"creation_seconds":cache_seconds},cache_path)
     history = {f"embedding_{kind}":value for kind,value in embeddings.items()}
     history["observed_bus"] = torch.tensor(np.stack([np.stack([r["pd_mw"],r["qd_mvar"],r["target_state"]["vm"],r["target_state"]["va_rad"]],axis=-1) for r in observed]),dtype=torch.float32)
-    history["observed_gen"] = torch.tensor(np.stack([np.stack([r["target_state"]["pg_mw"],r["target_state"]["qg_mvar"]],axis=-1) for r in observed]),dtype=torch.float32)
+    history["observed_gen"] = torch.tensor(np.stack([np.stack([r["target_state"]["pg_mw"],r["target_state"]["qg_mvar"]],axis=-1) for r in observed]),dtype=torch.float32)[:,net.online_gen]
     for kind in ("bus","gen"): history[f"available_{kind}"]=torch.isfinite(history[f"observed_{kind}"])
     timestamps = pd.to_datetime([r["time_utc"] for r in targets],utc=True)
     h,d = timestamps.hour.to_numpy(),timestamps.dayofweek.to_numpy()
@@ -71,11 +72,11 @@ def fixture(cfg, root):
     graph = graph_for_demand(net,observed[-1]["pd_mw"],observed[-1]["qd_mvar"])
     count = cfg["stage_b"]["future_graph_batch_size"]
     future = base.batch([graph]*count)
-    assert future.num_graphs == 192 and future["bus"].num_nodes == 5760
+    assert future.num_graphs == count and future["bus"].num_nodes == count*net.n_bus
     target_vectors = []
     for r in targets:
         physics = physical_quantities(net,r["pd_mw"],r["qd_mvar"],r["target_state"])
-        values = dict(physics,**r["target_state"],pd_mw=r["pd_mw"],qd_mvar=r["qd_mvar"])
+        values = record_values(net,r)
         target_vectors.append(np.concatenate([np.asarray(values[key])[spec["joint_score_mask"]]
             for key,spec in scales["features"].items() if any(spec["joint_score_mask"])]))
     target = torch.tensor(np.asarray(target_vectors).flatten(),dtype=torch.float32)

@@ -70,7 +70,7 @@ def demands(profile, baseline_pd, baseline_qd, settings, seed):
 
 def prepare_benchmark(config):
     from gridfm_datakit.perturbations.load_perturbation import LoadScenariosFromAggProfile
-    network = load_network()
+    network = load_network(config=config)
     profile_path = eia_profile(config)
     frame = pd.read_csv(profile_path)
     dataset = config.get("dataset", {})
@@ -92,7 +92,7 @@ def prepare_benchmark(config):
         "profile_sha256": sha256(profile_path), "case_sha256": network["case_sha256"],
         "generation": settings, "solver_budget": config["solver"].get("budget", {}),
         "train_profile_min": low, "train_profile_max": high, "timezone": "UTC",
-        "geography": "ERCOT aggregate hourly profile applied to IEEE case30",
+        "geography": f"ERCOT aggregate hourly profile applied to {network.path.stem}",
         "independence": "independent stochastic replicates conditional on reused source blocks",
         "datakit_use": ["Network MATPOWER parsing", "makeYbus", "LoadScenariosFromAggProfile.min_max_scale"],
         "source_data_units": "EIA hourly MWh divided by one hour gives mean MW",
@@ -110,7 +110,7 @@ def prepare_benchmark(config):
             for split, pool in pools.items() for i in pool]
     identifier = hashlib.sha256(json.dumps(descriptor, sort_keys=True).encode()).hexdigest()
     descriptor["benchmark_id"] = identifier
-    root = Path(config["paths"].get("temporal_root", str(Path(config["paths"]["data_root"])/"temporal_case30")))
+    root = Path(config["paths"].get("temporal_root", str(Path(config["paths"]["data_root"])/config["task"]["canonical_case"])))
     if root.resolve().is_relative_to(Path("/home")) or root.resolve().is_relative_to(ROOT):
         raise ValueError("Temporal data must be outside /home and the repository; use the configured /lus/flare data root")
     root.mkdir(parents=True, exist_ok=True)
@@ -136,7 +136,7 @@ def label(config, maximum_hours=200, require_pilot=True):
     dual_proof = read_json(dual_proof_path) if dual_proof_path.exists() else {}
     dual_sign = dual_proof.get("dual_check", {}).get("sign")
     dual_verified = dual_proof.get("dual_check", {}).get("valid", False)
-    with IpoptSolver(config, root / "julia.log") as solver:
+    with IpoptSolver(config, root / "julia.log", network=network) as solver:
         for episode in manifest["episodes"]:
             path = root / "episodes" / f"{episode['episode_id']}.json"
             shard = read_json(path) if path.exists() else {"benchmark_id": manifest["benchmark_id"],

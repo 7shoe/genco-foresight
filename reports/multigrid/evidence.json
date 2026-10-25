@@ -1,0 +1,308 @@
+{
+  "case14_ieee": {
+    "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/multigrid/case14_ieee/gate.json",
+    "sha256": "9312f70d5c1b159d80f8842d06e7ca3f06b155dc8374fcc3f2df589ade07a999",
+    "report": {
+      "case": "case14_ieee",
+      "status": "supported",
+      "node": "aurora-uan-0012",
+      "device": "cpu",
+      "scope": "CPU loading and data-format support; solver/training performance unmeasured",
+      "step_seconds": null,
+      "peak_device_memory_bytes": null,
+      "seconds_per_ipopt_solve": null,
+      "dims": {
+        "n_bus": 14,
+        "n_gen": 5,
+        "n_branch": 20,
+        "online_gen": 5,
+        "online_branch": 20,
+        "active_demand": 11,
+        "rated_branches": 20,
+        "reference_bus": 1,
+        "baseMVA": 100.0
+      },
+      "strict_checkpoint_load": true,
+      "graph_shapes": {
+        "bus": [
+          14,
+          15
+        ],
+        "gen": [
+          5,
+          6
+        ]
+      },
+      "opfdata": {
+        "root": "/lus/flare/projects/FRAME-IDP/siebenschuh/acopf_datasets/processed/N1/pglib_opf_case14_ieee",
+        "samples": 300000,
+        "checked_sample_id": 0,
+        "bus_nodes": 14,
+        "generator_nodes": 4,
+        "manifest_sha256": "805c17215dc6acff724b6367afe73432f8a3464fa8375dc30951d8945d2296bd"
+      },
+      "input_hours": 200,
+      "labels_generated": false,
+      "demand_sha256": "ca0e14914c25dae35285feb5fdd4f03c61195b9ea1db3bea1778449b6f1dd856",
+      "reference_bus_from_network": true,
+      "bus_qg_coordinates": 5,
+      "negative_demand_buses": 0,
+      "cpu_check_seconds": 0.60195494198706
+    }
+  },
+  "case30_ieee": {
+    "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/multigrid/case30_ieee/gate.json",
+    "sha256": "046355316bfbe65ea4373a4996e12f3fb748b62d66fc2167dd52ecf3b760e416",
+    "report": {
+      "case": "case30_ieee",
+      "status": "supported",
+      "node": "aurora-uan-0012",
+      "device": "cpu",
+      "scope": "CPU loading and data-format support; solver/training performance unmeasured",
+      "step_seconds": null,
+      "peak_device_memory_bytes": null,
+      "seconds_per_ipopt_solve": null,
+      "dims": {
+        "n_bus": 30,
+        "n_gen": 6,
+        "n_branch": 41,
+        "online_gen": 6,
+        "online_branch": 41,
+        "active_demand": 21,
+        "rated_branches": 41,
+        "reference_bus": 1,
+        "baseMVA": 100.0
+      },
+      "strict_checkpoint_load": true,
+      "graph_shapes": {
+        "bus": [
+          30,
+          15
+        ],
+        "gen": [
+          6,
+          6
+        ]
+      },
+      "opfdata": {
+        "root": "/lus/flare/projects/FRAME-IDP/siebenschuh/acopf_datasets/processed/N1/pglib_opf_case30_ieee",
+        "samples": 300000,
+        "checked_sample_id": 0,
+        "bus_nodes": 30,
+        "generator_nodes": 6,
+        "manifest_sha256": "0f8222b70ef6cfd5c0820ac8b218e53e618890887340f1c9f533b8bae209a7c7"
+      },
+      "input_hours": 200,
+      "labels_generated": false,
+      "demand_sha256": "d975fbe4a22754caba0aa945735d8df33347645bf6637c7d6e37aca3c528eedc",
+      "reference_bus_from_network": true,
+      "bus_qg_coordinates": 6,
+      "negative_demand_buses": 0,
+      "cpu_check_seconds": 1.3407049449742772
+    }
+  },
+  "case57_ieee": {
+    "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/multigrid/case57_ieee/gate.json",
+    "sha256": "3b29252839e521aee3e023d19ee73675410b47a4886ea17fa7037090c9506440",
+    "report": {
+      "case": "case57_ieee",
+      "status": "supported",
+      "node": "aurora-uan-0012",
+      "device": "cpu",
+      "scope": "CPU loading and data-format support; solver/training performance unmeasured",
+      "step_seconds": null,
+      "peak_device_memory_bytes": null,
+      "seconds_per_ipopt_solve": null,
+      "dims": {
+        "n_bus": 57,
+        "n_gen": 7,
+        "n_branch": 80,
+        "online_gen": 7,
+        "online_branch": 80,
+        "active_demand": 42,
+        "rated_branches": 80,
+        "reference_bus": 1,
+        "baseMVA": 100.0
+      },
+      "strict_checkpoint_load": true,
+      "graph_shapes": {
+        "bus": [
+          57,
+          15
+        ],
+        "gen": [
+          7,
+          6
+        ]
+      },
+      "opfdata": {
+        "root": "/lus/flare/projects/FRAME-IDP/siebenschuh/acopf_datasets/processed/N1/pglib_opf_case57_ieee",
+        "samples": 300000,
+        "checked_sample_id": 0,
+        "bus_nodes": 57,
+        "generator_nodes": 6,
+        "manifest_sha256": "17a236ef5489768d918fe6cc5e5f3cd378d46cd9263deecd04798d17a509a71d"
+      },
+      "input_hours": 200,
+      "labels_generated": false,
+      "demand_sha256": "6efe059a31e8b76b4a6f58240830546af09496d8ed7e13f82346b86760112c84",
+      "reference_bus_from_network": true,
+      "bus_qg_coordinates": 7,
+      "negative_demand_buses": 0,
+      "cpu_check_seconds": 0.46327659499365836
+    }
+  },
+  "case118_ieee": {
+    "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/multigrid/case118_ieee/gate.json",
+    "sha256": "1b49aa5d45ce41f3db76073ecb6010b049b9d38cdccdc13fb4389d3524b0d5f3",
+    "report": {
+      "case": "case118_ieee",
+      "status": "supported",
+      "node": "aurora-uan-0012",
+      "device": "cpu",
+      "scope": "CPU loading and data-format support; solver/training performance unmeasured",
+      "step_seconds": null,
+      "peak_device_memory_bytes": null,
+      "seconds_per_ipopt_solve": null,
+      "dims": {
+        "n_bus": 118,
+        "n_gen": 54,
+        "n_branch": 186,
+        "online_gen": 54,
+        "online_branch": 186,
+        "active_demand": 99,
+        "rated_branches": 186,
+        "reference_bus": 69,
+        "baseMVA": 100.0
+      },
+      "strict_checkpoint_load": true,
+      "graph_shapes": {
+        "bus": [
+          118,
+          15
+        ],
+        "gen": [
+          54,
+          6
+        ]
+      },
+      "opfdata": {
+        "root": "/lus/flare/projects/FRAME-IDP/siebenschuh/acopf_datasets/processed/N1/pglib_opf_case118_ieee",
+        "samples": 300000,
+        "checked_sample_id": 0,
+        "bus_nodes": 118,
+        "generator_nodes": 54,
+        "manifest_sha256": "b5772ccf935cf267bac7941dad4d82f19c3f9d2d26f446c73c9f87a368dd1dc2"
+      },
+      "input_hours": 200,
+      "labels_generated": false,
+      "demand_sha256": "fdbe825ed1e730839fd147d3f5790e2a09021d574d375d88d404137a8374355d",
+      "reference_bus_from_network": true,
+      "bus_qg_coordinates": 54,
+      "negative_demand_buses": 0,
+      "cpu_check_seconds": 0.5626487309928052
+    }
+  },
+  "case500_goc": {
+    "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/multigrid/case500_goc/gate.json",
+    "sha256": "bd876fddf60f746345fc23d5520494dcee5c8b5ee58d60beb632fdf2997d4d06",
+    "report": {
+      "case": "case500_goc",
+      "status": "supported",
+      "node": "aurora-uan-0012",
+      "device": "cpu",
+      "scope": "CPU loading and data-format support; solver/training performance unmeasured",
+      "step_seconds": null,
+      "peak_device_memory_bytes": null,
+      "seconds_per_ipopt_solve": null,
+      "dims": {
+        "n_bus": 500,
+        "n_gen": 224,
+        "n_branch": 733,
+        "online_gen": 171,
+        "online_branch": 728,
+        "active_demand": 281,
+        "rated_branches": 728,
+        "reference_bus": 311,
+        "baseMVA": 100.0
+      },
+      "strict_checkpoint_load": true,
+      "graph_shapes": {
+        "bus": [
+          500,
+          15
+        ],
+        "gen": [
+          171,
+          6
+        ]
+      },
+      "opfdata": {
+        "root": "/lus/flare/projects/FRAME-IDP/siebenschuh/acopf_datasets/processed/N1/pglib_opf_case500_goc",
+        "samples": 300000,
+        "checked_sample_id": 0,
+        "bus_nodes": 500,
+        "generator_nodes": 170,
+        "manifest_sha256": "e9cfe1eaf82bcb1f9873099ed92159ebca54d887c19722be7dc26e18cc406a0d"
+      },
+      "input_hours": 200,
+      "labels_generated": false,
+      "demand_sha256": "540ce15dbd8c61efed293e489fbedbce047f93fac8fe9159e6978facf545611f",
+      "reference_bus_from_network": true,
+      "bus_qg_coordinates": 113,
+      "negative_demand_buses": 0,
+      "cpu_check_seconds": 1.2341327219619416
+    }
+  },
+  "case2000_goc": {
+    "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/multigrid/case2000_goc/gate.json",
+    "sha256": "b655a44c0cd11d447347f96991e92545244969b7495ccb3239fa6314ca57f79c",
+    "report": {
+      "case": "case2000_goc",
+      "status": "supported",
+      "node": "aurora-uan-0012",
+      "device": "cpu",
+      "scope": "CPU loading and data-format support; solver/training performance unmeasured",
+      "step_seconds": null,
+      "peak_device_memory_bytes": null,
+      "seconds_per_ipopt_solve": null,
+      "dims": {
+        "n_bus": 2000,
+        "n_gen": 384,
+        "n_branch": 3639,
+        "online_gen": 238,
+        "online_branch": 3633,
+        "active_demand": 1010,
+        "rated_branches": 3633,
+        "reference_bus": 551,
+        "baseMVA": 100.0
+      },
+      "strict_checkpoint_load": true,
+      "graph_shapes": {
+        "bus": [
+          2000,
+          15
+        ],
+        "gen": [
+          238,
+          6
+        ]
+      },
+      "opfdata": {
+        "root": "/lus/flare/projects/FRAME-IDP/siebenschuh/acopf_datasets/processed/N1/pglib_opf_case2000_goc",
+        "samples": 300000,
+        "checked_sample_id": 0,
+        "bus_nodes": 2000,
+        "generator_nodes": 237,
+        "manifest_sha256": "78cd010d633544e716fac39d19124006788c9b129055162322c8de4292226806"
+      },
+      "input_hours": 200,
+      "labels_generated": false,
+      "demand_sha256": "ebbf1da1f986b1ad3f3cd14c4a39679e0563b933b81c978860ad63f3f406cdf6",
+      "reference_bus_from_network": true,
+      "bus_qg_coordinates": 178,
+      "negative_demand_buses": 0,
+      "cpu_check_seconds": 1.4135822899988852
+    }
+  }
+}

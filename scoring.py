@@ -88,7 +88,7 @@ def variogram_pairs(scales, network, horizon=24):
     for t in range(horizon-1):pairs.extend((t*d+i,(t+1)*d+i) for i in range(d))
     for t in range(horizon):
         for key in ("pd_mw","qd_mvar","vm","va_rad"):
-            for f,to in network["branch"][:,:2].astype(int):
+            for f,to in network["branch"][getattr(network, "online_branch", np.ones(len(network["branch"]), dtype=bool)),:2].astype(int):
                 if (key,f) in lookup and (key,to) in lookup:
                     pairs.append((t*d+lookup[key,f],t*d+lookup[key,to]))
     return np.asarray(sorted(set(tuple(sorted(p)) for p in pairs)),dtype=np.int64)

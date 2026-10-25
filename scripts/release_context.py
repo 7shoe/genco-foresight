@@ -1,5 +1,6 @@
 """Record release facts from existing configurations and immutable evidence."""
 from pathlib import Path
+from data.loader.network import load_network
 from common import ROOT, load_config, read_json, sha256, write_json
 from scripts.finalize_release import check_frozen
 
@@ -14,7 +15,7 @@ def main():
     def add(key, value, unit, source):
         claims[key] = {"value": value, "unit": unit, "source": source}
     for key, value, unit in (
-        ("setup.case_buses", 30, "buses"), ("setup.seed", cfg["seed"], "seed"),
+        ("setup.case_buses", load_network(config=cfg).n_bus, "buses"), ("setup.seed", cfg["seed"], "seed"),
         ("setup.history_hours", cfg["task"]["history_hours"], "hours"),
         ("setup.forecast_hours", cfg["task"]["horizon_hours"], "hours"),
         ("setup.episodes", cfg["task"]["episodes"], "episodes"),

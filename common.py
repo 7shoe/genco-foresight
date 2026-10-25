@@ -19,8 +19,13 @@ def config_path(path=None):
 
 
 def load_config(path=None):
+    """Apply optional mapping overrides, resolve references, and return plain containers."""
     with config_path(path).open() as stream:
-        return yaml.safe_load(stream)
+        result = yaml.safe_load(stream)
+    if set(result) == {"grid"}:
+        from data.grids import grid_config
+        return grid_config(result["grid"])
+    return result
 
 
 def sha256(path):

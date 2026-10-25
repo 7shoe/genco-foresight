@@ -41,7 +41,7 @@ def prepare(config, download=False, spot_count=32):
         path = cache.folder / f"group_{record['group']}.pt"
         if sha256(path) != record["sha256"]:
             raise ValueError(f"Published OPFData cache checksum mismatch: {path}")
-    raw = root / "data/case30_ieee/raw"
+    raw = root / "data" / config["checkpoint"]["directory"].split("/")[0] / "raw"
     raw.mkdir(parents=True, exist_ok=True)
     tables = [[], [], []]
     selected_tables = {}
@@ -70,7 +70,7 @@ def prepare(config, download=False, spot_count=32):
     (root / "evaluate.yaml").write_text(yaml.safe_dump(settings, sort_keys=False))
     # Independent official parquet spot check protects the local schema adapter.
     partitions = sorted({int(i)//200 for i in ids[:spot_count]})
-    official_root = converted_partitions(partitions, Path(config["paths"]["assets_root"])/"official_case30", download)
+    official_root = converted_partitions(partitions, Path(config["paths"]["assets_root"])/("official_"+config["checkpoint"]["directory"].split("/")[0]), download, config=config)
     differences = {}
     for name, table_index in (("bus", 0), ("gen", 1), ("branch", 2)):
         official_frames = []
@@ -89,7 +89,7 @@ def prepare(config, download=False, spot_count=32):
                                            err_msg=f"{canonical}/{name}/{column}")
                 differences[f"{name}.{column}"] = max(differences.get(f"{name}.{column}", 0), float(abs(a-b).max()))
     write_json(root / "conversion_check.json", {"passed": True, "count": spot_count, "max_abs": differences,
-                "official_dataset_revision": "64bfe542a7fd195abe0b4b6e0a82520b43a73569"})
+                "official_dataset_revision": read_json(official_root/"download_manifest.json")["revision"]})
     print("Prepared parity:", len(ids), "snapshots; independent export checks:", spot_count, flush=True)
     return root
 
@@ -115,7 +115,7 @@ def evaluate(config):
     with (root / "official_cli.log").open("w") as stream:
         subprocess.run(command, env=env, stdout=stream, stderr=subprocess.STDOUT, check=True)
     model = Genco(assets, config["checkpoint"], device="cpu")
-    tables = [pd.read_parquet(root/f"data/case30_ieee/raw/{name}_data.parquet") for name in ("bus", "gen", "branch")]
+    tables = [pd.read_parquet(root/"data"/config["checkpoint"]["directory"].split("/")[0]/"raw"/f"{name}_data.parquet") for name in ("bus", "gen", "branch")]
     # Match the upstream raw-table aggregation exactly.
     limits = tables[1].groupby(["scenario", "bus"])[["min_q_mvar", "max_q_mvar"]].sum().reset_index()
     tables[0] = tables[0].merge(limits, on=["scenario", "bus"], how="left").fillna(0)
@@ -127,7 +127,7 @@ def evaluate(config):
         output = model.predict(graphs)
         predictions.append(output["bus"].cpu().numpy())
     ours = np.concatenate(predictions)
-    reference = pd.read_parquet(root / "official/case30_ieee_predictions.parquet")
+    reference = pd.read_parquet(root / "official" / (config["checkpoint"]["directory"].split("/")[0]+"_predictions.parquet"))
     reference = reference.sort_values(["scenario", "bus"])
     columns = ["Vm_pred", "Va_pred", "Pg_pred", "Qg_pred"]
     theirs = reference[columns].to_numpy()

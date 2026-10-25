@@ -134,7 +134,7 @@ def average_balances(rows):
         out[key] = {"count": n, "samples_times_hours_per_bus": nb,
                     "mean_abs": sum(r[key]["mean_abs"] * r[key]["count"] for r in rows if r[key]["count"]) / n if n else None,
                     "per_bus_mean_abs": (sum(np.array(r[key]["per_bus_mean_abs"]) * r[key]["samples_times_hours_per_bus"]
-                         for r in rows if r[key]["samples_times_hours_per_bus"]) / nb).tolist() if nb else [None] * 30}
+                         for r in rows if r[key]["samples_times_hours_per_bus"]) / nb).tolist() if nb else [None] * len(rows[0][key]["per_bus_mean_abs"])}
     return out
 
 
@@ -306,7 +306,7 @@ def provenance(cfg):
     train = Path(cfg["paths"]["training_run"])
     base_root = Path(cfg["paths"]["assets_root"]) / "genco-opfdata"
     base = Genco(base_root, cfg["checkpoint"], "cpu")
-    model = TemporalAdapter(base, load_network(), read_json(cfg["stage_b"]["coordinate_scales"]))
+    model = TemporalAdapter(base, load_network(config=load_config()), read_json(cfg["stage_b"]["coordinate_scales"]))
     checkpoint = torch.load(train / "best.pt", weights_only=True, map_location="cpu")
     state = checkpoint["model"]
     parameters = {k: p for k, p in model.named_parameters() if p.requires_grad}
@@ -383,7 +383,7 @@ def merge(cfg):
             scores.pop("per_origin", None)
             item = {"scores": scores, "balance": average_balances([r["balance"][mode][scope] for r in rows]),
                 "headline": {"active_pd": subset_summary(scores, "pd_mw", active), "vm": subset_summary(scores, "vm", buses),
-                             "line_1": subset_summary(scores, "loading", [0]), "pg_all": subset_summary(scores, "pg_mw", np.arange(6)),
+                             "line_1": subset_summary(scores, "loading", [0]), "pg_all": subset_summary(scores, "pg_mw", np.arange(len(scales["features"]["pg_mw"]["scale"]))),
                              "pg_free": subset_summary(scores, "pg_mw", free_pg)}}
             if mode in ("C", "S", "A", "D"):
                 item["groups"] = {}

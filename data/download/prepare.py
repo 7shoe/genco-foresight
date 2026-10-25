@@ -7,25 +7,32 @@ from datetime import datetime, timezone
 
 import pandas as pd
 import requests
+# workhorse loader
 from huggingface_hub import HfApi, hf_hub_download
 
 from common import load_config, read_json, sha256, write_json
 
 
-DATASET_REVISION = "64bfe542a7fd195abe0b4b6e0a82520b43a73569"
-DATASET_REPOSITORY = "gridfm/opfdata_case30_ieee"
+def dataset_repository(config):
+    return "gridfm/opfdata_"+config["task"]["canonical_case"].removeprefix("pglib_opf_")
 
 
 def checkpoint_assets(config, download=False):
+    """
+    Check if checkpoints are in if not download
+    """
+    # check if OK on your system
     settings = config["checkpoint"]
     root = Path(config["paths"]["assets_root"]) / "genco-opfdata"
     previous = read_json(root / "manifest.json") if (root / "manifest.json").exists() else None
+    # validity check
     if previous and (previous["repository"], previous["revision"]) != (settings["repository"], settings["revision"]):
         raise ValueError("Checkpoint asset directory belongs to another repository/revision")
+    # paths
     names = [f"{settings['directory']}/{settings[key]}"
              for key in ("weights", "normalizer", "configuration")]
     names += [f"splits/{part}.pt" for part in ("train", "val", "test", "shuffled_indices")]
-    manifest = {"repository": settings["repository"], "revision": settings["revision"], "files": {}}
+    manifest = {"repository": settings["repository"], "revision": settings["revision"], "files": dict(previous["files"]) if previous else {}}
     for name in names:
         path = root / name
         if not path.is_file():
@@ -36,20 +43,30 @@ def checkpoint_assets(config, download=False):
         if previous and name in previous["files"] and entry != previous["files"][name]:
             raise ValueError(f"Pinned checkpoint asset changed: {path}")
         manifest["files"][name] = entry
+    # write log
     write_json(root / "manifest.json", manifest)
     return root
 
 
-def converted_partitions(partitions, destination, download=False):
-    """Acquire a small official reference subset, rather than all 300K graphs."""
+def converted_partitions(partitions, destination, download=False, config=None):
+    """Prepare selected OPFData partitions w/o downloadig the full dataset"""
+    config = config if config is not None else load_config()
+    repository = dataset_repository(config)
+    revision = config.get("official_dataset_revision")
+    # check path on your system
     root = Path(destination)
     root.mkdir(parents=True, exist_ok=True)
     inventory_path = root / "hf_inventory.json"
+    # cache the file listing to avoid repeating the API request
     if inventory_path.exists():
         inventory = read_json(inventory_path)
+        revision = inventory["revision"]
+        if inventory.get("repository", repository) != repository:
+            raise ValueError("Reference cache belongs to another dataset")
     else:
-        info = HfApi().dataset_info(DATASET_REPOSITORY, revision=DATASET_REVISION, files_metadata=True)
-        inventory = {"revision": info.sha,
+        info = HfApi().dataset_info(repository, revision=revision, files_metadata=True)
+        revision = info.sha
+        inventory = {"repository": repository, "revision": info.sha,
                      "files": [{"name": f.rfilename, "bytes": f.size} for f in info.siblings]}
         write_json(inventory_path, inventory)
     selected = []
@@ -63,25 +80,30 @@ def converted_partitions(partitions, destination, download=False):
         if not path.is_file():
             if not download:
                 raise FileNotFoundError(f"Missing reference parquet {path}; pass --download")
-            hf_hub_download(DATASET_REPOSITORY, name, repo_type="dataset", revision=DATASET_REVISION,
+            hf_hub_download(repository, name, repo_type="dataset", revision=revision,
                             local_dir=root)
         selected.append({"path": name, "sha256": sha256(path), "bytes": path.stat().st_size})
+    # each partition needs one bus, generator & branch file
     if len(selected) != 3 * len(set(partitions)):
         raise ValueError("Expected one parquet per requested partition and table")
-    write_json(root / "download_manifest.json", {"repository": DATASET_REPOSITORY,
-               "revision": DATASET_REVISION, "files": selected})
+    # write manifsest
+    write_json(root / "download_manifest.json", {"repository": repository,
+               "revision": revision, "files": selected})
     return root
 
 
 def eia_profile(config, download=False):
     """Hourly ERCO demand for 2025 from the public EIA v2 API, in UTC."""
+    # path for temporal data
     root = Path(config["paths"]["assets_root"]) / "profiles"
     root.mkdir(parents=True, exist_ok=True)
+    # key CSV to simulate synthetic temporal evolution
     target = root / "eia_erco_demand_2025.csv"
     provenance = root / "eia_erco_demand_2025.json"
     expected_hash = config.get("asset_hashes", {}).get("ercot_2025_csv")
     if target.exists() and provenance.exists():
         actual_hash = sha256(target)
+        # check validity
         if actual_hash != read_json(provenance)["sha256"] or (expected_hash and actual_hash != expected_hash):
             raise ValueError("Profile checksum changed")
         return target
@@ -115,7 +137,7 @@ def eia_profile(config, download=False):
     write_json(provenance, {"source": url, "respondent": "ERCO", "type": "D",
                "frequency": "hourly", "timezone": "UTC", "year": 2025, "rows": len(frame),
                "retrieved_utc": datetime.now(timezone.utc).isoformat(), "sha256": sha256(target),
-               "assumption": "ERCOT aggregate demand drives synthetic IEEE case30 bus loads"})
+               "assumption": "ERCOT aggregate demand drives the selected benchmark network"})
     return target
 
 
@@ -133,7 +155,7 @@ def main():
         print("Profile:", eia_profile(config, args.download), flush=True)
     if args.reference_partitions is not None:
         print("Reference data:", converted_partitions(args.reference_partitions,
-              Path(config["paths"]["assets_root"])/"official_case30", args.download), flush=True)
+              Path(config["paths"]["assets_root"])/("official_"+config["task"]["canonical_case"].removeprefix("pglib_opf_")), args.download, config=config), flush=True)
 
 
 if __name__ == "__main__":

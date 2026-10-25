@@ -25,7 +25,7 @@ def prepare(cfg):
     original = read_json(root / "protocol.json")
     for path, digest in original["source_sha256"].items():
         assert sha256(ROOT / path) == digest, f"Frozen scorer/evaluation source changed: {path}"
-    net = load_network()
+    net = load_network(config=load_config())
     manifest = read_json(data / "manifest.json")
     blocks, records, source_hashes = [], [], {}
     for episode in manifest["episodes"]:
@@ -135,7 +135,7 @@ def worker(cfg, shard, shards):
 def merge(cfg):
     root, _, _ = locations(cfg)
     protocol = read_json(root / "controls/protocol.json")
-    active = np.flatnonzero(load_network()["bus"][:, 2] != 0)
+    active = np.flatnonzero(load_network(config=load_config())["bus"][:, 2] != 0)
     buses = np.asarray(cfg["stage_b"]["calibration"]["headline_voltage_bus_ids"]) - 1
     for mode in ("C", "P0"):
         reports = [read_json(root / f"controls/origins/{o['id']}/{mode}_scores.json") for o in protocol["origins"]]

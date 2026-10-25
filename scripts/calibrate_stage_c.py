@@ -13,17 +13,25 @@ from scripts.diagnose_stage_b import npz
 from training.forecaster import atomic_npz
 
 MODES = ("C", "P", "P0", "S", "A", "D")
-BUSES = (1, 9, 11, 13, 15, 21, 22)
-FAMILIES = {"voltage": [f"voltage_bus_{b}" for b in BUSES], "thermal": ["thermal_line_1"]}
 RESOLUTIONS = ("hourly", "daily_any")
 
 
-def freeze(cfg):
+def event_selection(cfg, net):
+    settings = cfg["stage_b"]["calibration"]
+    if "headline_voltage_bus_ids" in settings:
+        return dict(bus_ids=settings["headline_voltage_bus_ids"], line_ids=settings["continuous_loading_line_ids"])
+    selected = read_json(Path(cfg["paths"]["stage_a_run"])/"stage_a_followup/headline_components.json")
+    return dict(bus_ids=selected["voltage_bus_ids"], line_ids=selected["thermal_line_ids"])
+
+
+def freeze(cfg, net=None):
+    net = net if net is not None else load_network(config=cfg)
+    selected = event_selection(cfg, net)
     out = Path(cfg["paths"]["runs_root"]) / "stage_c"
     out.mkdir(parents=True, exist_ok=True)
     b = out.parent / "stage_b"
     protocol = {"created_by": "scripts.calibrate_stage_c", "dataset": cfg["dataset"]["id"],
-        "modes": list(MODES), "voltage_bus_ids": list(BUSES), "thermal_line_ids": [1],
+        "modes": list(MODES), "voltage_bus_ids": list(selected["bus_ids"]), "thermal_line_ids": list(selected["line_ids"]),
         "primary_resolution": "hourly", "secondary_resolution": "daily_any",
         "thresholds": "Vm <= Vmin + 0.05*(Vmax-Vmin) or >= Vmax-0.05*(Vmax-Vmin); loading > 0.95",
         "posthoc": "One sigmoid of clipped logit(p) per mode/family/resolution, pooled across supported components",
@@ -44,22 +52,25 @@ def freeze(cfg):
     return out
 
 
-def collect(cfg, partition, out):
+def collect(cfg, partition, out, net=None):
     root = out / "calibration" if partition == "risk_calibration" else out.parent / "stage_b"
     p = read_json(root / "protocol.json")
     if partition == "risk_calibration":
         assert p["partition"] == partition
-    net = load_network()
-    targets = {f: {r: [] for r in RESOLUTIONS} for f in FAMILIES}
-    probabilities = {m: {f: {r: [] for r in RESOLUTIONS} for f in FAMILIES} for m in MODES}
+    net = net if net is not None else load_network(config=cfg)
+    selected = event_selection(cfg, net)
+    families = {"voltage": [f"voltage_bus_{b}" for b in selected["bus_ids"]],
+                "thermal": [f"thermal_line_{i}" for i in selected["line_ids"]]}
+    targets = {f: {r: [] for r in RESOLUTIONS} for f in families}
+    probabilities = {m: {f: {r: [] for r in RESOLUTIONS} for f in families} for m in MODES}
     continuous = {m: {} for m in MODES}
     evidence = {}
-    components = [(f"voltage_bus_{bus}", "vm", bus - 1) for bus in BUSES] + [("thermal_line_1", "loading", 0)]
+    components = [(f"voltage_bus_{bus}", "vm", net.bus_ids.tolist().index(bus)) for bus in selected["bus_ids"]] + [(f"thermal_line_{i}", "loading", i-1) for i in selected["line_ids"]]
     for o in p["origins"]:
         directory = root / "origins" / o["id"]
-        target = event_targets(npz(directory / "targets.npz"), net)
+        target = event_targets(npz(directory / "targets.npz"), net, **event_selection(cfg, net))
         evidence[str(directory / "targets.npz")] = sha256(directory / "targets.npz")
-        for f in FAMILIES:
+        for f in families:
             for r in RESOLUTIONS:
                 targets[f][r].append(target[f][r])
         for m in MODES:
@@ -72,8 +83,8 @@ def collect(cfg, partition, out):
                 digest = sha256(path)
                 assert filename in artifacts and digest == artifacts[filename], path
                 evidence[str(path)] = digest
-            pred = event_probabilities(npz(folder / f"{m}.npz"), net)
-            for f in FAMILIES:
+            pred = event_probabilities(npz(folder / f"{m}.npz"), net, **event_selection(cfg, net))
+            for f in families:
                 for r in RESOLUTIONS:
                     probabilities[m][f][r].append(pred[f][r])
             scores = npz(folder / f"{m}_scores.npz")
@@ -96,14 +107,18 @@ def collect(cfg, partition, out):
 
 def main():
     cfg = load_config()
-    out = freeze(cfg)
-    cy, cp, cc, co = collect(cfg, "risk_calibration", out)
+    net = load_network(config=cfg)
+    selected = event_selection(cfg, net)
+    families = {"voltage": [f"voltage_bus_{b}" for b in selected["bus_ids"]],
+                "thermal": [f"thermal_line_{i}" for i in selected["line_ids"]]}
+    out = freeze(cfg, net)
+    cy, cp, cc, co = collect(cfg, "risk_calibration", out, net)
     maps = {m: {f: {r: fit_map(cp[m][f][r], cy[f][r], r, "risk_calibration")
-                    for r in RESOLUTIONS} for f in FAMILIES} for m in MODES}
+                    for r in RESOLUTIONS} for f in families} for m in MODES}
     # Persist the map before opening test event arrays; no model or threshold selection on test.
     write_json(out / "maps.json", {"maps": maps, "fit_inputs_sha256": sha256(out / "inputs_risk_calibration.json"),
         "protocol_sha256": sha256(out / "protocol.json"), "fit_completed_epoch": time.time()})
-    ty, tp, tc, to = collect(cfg, "test", out)
+    ty, tp, tc, to = collect(cfg, "test", out, net)
     rates = read_json(Path(cfg["paths"]["stage_a_run"]) / "stage_b_prevalence.json")["prevalence"]
     train = {(r["event"], r["resolution"]): r["prevalence"] for r in rates if r["partition"] == "train"}
     report = {"protocol_sha256": sha256(out / "protocol.json"), "maps_sha256": sha256(out / "maps.json"),
@@ -113,7 +128,7 @@ def main():
             "Maps change event probabilities only, not states, balances, PIT or continuous interval coverage.",
             "Numerical-difficulty classifier unavailable: zero failed labels in 5,040 training hours at the fixed budget; no discrimination or two-class calibration is estimable.",
             "Dual-price quantiles and scenario-selected third hybrid arm deferred; current deliverables prioritize voltage calibration and the requested two-arm experiment."]}
-    for f, names in FAMILIES.items():
+    for f, names in families.items():
         for r in RESOLUTIONS:
             for j, event in enumerate(names):
                 c, t = cy[f][r][..., j], ty[f][r][..., j]

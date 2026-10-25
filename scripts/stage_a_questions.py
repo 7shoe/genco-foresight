@@ -35,10 +35,13 @@ def figure_support(report, daily_range=None):
 
 def main():
     cfg = load_config()
+    if "grid" in cfg:
+        from scripts.variant_events import run
+        return run(cfg)
     root = Path(cfg["paths"]["temporal_root"])
     manifest = read_json(root/"manifest.json")
     hashes = {r["file"]: r["sha256"] for r in manifest["shards"]}
-    net = load_network()
+    net = load_network(config=load_config())
     buses, edges = net["bus"], net["branch"]
     bus_ids = net["bus_ids"].tolist()
     profile = pd.read_csv(Path(cfg["paths"]["assets_root"])/"profiles/eia_erco_demand_2025.csv")
@@ -99,7 +102,7 @@ def main():
             "component_counts_by_episode": [{"episode_id": e["episode_id"],
                 "thermal_daily_positive": e["day_t"].sum(0).tolist(),
                 "voltage_daily_positive": e["day_v"].sum(0).tolist()} for e in groups[split]]}
-    for family, output, width, hourly, daily in (("voltage", "buses", 30, "voltage", "day_v"),
+    for family, output, width, hourly, daily in (("voltage", "buses", net.n_bus, "voltage", "day_v"),
                                                ("thermal", "lines", len(edges), "thermal", "day_t")):
         for i in range(width):
             item = {"id": bus_ids[i] if family == "voltage" else i+1,

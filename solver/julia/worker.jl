@@ -68,9 +68,9 @@ function solve_request(request)
         record["state"] = Dict(
             "vm"=>[s["bus"][string(id)]["vm"] for id in bus_ids],
             "va_rad"=>[s["bus"][string(id)]["va"] for id in bus_ids],
-            "pg_mw"=>[s["gen"][string(id)]["pg"]*base for id in gen_ids],
-            "qg_mvar"=>[s["gen"][string(id)]["qg"]*base for id in gen_ids])
-        record["branch"] = Dict(field=>[s["branch"][string(id)][field]*base for id in branch_ids]
+            "pg_mw"=>[get(get(s["gen"],string(id),Dict()),"pg",NaN)*base for id in gen_ids],
+            "qg_mvar"=>[get(get(s["gen"],string(id),Dict()),"qg",NaN)*base for id in gen_ids])
+        record["branch"] = Dict(field=>[get(get(s["branch"],string(id),Dict()),field,NaN)*base for id in branch_ids]
                                 for field in ("pf","qf","pt","qt"))
         if has_duals(pm.model)
             record["dual_p_raw"] = [s["bus"][string(id)]["lam_kcl_r"] for id in bus_ids]

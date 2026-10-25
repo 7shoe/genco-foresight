@@ -36,10 +36,13 @@ def reporting_policy(calibration, test, resolution, settings):
 
 def main():
     cfg = load_config()
+    if "grid" in cfg:
+        from scripts.variant_events import run
+        return run(cfg)
     root = Path(cfg["paths"]["temporal_root"])
     manifest = read_json(root/"manifest.json")
     hashes = {r["file"]: r["sha256"] for r in manifest["shards"]}
-    net = load_network()
+    net = load_network(config=load_config())
     ids = cfg["stage_b"]["calibration"]["headline_voltage_bus_ids"]
     selected = [net["bus_ids"].tolist().index(i) for i in ids]
     counts = {}

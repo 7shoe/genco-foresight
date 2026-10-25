@@ -181,3 +181,15 @@ events can be structurally uninformative because cost-minimizing OPF operates
 some buses near a bound; report component probabilities and state calibration
 separately. Stage B's held-out comparisons and Stage C/D's calibration,
 two-arm solver experiment and figures are complete; public release remains pending.
+
+## Multigrid CPU format support
+
+The `multigrid` branch supports registry entries for case14, case30, case57, case118,
+case500, and case2000. Use `GENCO_CONFIG=configs/multigrid/case118_ieee.yaml` to select
+a case with separate output paths. `GridSpec` supplies dimensions, reference buses,
+co-located generation maps, and offline masks.
+
+Run `python -m scripts.multigrid_smoke` for CPU loading and formatting checks, then
+`python -m scripts.multigrid_report` to refresh [the support report](reports/multigrid/support.md).
+The check launches no solver, training, or PBS job. All assets and generated arrays stay
+on `/lus/flare`; the existing Torch/Transformers environment is retained.
