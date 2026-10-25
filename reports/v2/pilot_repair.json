@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "status": "submitted_verification_pending",
-  "passed": null,
+  "status": "repair_verified_full_generation_running",
+  "passed": true,
   "job_id": "8963841",
   "source_commit": "1d0ec50",
   "root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/large_grid_pilots_20261025_repair_v2",
@@ -38,8 +38,130 @@
   "case500_root_cause": "File/GridSpec reference bus311 has no online generator; PowerModels.parse_file corrects to bus313. Old solved state passes unchanged1e-5 checks at bus313.",
   "case2000_root_cause": "Five-second CPU budget terminated the cold base solve at24 iterations with TIME_LIMIT; no completed temporal hours existed.",
   "limitations": [
-    "200-hour and full Stage A audits pending; no training authorized until readiness gate.",
-    "Full20 episodes retained initially; >120s median triggers formulation review, projected generation>3h triggers a new half-size identity.",
-    "No Stage2 or cross-grid performance claim; neither pilot enters the fleet table."
-  ]
+    "Both200-hour pilots passed; full generation, full Stage A and cache readiness are still pending.",
+    "No formulation change or half-size reduction required: case2000 median8.885s, projected full-size solve wall1675.677s.",
+    "Neither pilot enters the cross-grid table; no Stage2 or training result is claimed."
+  ],
+  "compute_tests": {
+    "passed": 64,
+    "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/large_grid_pilots_20261025_repair_v2/tests.xml",
+    "sha256": "189082bfbf11c8dfc746cda157fb5cb977e001cfaf0beb5b5d6f3ecfbdd6081d"
+  },
+  "pilot_results": {
+    "case500_goc": {
+      "smoke": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/large_grid_pilots_20261025_repair_v2/case500_goc/stage_a/solver_smoke.json",
+      "smoke_sha256": "542a19d73a689dee8996395c60d0d617af4ee89bead31c28d0e2dadbecb20285",
+      "smoke_passed": true,
+      "dual_check": {
+        "bus_index": 0,
+        "hold_qd_fixed": true,
+        "sign": -1,
+        "finite_difference": 48.03285220405087,
+        "signed_dual_per_mw": 48.03273476858658,
+        "relative_error": 2.4448988328030085e-06,
+        "valid": true
+      },
+      "pilot": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/large_grid_pilots_20261025_repair_v2/case500_goc/data/pilot_report.json",
+      "pilot_sha256": "5d10013dd0a47474b123512385df2278bebfe50d378e4dfc38a7111c10e3ec65",
+      "accepted": true,
+      "attempted": 200,
+      "valid": 200,
+      "valid_duals": 200,
+      "solve_statistics": {
+        "completed": 200,
+        "median_seconds": 0.9823479652404785,
+        "max_seconds": 4.119322061538696,
+        "median_request_seconds": 1.4266159386606887,
+        "max_request_seconds": 8.549383332952857,
+        "median_iterations": 35.0,
+        "max_iterations": 38,
+        "status_counts": {
+          "LOCALLY_SOLVED": 200
+        }
+      },
+      "projection": {
+        "projected_solve_wall_seconds": 2080.4959244997704,
+        "full_size_cap_seconds": 10800,
+        "episodes": 20,
+        "includes_startup_and_audit": false
+      },
+      "projection_sha256": "0d20574721514c9bb06aca3586837648869395a016e2db55a0cf9e5f9fc0a3e9",
+      "worker_layout": {
+        "processes": 8,
+        "available_cpus": 204,
+        "warm_start": "cold",
+        "start_epoch": 1792923318.5619738
+      }
+    },
+    "case2000_goc": {
+      "smoke": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/large_grid_pilots_20261025_repair_v2/case2000_goc/stage_a/solver_smoke.json",
+      "smoke_sha256": "4cfd994a2631bd70f5ec57f9100b3d5919beddb420ec0540ebbbc889363162e8",
+      "smoke_passed": true,
+      "dual_check": {
+        "bus_index": 2,
+        "hold_qd_fixed": true,
+        "sign": -1,
+        "finite_difference": 36.78978909738362,
+        "signed_dual_per_mw": 36.78754993471852,
+        "relative_error": 6.0863699413211554e-05,
+        "valid": true
+      },
+      "pilot": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/large_grid_pilots_20261025_repair_v2/case2000_goc/data/pilot_report.json",
+      "pilot_sha256": "3892e631c28a37f886836dcb5f5aede6daa3562a2c6c6b33fff82ed4fa1bc940",
+      "accepted": true,
+      "attempted": 200,
+      "valid": 200,
+      "valid_duals": 200,
+      "solve_statistics": {
+        "completed": 200,
+        "median_seconds": 8.885463953018188,
+        "max_seconds": 15.742999076843262,
+        "median_request_seconds": 11.346289435983635,
+        "max_request_seconds": 29.55228330101818,
+        "median_iterations": 40.0,
+        "max_iterations": 43,
+        "status_counts": {
+          "LOCALLY_SOLVED": 200
+        }
+      },
+      "projection": {
+        "projected_solve_wall_seconds": 1675.6774008213952,
+        "full_size_cap_seconds": 10800,
+        "episodes": 20,
+        "includes_startup_and_audit": false
+      },
+      "projection_sha256": "fe27643e90b3f3065789a41d4709f4996d668645f14a1a1b0bb59d84f4038a06",
+      "worker_layout": {
+        "processes": 96,
+        "available_cpus": 204,
+        "warm_start": "fixed checked base",
+        "start_epoch": 1792923356.5322812
+      }
+    }
+  },
+  "gate_scope": "Both200-hour repair pilots and solver smoke checks; full Stage A readiness remains separate",
+  "training_released": false,
+  "cpu_layout": {
+    "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/large_grid_pilots_20261025_repair_v2/runtime_cpu_layout.json",
+    "sha256": "d97ebfcc2597d6834739002a6fe6d0fc470fc86448d9cbfa64eca18298877d4e",
+    "epoch": 1792923463.9728675,
+    "julia_solver_processes": 104,
+    "cpu_layout": [
+      "CPU(s):                                  208",
+      "Thread(s) per core:                      2",
+      "Core(s) per socket:                      52",
+      "Socket(s):                               2"
+    ]
+  },
+  "observed_epoch": 1792923568.9227889,
+  "generation_progress": {
+    "case500_goc": {
+      "completed_hour_shards": 1203,
+      "full_stage_a_ready": false
+    },
+    "case2000_goc": {
+      "completed_hour_shards": 1759,
+      "full_stage_a_ready": false
+    }
+  }
 }
