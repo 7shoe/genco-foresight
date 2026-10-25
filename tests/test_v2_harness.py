@@ -117,6 +117,35 @@ def test_absolute_floor_handles_near_zero():
     assert not close(float("nan"), 0., {"atol": 1., "rtol": 1.})
 
 
+def test_one_sided_gate_accepts_improvement_and_exempts_on_reference(tmp_path):
+    roots, protocol = fixture(tmp_path)
+    comparison = protocol["comparison"]
+    comparison.update(numerical_acceptance="epoch_noninferiority", epochs=1,
+        epoch_upper_bounds={"1": {"historical_maximum": .4, "slack": .005}}, compare_stopping_epochs=False)
+    comparison.pop("thresholds")
+    comparison["expected_manifest"]["deterministic_algorithms"] = False
+    for root, score in zip(roots, (.1, .405)):
+        manifest = json.loads((root / "manifest.json").read_text())
+        manifest["deterministic_algorithms"] = False
+        put(root / "manifest.json", manifest)
+        put(root / "epochs.json", [{"epoch": 1, "steps": 2, "selection_energy_score": score}])
+        status = json.loads((root / "status.json").read_text())
+        status["epochs_reached"] = 1
+        put(root / "status.json", status)
+    assert compare_runs(*roots, protocol)["passed"]
+    put(roots[1] / "epochs.json", [{"epoch": 1, "steps": 2, "selection_energy_score": .405000001}])
+    assert not compare_runs(*roots, protocol)["passed"]
+    manifest["deterministic_algorithms"] = True
+    put(roots[1] / "manifest.json", manifest)
+    comparison["manifest_differences"] = {"deterministic_algorithms": [False, True]}
+    put(roots[1] / "epochs.json", [{"epoch": 1, "steps": 2, "selection_energy_score": 9.}])
+    assert compare_runs(*roots, protocol)["passed"]
+    put(roots[1] / "epochs.json", [{"epoch": 1, "steps": 2, "selection_energy_score": float("nan")}])
+    assert not compare_runs(*roots, protocol)["passed"]
+    put(roots[1] / "epochs.json", [])
+    assert not compare_runs(*roots, protocol)["passed"]
+
+
 def test_recovery_archives_only_uncommitted_tail(tmp_path):
     progress = dict(steps=0, origins_consumed=0, epoch=0, step_in_epoch=0, step_sequence_sha256="sequence")
     logger = TrainingMetrics(tmp_path, progress, 1)

@@ -9,7 +9,7 @@ import sys
 import time
 
 from common import ROOT, load_config, read_json, sha256, write_json
-from scripts.v2.compare_runs import compare_runs, in_epoch_envelope
+from scripts.v2.compare_runs import compare_runs, in_epoch_envelope, noninferior_epoch
 from scripts.v2.verify_stage import V2_ROOT, copy_cache, freeze_preparation, invoke, verify_frozen
 
 
@@ -18,7 +18,7 @@ def prepare(protocol_path, root):
     if not prerequisite["passed"]:
         raise ValueError("Stage 0 has not passed")
     protocol=read_json(protocol_path)
-    if protocol["comparison"].get("numerical_acceptance")=="epoch_envelope":
+    if protocol["comparison"].get("numerical_acceptance") in ("epoch_envelope","epoch_noninferiority"):
         diagnosis=protocol["prerequisite"]["gradient_diagnosis"]
         if sha256(ROOT/diagnosis["path"])!=diagnosis["sha256"]:
             raise ValueError("Gradient diagnosis gate changed")
@@ -152,10 +152,11 @@ def case30(root,deadline,record):
             env,root/"logs/tests.log",deadline)
         invoke(command(root,"mechanism"),env,root/"logs/mechanism.log",deadline)
     if not read_json(root/"mechanism/xpu.json")["passed"]:raise RuntimeError("Mechanism gate failed")
-    running={};parked=set();attempts={name:0 for name in read_json(root/"protocol.json")["runs"]}
+    protocol=read_json(root/"protocol.json")
+    running={};parked=set();attempts={name:0 for name in protocol["runs"]}
     try:
         while time.time()<deadline:
-            comparison=read_json(root/"protocol.json")["comparison"]
+            comparison=protocol["comparison"]
             if comparison.get("numerical_acceptance")=="epoch_envelope":
                 for name in attempts:
                     path=root/name/"epochs.json"
@@ -166,6 +167,16 @@ def case30(root,deadline,record):
                                     "bounds":comparison["epoch_envelopes"][str(row["epoch"])],
                                     "rule":"predeclared historical per-epoch min/max envelope"})
                                 raise RuntimeError(f"{name} epoch {row['epoch']} outside historical ES envelope")
+            if comparison.get("numerical_acceptance")=="epoch_noninferiority":
+                for name in comparison["gated_runs"]:
+                    path=root/name/"epochs.json"
+                    if path.exists():
+                        for row in read_json(path):
+                            if not noninferior_epoch(row,comparison):
+                                write_json(root/"epoch_failure.json",{"run":name,"observation":row,
+                                    "bound":comparison["epoch_upper_bounds"][str(row["epoch"])],
+                                    "rule":"OFF ES <= historical maximum + 0.005"})
+                                raise RuntimeError(f"{name} epoch {row['epoch']} fails one-sided non-inferiority")
             for tile,name in enumerate(attempts):
                 if name in running or name in parked:continue
                 path=root/name/"status.json"
@@ -234,7 +245,12 @@ def job(root):
     record={"schema_version":1,"job_id":os.environ["PBS_JOBID"],"node":os.uname().nodename,
             "phase":phase,"start_epoch":start,"workers":[],"status":"running"}
     try:
-        if phase=="case30":result=case30(root,deadline,record)
+        if phase=="case30":
+            result=case30(root,deadline,record)
+            if protocol.get("adoption_gate")=="case30_only":
+                gate(root,result.get("complete",False) and result.get("passed",False),case30=result,
+                    case118="Excluded by the user's final Stage 1 acceptance protocol",
+                    allocation_cap_exhausted=not result.get("complete",False))
         elif phase=="case118":
             from scripts.v2.prepare_case118 import job as case_job
             result=case_job(root,deadline,record)

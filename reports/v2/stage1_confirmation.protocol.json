@@ -1,0 +1,215 @@
+{
+  "schema_version": 1,
+  "protocol_version": "stage1-confirmation-v3",
+  "stage": 1,
+  "recorded_before_submission": true,
+  "prerequisite": {
+    "stage0_commit": "7c19dd0",
+    "main_merge": "a6ae620264ff4cdfda9e1b4f31eeca377cb6f938",
+    "gate": "reports/v2/stage0.json",
+    "gradient_diagnosis": {
+      "path": "reports/v2/stage1_diagnosis.json",
+      "sha256": "e5ffb264fb3e473270c04edb9b734ea2805fe88272cdb64dbc1b2ebeecc05861",
+      "commit": "b49a177"
+    }
+  },
+  "runs": [
+    "off_a",
+    "off_b"
+  ],
+  "seeds": [
+    42,
+    42
+  ],
+  "recipe": "Exactly the case30 v4 training configuration of job 8962608, via configs/v4.yaml and configs/v2/stage1.yaml; two fresh OFF runs only",
+  "origin_order": "All 4090 origins in each of epochs 0,1,2; CPU randperm seed 42+epoch; full 36-origin K64 selection each epoch",
+  "restart_points": [
+    {
+      "run": "off_b",
+      "steps": 4090,
+      "position": "after final epoch-0 optimizer update and before selection; terminate worker normally after atomic save and start a fresh interpreter for selection"
+    }
+  ],
+  "allocation_restarts": "OFF B restarts within the same allocation at step 4090 before selection. One allocation only; no automatic continuation allocation.",
+  "mechanism_test": {
+    "entry": "scripts.resume_test.trial",
+    "determinism": true,
+    "device": "xpu",
+    "steps": 200,
+    "sigkill_at_step": 100,
+    "require_exact": true
+  },
+  "controller_test": "Separate small loop fixture with four identical selection scores, patience 3, boundary restart; stopping must occur at epoch 4, best at epoch 1",
+  "comparison": {
+    "steps": 12270,
+    "origins": 12270,
+    "epochs": 3,
+    "cadence_steps": 1,
+    "exact_adapter": false,
+    "expected_manifest": {
+      "seed": 42,
+      "deterministic_algorithms": false,
+      "world_size": 1,
+      "origins_per_step": 1,
+      "global_K": 8,
+      "training_origins": 4090,
+      "selection_origins": 36,
+      "precision_policy": {
+        "all_modules": "fp32",
+        "loss_and_physics": "fp32"
+      }
+    },
+    "rule": "For each OFF chain at each of epochs 1,2,3: selection_ES <= historical maximum of the three v4 ON seeds at that epoch + 0.005. No lower bound: improvements pass. All persisted metrics finite; configuration/counters/order/noise and saved/restored state exact.",
+    "justification": "User-declared one-sided non-inferiority: the question is only whether OFF is not worse. A two-sided min/max envelope from n=3 rejects an in-distribution draw with probability 2/(n+1)=50% under independent exchangeable continuous draws, and rejects improvements. Slack 0.005 is about 1% of epoch-1 ES, fixed here before this new run and never tightened or loosened afterwards.",
+    "pairs": [
+      [
+        "off_a",
+        "off_b"
+      ]
+    ],
+    "reference_allowed_differences": [],
+    "exact_fields": "Origin order, sample noise, counters, all configuration except declared run identity/mode differences; final RNG trees; restored model/optimizer/scheduler/RNG equal saved state for every restart",
+    "selection_cadence": "All three complete epochs",
+    "stopping_epoch_comparison": "Dropped from this gate because three epochs cannot test stopping epoch +/-1. Report it from the first full fleet run instead; no fleet job is launched by this confirmation.",
+    "numerical_acceptance": "epoch_noninferiority",
+    "near_zero": "Absolute additive slack 0.005 (rtol=0) against historical maxima; no denominator or lower bound.",
+    "monitoring": "Check persisted OFF epoch selections every second against the fixed upper bounds; final gate also checks complete three-epoch coverage, finite step metrics and exact restoration/RNG/order/configuration.",
+    "epoch_upper_bounds": {
+      "1": {
+        "historical_maximum": 0.6171770658757951,
+        "slack": 0.005,
+        "upper_bound": 0.6221770658757951,
+        "values_by_seed": {
+          "seed42": 0.6171770658757951,
+          "seed1": 0.5296809681587749,
+          "seed2": 0.5118635098139445
+        }
+      },
+      "2": {
+        "historical_maximum": 0.4580226242542267,
+        "slack": 0.005,
+        "upper_bound": 0.4630226242542267,
+        "values_by_seed": {
+          "seed42": 0.4580226242542267,
+          "seed1": 0.4575765902797381,
+          "seed2": 0.4213344115349982
+        }
+      },
+      "3": {
+        "historical_maximum": 0.4392866889635722,
+        "slack": 0.005,
+        "upper_bound": 0.4442866889635722,
+        "values_by_seed": {
+          "seed42": 0.4392866889635722,
+          "seed1": 0.3894047596388393,
+          "seed2": 0.3815448308984439
+        }
+      }
+    },
+    "gated_runs": [
+      "off_a",
+      "off_b"
+    ],
+    "compare_stopping_epochs": false
+  },
+  "timing": {
+    "case30": {
+      "window_steps_inclusive": [
+        101,
+        600
+      ],
+      "modes": [
+        "off_a",
+        "off_b"
+      ],
+      "report": "Median and p90 synchronized production-step seconds; full worker and allocation cost, restart/selection overhead; two independent isolated tiles."
+    },
+    "historical_ON_context": {
+      "job_id": "8962608",
+      "evidence": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_epoch_20261025_v2/failure_analysis.json",
+      "median_step_seconds": 0.26796993357129395,
+      "interpretation": "Previously measured ON timing is contextual, not a new matched ON/OFF comparison."
+    },
+    "speedup_threshold": null
+  },
+  "job": {
+    "queue": "debug",
+    "account": "EpiCalib",
+    "nodes": 1,
+    "walltime_seconds": 3600,
+    "case30_max_allocations": 1,
+    "case118_max_allocations": 0,
+    "max_allocations": 1,
+    "cumulative_allocation_cap_seconds": 3600,
+    "family_guard_seconds": 3300,
+    "checkpoint_interval_seconds": 120,
+    "case30_layout": "One debug node, ordinary sequential preparation and mechanism checks, then two independent OFF workers on flat tiles 0/1. No cache pre-copy before allocation, no spare-tile overlap, no ON reference worker.",
+    "budget_accounting": "PBS allocation reservations plus actual PBS wall time; every worker subprocess including restarts/startup/validation/checkpointing recorded; missing job boundary charged full 3600 seconds and stops verification",
+    "stop_conditions": [
+      "OFF epoch ES exceeds the fixed upper bound",
+      "Any nonfinite persisted metric or worker failure",
+      "Exact restoration/RNG/order/counter/configuration mismatch",
+      "Missing evidence or incomplete three-epoch coverage",
+      "One-allocation cap or graceful walltime guard reached"
+    ],
+    "retry_policy": "No crash retry or second allocation; retain atomic checkpoints and record incomplete confirmation if the cap is reached",
+    "cumulative_accounting_scope": "This fresh confirmation reserves at most 3600 node-seconds. Earlier Stage1 attempts reserved8400, used1423 PBS node-seconds, conservative charge4600; keep these prior costs in the handover."
+  },
+  "adoption": "Record the new verdict without changing historical verdicts. A pass supports the previously requested Stage1 merge and Stage2 start; the confirmation is not a prerequisite for the separately authorized OFF fleet launch.",
+  "limitations": [
+    "Two same-seed OFF chains do not establish population convergence",
+    "Historical v4 seeds provide per-epoch ON reference values; no new ON chain",
+    "No stopping-epoch test in three epochs; report on the first full fleet run",
+    "No case118 timing or fleet training in this confirmation allocation"
+  ],
+  "supersession": "User final protocol replaces the earlier min/max envelope; subsequent steering removes the new ON chain. Earlier protocols and failed runs remain immutable.",
+  "historical_epoch_evidence": {
+    "seed42": {
+      "manifest.json": {
+        "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/adapter_v4/manifest.json",
+        "sha256": "943f81d38dd7db32d7de9dea8c8f13c716acea85afc27d55b781107203b69bb5"
+      },
+      "epochs.json": {
+        "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/adapter_v4/epochs.json",
+        "sha256": "1b6cc3c2c437d3be8606b2fedfcaf7854321f3d86c91e94b1ca29eaf302dc927"
+      },
+      "status.json": {
+        "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/adapter_v4/status.json",
+        "sha256": "0fede0cc2535a1a6be5740eb355a5cface1de08bbaf3d9fdaa2d8590d16c9426"
+      }
+    },
+    "seed1": {
+      "manifest.json": {
+        "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/replication/case30_ieee/v4/seed1/adapter/manifest.json",
+        "sha256": "16ddf4586c820a574f3566212df1347cd01656fbc10e005da94785719cf25f22"
+      },
+      "epochs.json": {
+        "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/replication/case30_ieee/v4/seed1/adapter/epochs.json",
+        "sha256": "646a375a7bbe2fcf81811f1208d5d22369240e3a741c1a31927a2964f5b2c936"
+      },
+      "status.json": {
+        "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/replication/case30_ieee/v4/seed1/adapter/status.json",
+        "sha256": "3985fde0937630ecadd217406a62c895969d20f15f89873a7c56fb3470d3fe04"
+      }
+    },
+    "seed2": {
+      "manifest.json": {
+        "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/replication/case30_ieee/v4/seed2/adapter/manifest.json",
+        "sha256": "e54642b8fb22f86114a411b36be7f71883f624e0ac91f7e103fe41416ee29033"
+      },
+      "epochs.json": {
+        "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/replication/case30_ieee/v4/seed2/adapter/epochs.json",
+        "sha256": "5d67534ff768ff84eda9782a2be8421729611ae5a61c297d97ad4ef5262e8925"
+      },
+      "status.json": {
+        "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/replication/case30_ieee/v4/seed2/adapter/status.json",
+        "sha256": "ecf10c03da26dc8a7389b98e45c7fabfa633bea771961fc4b818a9a15586c414"
+      }
+    }
+  },
+  "purpose": "Background, non-blocking confirmation of two determinism-OFF chains against historical ON references",
+  "historical_reference": "The three historical v4 ON seeds are the reference. No new ON training chain.",
+  "adoption_gate": "case30_only",
+  "fleet_launch_blocked_by_confirmation": false,
+  "execution": "Submit in background; OFF fleet launch does not wait for this confirmation. This confirmation runner does not launch fleet jobs."
+}
