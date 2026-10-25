@@ -1,17 +1,18 @@
+base: /lus/flare/projects/FRAME-IDP/siebenschuh
 device: xpu
 seed: 2
 paths:
-  opfdata_root: /lus/flare/projects/FRAME-IDP/siebenschuh/acopf_datasets
-  n1_cache: /lus/flare/projects/FRAME-IDP/siebenschuh/acopf_datasets/processed/N1/pglib_opf_case30_ieee
-  t1_cache: /lus/flare/projects/FRAME-IDP/siebenschuh/acopf_datasets/processed/T1/pglib_opf_case30_ieee
-  n1_splits: /lus/flare/projects/FRAME-IDP/siebenschuh/acopf_datasets/processed/N1/splits/pglib_opf_case30_ieee
-  assets_root: /lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/replication/case30_ieee/assets
-  data_root: /lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/data
-  temporal_root: /lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/data/temporal_case30_v4
-  runs_root: /lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/replication/case30_ieee/v4/seed2
-  stage_a_run: /lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/stage_a_v4
-  evidence_root: /lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/replication/case30_ieee/v4/seed2/evidence
-  training_run: /lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/replication/case30_ieee/v4/seed2/adapter
+  opfdata_root: ${base}/acopf_datasets
+  n1_cache: ${base}/acopf_datasets/processed/N1/pglib_opf_case30_ieee
+  t1_cache: ${base}/acopf_datasets/processed/T1/pglib_opf_case30_ieee
+  n1_splits: ${base}/acopf_datasets/processed/N1/splits/pglib_opf_case30_ieee
+  assets_root: ${base}/GENCO/runs/replication/case30_ieee/assets
+  data_root: ${base}/GENCO/data
+  temporal_root: ${base}/GENCO/data/temporal_case30_v4
+  runs_root: ${base}/GENCO/runs/replication/case30_ieee/v4/seed2
+  stage_a_run: ${base}/GENCO/runs/stage_a_v4
+  evidence_root: ${base}/GENCO/runs/replication/case30_ieee/v4/seed2/evidence
+  training_run: ${base}/GENCO/runs/replication/case30_ieee/v4/seed2/adapter
   reference_solver_checkout: /home/siebenschuh/Projects/acopf
 upstream:
   graphkit:
@@ -45,8 +46,8 @@ task:
 solver:
   backend: powermodels_ipopt
   transport: julia_subprocess
-  julia_executable: /lus/flare/projects/FRAME-IDP/siebenschuh/envs/rambo_julia/julia-1.10.10/bin/julia
-  julia_depot: /lus/flare/projects/FRAME-IDP/siebenschuh/envs/rambo_julia/depot
+  julia_executable: ${base}/envs/rambo_julia/julia-1.10.10/bin/julia
+  julia_depot: ${base}/envs/rambo_julia/depot
   reference_source: /home/siebenschuh/Projects/lumina-sdk/distillation/RAMBO
   reference_revision: e75ffcd74854c14e2960b9a9411ddd72377e5239
   julia_project: solver/julia
@@ -103,7 +104,7 @@ stage_b:
   forecast_batch_size: 1
   future_graph_batch_size: 192
   training_budget_seconds: 21600
-  coordinate_scales: /lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/stage_a_v4/stage_a_followup/train_coordinate_scales.json
+  coordinate_scales: ${base}/GENCO/runs/stage_a_v4/stage_a_followup/train_coordinate_scales.json
   early_stopping:
     metric: model_selection_energy_score
     patience: 3
@@ -249,7 +250,7 @@ stage_b:
 variant:
   label: in-distribution + physics-weighted
   ablation: false
-  control_run: /lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/adapter_v3
+  control_run: ${base}/GENCO/runs/adapter_v3
   dependency_prefetch: false
   ship_cutoff_ct: '2026-10-24T18:00:00-05:00'
   ship_on_v3_if_unfinished: true

@@ -14,7 +14,7 @@ htmlcov/
 .env.*
 !.env.example
 
-# runtime artifacts (belong in config.yaml)
+# runtime artifacts (locations configured in configs/v3.yaml)
 /runs/
 /outputs/
 /checkpoints/
@@ -36,3 +36,6 @@ README_legacy.md
 
 # ignore plans of any sort
 PLAN*.md
+
+# reports
+reports/
