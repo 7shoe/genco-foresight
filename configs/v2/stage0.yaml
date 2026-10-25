@@ -1,0 +1,9 @@
+# Applied to v4 with load_config(overrides=...) by the verification entry point.
+v2:
+  stage: 0
+  run_identity: stage0-unassigned
+stage_b:
+  metrics_interval_steps: 1
+  checkpoint_interval_seconds: 60
+  training_budget_seconds: 3000
+  job_training_guard_seconds: 3000

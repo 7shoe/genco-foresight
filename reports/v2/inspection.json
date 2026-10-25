@@ -1,0 +1,510 @@
+{
+  "schema_version": 1,
+  "head": "f991d1186cb5ba602d068d8ffea244e63c998fb6",
+  "run_root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage0_20261025T052938Z",
+  "source_hash_checks": [
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/common.py",
+      "expected": "2f2308e0736422ecd75807db248ef35753a6bc3b2289e6e75e655ec652658e59",
+      "actual": "2f2308e0736422ecd75807db248ef35753a6bc3b2289e6e75e655ec652658e59",
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/configs/multigrid/case500_goc.yaml",
+      "expected": "d9ad4f827c576e2ae9f9211f0aab0b19abeefb4507f4f0f1c8ff12bf1b88afdc",
+      "actual": "d9ad4f827c576e2ae9f9211f0aab0b19abeefb4507f4f0f1c8ff12bf1b88afdc",
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/configs/replication/family.json",
+      "expected": "f0b151aaa2dfa557d86c099df66c5cbe1f894e064903f16def6f3488f7f14e91",
+      "actual": "f0b151aaa2dfa557d86c099df66c5cbe1f894e064903f16def6f3488f7f14e91",
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/configs/v4.yaml",
+      "expected": "b5bf7a842114bfa056abe75119cb0c8629966a56a54f692132952a2cda1a649a",
+      "actual": "b5bf7a842114bfa056abe75119cb0c8629966a56a54f692132952a2cda1a649a",
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/data/coordinates.py",
+      "expected": "f5e5b466379a4a37e38c09528b8938faec36f212a180c2fbebe3ec17dd79ee6a",
+      "actual": "f5e5b466379a4a37e38c09528b8938faec36f212a180c2fbebe3ec17dd79ee6a",
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/data/grids.py",
+      "expected": "4c2fc812277d9761f2b6bf896a8552657bf95a1d890937203d1650d60060b4d1",
+      "actual": "4c2fc812277d9761f2b6bf896a8552657bf95a1d890937203d1650d60060b4d1",
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/models/genco.py",
+      "expected": "01000bdd73fe30af4a54ec6f2e27490c064fd0d0c7d8d2297dc7c6407f23007c",
+      "actual": "01000bdd73fe30af4a54ec6f2e27490c064fd0d0c7d8d2297dc7c6407f23007c",
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/models/temporal.py",
+      "expected": "71f1746b1d7bea0e9cbe513ccb460e79eb5e3c1ecf5a77041232814515cda20c",
+      "actual": "71f1746b1d7bea0e9cbe513ccb460e79eb5e3c1ecf5a77041232814515cda20c",
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/reports/multigrid/profile.md",
+      "expected": "3baff01ae0a57b096af9722807f47413796a2406ca8d35db5ce15e7428cfd6f8",
+      "actual": "3baff01ae0a57b096af9722807f47413796a2406ca8d35db5ce15e7428cfd6f8",
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scoring.py",
+      "expected": "4ec8448fb6b13f611bc30a9c7e27ef56f938f1984eeb170025b6696c48eecc96",
+      "actual": "4ec8448fb6b13f611bc30a9c7e27ef56f938f1984eeb170025b6696c48eecc96",
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/multigrid/profile_step.py",
+      "expected": "1122108ba48ba3285467946b47bcd6a3f08f5b2e97cac778306b87507212f509",
+      "actual": "1122108ba48ba3285467946b47bcd6a3f08f5b2e97cac778306b87507212f509",
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/replication_chain.pbs",
+      "expected": "0fb0fe57fbe217c4385f3de862398099033b72b45b051755523112d427e5b4fd",
+      "actual": "0fb0fe57fbe217c4385f3de862398099033b72b45b051755523112d427e5b4fd",
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/replication_chain.py",
+      "expected": "53c1ae34508a5e6fb032db5833783159e6726e839d92a717630b95616b5765c8",
+      "actual": "53c1ae34508a5e6fb032db5833783159e6726e839d92a717630b95616b5765c8",
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/resume_test.py",
+      "expected": "77be123c59afe05f5f1c15390d2023e9b69381060587495e078b238ba4b6b178",
+      "actual": "77be123c59afe05f5f1c15390d2023e9b69381060587495e078b238ba4b6b178",
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/train_adapter.pbs",
+      "expected": "b04730432bc62347444768505fbd1f7e620d127f4b35973ed4a0223769cea79f",
+      "actual": "b04730432bc62347444768505fbd1f7e620d127f4b35973ed4a0223769cea79f",
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/training_chain.py",
+      "expected": "ad4f532ab211e0c6ba984665e0349d43c2ae90045e5d19cd1c37b23058fa868b",
+      "actual": "ad4f532ab211e0c6ba984665e0349d43c2ae90045e5d19cd1c37b23058fa868b",
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/training/inputs.py",
+      "expected": "738588d8432da7d958863f9240d5f590678cc22ac2e2f266edb473149d63badd",
+      "actual": "738588d8432da7d958863f9240d5f590678cc22ac2e2f266edb473149d63badd",
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/training/loop.py",
+      "expected": "3621d84a925ff9acd8109cf71b9bb7fdabc60575923a97f2b5bc37a0ea0840e5",
+      "actual": "3621d84a925ff9acd8109cf71b9bb7fdabc60575923a97f2b5bc37a0ea0840e5",
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/training/state.py",
+      "expected": "f197af1a491c6de21564497b49c337de037e0cd2d31a65f9440cfeab0647b7e1",
+      "actual": "f197af1a491c6de21564497b49c337de037e0cd2d31a65f9440cfeab0647b7e1",
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/multigrid/profile/20261025T041341Z/solo_case30_ieee_k8/rank_0.log",
+      "expected": "79b40400e0a11659a257095686cef236c131866e56476ad9fdcc0de3cb704060",
+      "actual": "79b40400e0a11659a257095686cef236c131866e56476ad9fdcc0de3cb704060",
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/gridfm_graphkit/models/gnn_heterogeneous_gns.py",
+      "expected": "0ae2c1351629884e0b1358bf953fa70601df0b9cc5ef308c419f424dde28821e",
+      "actual": "0ae2c1351629884e0b1358bf953fa70601df0b9cc5ef308c419f424dde28821e",
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/gridfm_graphkit/models/utils.py",
+      "expected": "b776c8323c52b87f88bd975487f3829080933c1908f8d56ce17fe49beb3c8ea3",
+      "actual": "b776c8323c52b87f88bd975487f3829080933c1908f8d56ce17fe49beb3c8ea3",
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_geometric/data/data.py",
+      "expected": "f84e9e975927360489c9aa55f0a524d9a4511ce7efc04be35057defc16a92df7",
+      "actual": "f84e9e975927360489c9aa55f0a524d9a4511ce7efc04be35057defc16a92df7",
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_geometric/nn/aggr/basic.py",
+      "expected": "7f99393eba4ffa8c5de2bc8778bab2413b358f3889ec986fe58c6790ec963bf6",
+      "actual": "7f99393eba4ffa8c5de2bc8778bab2413b358f3889ec986fe58c6790ec963bf6",
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_geometric/nn/conv/transformer_conv.py",
+      "expected": "ffa59f24f9e0854101d50f067a750d12f315c0852d2cf8c6a3f80a65f0da38cc",
+      "actual": "ffa59f24f9e0854101d50f067a750d12f315c0852d2cf8c6a3f80a65f0da38cc",
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_geometric/utils/_scatter.py",
+      "expected": "14fb794f8d706e0d2294b32d01c251e12c0faa5c43ae30ea3bb2a003e6276f0a",
+      "actual": "14fb794f8d706e0d2294b32d01c251e12c0faa5c43ae30ea3bb2a003e6276f0a",
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_geometric/utils/_softmax.py",
+      "expected": "057d3ac17c52abe055b6fba6368c95f064bdaadb16258c0dac50054498efe1c5",
+      "actual": "057d3ac17c52abe055b6fba6368c95f064bdaadb16258c0dac50054498efe1c5",
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_scatter/scatter.py",
+      "expected": "ff6a3fc29e3461675986fb73a3a82f6a76c264adc4dd3e6d1dbd01e8d0f11be2",
+      "actual": "ff6a3fc29e3461675986fb73a3a82f6a76c264adc4dd3e6d1dbd01e8d0f11be2",
+      "matches": true
+    },
+    {
+      "path": "/opt/aurora/26.181.0/frameworks/aurora_frameworks-2026.1.0/lib/python3.12/site-packages/torch/nn/utils/clip_grad.py",
+      "expected": "5e30dac17eb0311ab1a12e46ed2484decb66165427644d2601d13570ab0ee4d7",
+      "actual": "5e30dac17eb0311ab1a12e46ed2484decb66165427644d2601d13570ab0ee4d7",
+      "matches": true
+    }
+  ],
+  "excerpt_checks": [
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/training/loop.py",
+      "start_line": 65,
+      "matches": true
+    },
+    {
+      "path": "/opt/aurora/26.181.0/frameworks/aurora_frameworks-2026.1.0/lib/python3.12/site-packages/torch/nn/utils/clip_grad.py",
+      "start_line": 105,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/models/temporal.py",
+      "start_line": 18,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/models/temporal.py",
+      "start_line": 79,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/models/temporal.py",
+      "start_line": 140,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/data/coordinates.py",
+      "start_line": 30,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/training/loop.py",
+      "start_line": 40,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/models/genco.py",
+      "start_line": 24,
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_geometric/data/data.py",
+      "start_line": 346,
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/gridfm_graphkit/models/gnn_heterogeneous_gns.py",
+      "start_line": 175,
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/gridfm_graphkit/models/gnn_heterogeneous_gns.py",
+      "start_line": 190,
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/gridfm_graphkit/models/gnn_heterogeneous_gns.py",
+      "start_line": 254,
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/gridfm_graphkit/models/gnn_heterogeneous_gns.py",
+      "start_line": 311,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scoring.py",
+      "start_line": 6,
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/gridfm_graphkit/models/utils.py",
+      "start_line": 75,
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/gridfm_graphkit/models/utils.py",
+      "start_line": 179,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/models/temporal.py",
+      "start_line": 188,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/models/temporal.py",
+      "start_line": 221,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/training/loop.py",
+      "start_line": 72,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/training/state.py",
+      "start_line": 20,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/training/state.py",
+      "start_line": 82,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/training/loop.py",
+      "start_line": 25,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/resume_test.py",
+      "start_line": 14,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/training/loop.py",
+      "start_line": 169,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/training/loop.py",
+      "start_line": 218,
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_geometric/nn/conv/transformer_conv.py",
+      "start_line": 107,
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_geometric/nn/conv/transformer_conv.py",
+      "start_line": 273,
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_geometric/nn/aggr/basic.py",
+      "start_line": 19,
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_geometric/utils/_scatter.py",
+      "start_line": 67,
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_geometric/utils/_softmax.py",
+      "start_line": 82,
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/gridfm_graphkit/models/utils.py",
+      "start_line": 56,
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/gridfm_graphkit/models/gnn_heterogeneous_gns.py",
+      "start_line": 281,
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/lib/python3.12/site-packages/torch_scatter/scatter.py",
+      "start_line": 8,
+      "matches": true
+    },
+    {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/multigrid/profile/20261025T041341Z/solo_case30_ieee_k8/rank_0.log",
+      "start_line": 1,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/train_adapter.pbs",
+      "start_line": 1,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/replication_chain.pbs",
+      "start_line": 1,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/replication_chain.py",
+      "start_line": 296,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/configs/replication/family.json",
+      "start_line": 1,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/replication_chain.py",
+      "start_line": 34,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/replication_chain.py",
+      "start_line": 218,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/replication_chain.py",
+      "start_line": 210,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/training/loop.py",
+      "start_line": 147,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/replication_chain.py",
+      "start_line": 102,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/replication_chain.py",
+      "start_line": 372,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/replication_chain.py",
+      "start_line": 423,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/training_chain.py",
+      "start_line": 36,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/training_chain.py",
+      "start_line": 56,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/training_chain.py",
+      "start_line": 92,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/training/state.py",
+      "start_line": 47,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/training/loop.py",
+      "start_line": 25,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/training/loop.py",
+      "start_line": 115,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/training/inputs.py",
+      "start_line": 25,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/training/inputs.py",
+      "start_line": 79,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/training/loop.py",
+      "start_line": 84,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/training/loop.py",
+      "start_line": 191,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/common.py",
+      "start_line": 16,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/configs/multigrid/case500_goc.yaml",
+      "start_line": 1,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/data/grids.py",
+      "start_line": 22,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/configs/v4.yaml",
+      "start_line": 34,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/configs/v4.yaml",
+      "start_line": 100,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/reports/multigrid/profile.md",
+      "start_line": 1,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/multigrid/profile_step.py",
+      "start_line": 195,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/multigrid/profile_step.py",
+      "start_line": 242,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/multigrid/profile_step.py",
+      "start_line": 217,
+      "matches": true
+    },
+    {
+      "path": "/home/siebenschuh/Projects/genco-foresight/scripts/multigrid/profile_step.py",
+      "start_line": 278,
+      "matches": true
+    }
+  ],
+  "all_match": true,
+  "initial_snapshot_sha256": "8c0dd819227f5b86f0fa5667f94c06784705461a7621a9587ebeb650d16f4004"
+}
