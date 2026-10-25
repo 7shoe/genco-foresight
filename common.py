@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import tempfile
 
-import yaml
+from omegaconf import OmegaConf
 
 
 ROOT = Path(__file__).resolve().parent
@@ -15,12 +15,18 @@ ROOT = Path(__file__).resolve().parent
 
 def config_path(path=None):
     """Explicit per-process variants; the default checkout configuration is v3."""
-    return Path(path if path is not None else os.environ.get("GENCO_CONFIG", ROOT / "config.yaml"))
+    return Path(path if path is not None else os.environ.get("GENCO_CONFIG", ROOT / "configs/v3.yaml"))
 
 
-def load_config(path=None):
-    with config_path(path).open() as stream:
-        return yaml.safe_load(stream)
+def load_config(path=None, *, overrides=None):
+    """Apply optional mapping overrides, resolve references, and return plain containers."""
+    config = OmegaConf.load(config_path(path))
+    if overrides is not None:
+        config = OmegaConf.merge(config, overrides)
+    resolved = OmegaConf.to_container(config, resolve=True, throw_on_missing=True)
+    if isinstance(resolved, dict):
+        resolved.pop("base", None)
+    return resolved
 
 
 def sha256(path):
