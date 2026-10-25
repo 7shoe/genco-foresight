@@ -27,14 +27,22 @@ def report(root):
             completion=path.with_name('completion.json');value=read(path);members=list(range(size))
             ready=completion.exists() and all(s in eligible for s in members)
             h=value.get('headlines',{}).get('A',value.get('modes',{}).get('A',{})) if ready else {}
+            full=value.get('modes',{}).get('A',{}) if ready else {}
+            if ready and 'variables' not in full:full=read(path.with_name('A.json'))
+            voltage=full.get('variables',{}).get('vm',{})
             rows.append(dict(case=case,size=size,seeds=members,finished_seeds=eligible,samples=64*size,
                              status='complete' if ready else 'not available at cutoff' if len(eligible)<size else 'evaluation pending',
-                             metrics={m:h.get(m) for m in metrics},path=str(path)))
+                             metrics={m:h.get(m) for m in metrics},path=str(path),
+                             all_bus_vm_crps=voltage.get('crps'),
+                             all_bus_vm_coverage90_pct=100*voltage['coverage_90'] if voltage.get('coverage_90') is not None else None))
             if ready:hashes[str(path)]=sha(path)
     lines=['# Mixture-size curves','',f'Updated {datetime.now(timezone.utc).isoformat()}. Training eligibility cutoff: 2026-10-25 19:00 CT.',
            '', 'Nested seed prefixes 0..m−1, 64 draws per seed, equal weights, jointly rescored with every cross-seed pair. Samples share the existing fixed-noise convention across checkpoints; this is a descriptive empirical mixture curve. Missing sizes are not interpolated. ES scales/masks differ across grids.',
            '', '| Grid | Size | Finished seeds | ES | Vm CRPS | Coverage90 % | P imbalance MW | Status |','|---|---:|---|---:|---:|---:|---:|---|']
     for r in rows:lines.append(f"| {r['case']} | {r['size']} | {','.join(map(str,r['finished_seeds']))} | "+' | '.join(fmt(r['metrics'][m]) for m in metrics)+f" | {r['status']} |")
+    lines+=['','Vm columns above retain the mechanical headline-bus rule; case14 has no eligible headline buses, so those values are undefined. The figure uses all-bus Vm CRPS/coverage for every grid, consistently, as an additional diagnostic. This does not change headline selection, training masks or scales.','',
+            '| Grid | Size | All-bus Vm CRPS | All-bus coverage90 % |','|---|---:|---:|---:|']
+    lines += [f"| {r['case']} | {r['size']} | {fmt(r['all_bus_vm_crps'])} | {fmt(r['all_bus_vm_coverage90_pct'])} |" for r in rows]
     (root/'mixture_sizes.md').write_text('\n'.join(lines)+'\n')
     (root/'mixture_sizes.json').write_text(json.dumps(dict(rows=rows,input_sha256=hashes,freeze_epoch=freeze),indent=2)+'\n')
     text=(recovery/'cross_grid.md').read_text()
@@ -63,9 +71,10 @@ def report(root):
     for i,case in enumerate(cases):
         selected=[r for r in rows if r['case']==case and r['status']=='complete']
         for j,metric in enumerate(metrics):
-            ax=axes[i,j];ax.plot([r['size'] for r in selected],[r['metrics'][metric] for r in selected],'o-')
+            y=[r['all_bus_vm_crps'] if j==1 else r['all_bus_vm_coverage90_pct'] if j==2 else r['metrics'][metric] for r in selected]
+            ax=axes[i,j];ax.plot([r['size'] for r in selected],y,'o-')
             ax.set_xticks([1,2,3,5,8]);ax.set_xlim(.7,8.3);ax.grid(alpha=.25)
-            if i==0:ax.set_title(metric)
+            if i==0:ax.set_title(('all-bus ' if j in (1,2) else '')+metric)
             if j==0:ax.set_ylabel(case)
             if i==3:ax.set_xlabel('Mixture size')
     fig.suptitle('Equal-weight mixtures: finished seeds only; missing sizes unmeasured')
