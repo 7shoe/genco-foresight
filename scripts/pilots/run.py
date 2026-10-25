@@ -292,7 +292,7 @@ def node(root):
         log = root / 'logs/tests.log'
         with log.open('a') as stream:
             result = subprocess.run([PYTHON, '-m', 'pytest', '-q', '-p', 'no:cacheprovider',
-                'tests/test_pilots.py', 'tests/test_pilot_repair.py', 'tests/test_fleet.py', 'tests/test_case_identity.py', 'tests/test_multigrid.py',
+                'tests/test_pilots.py', 'tests/test_pilot_repair.py', 'tests/test_recovery.py', 'tests/test_fleet.py', 'tests/test_case_identity.py', 'tests/test_multigrid.py',
                 'tests/test_v2_harness.py', 'tests/test_v2_stage1.py', '--basetemp', str(root / 'tmp/tests'), '--junitxml', str(root / 'tests.xml')],
                 cwd=ROOT, stdout=stream, stderr=subprocess.STDOUT, timeout=max(1, deadline-time.time()))
         write_json(root / 'tests.json', dict(passed=result.returncode == 0, log=str(log)))

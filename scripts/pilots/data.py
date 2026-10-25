@@ -136,6 +136,11 @@ def prepare_grid(root, case, cfg):
     torch.use_deterministic_algorithms(True)
     grid = root / case; audit = Path(cfg['paths']['stage_a_run']); audit.mkdir(parents=True, exist_ok=True)
     cfg_path = config_file(root, case); data = Path(cfg['paths']['temporal_root'])
+    if cfg['pilot'].get('reuse_labels'):
+        required = (data / 'pilot_report.json', data / 'generation_report.json',
+                    audit / 'solver_smoke.json', audit / 'parity/conversion_check.json', audit / 'parity/parity_report.json')
+        if not all(path.is_file() for path in required):
+            raise RuntimeError('Existing-label recovery requires complete generation and parity evidence; no regeneration')
     if not (audit / 'environment_before.txt').exists():
         (audit / 'environment_before.txt').write_text(subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'], text=True))
     parity = audit / 'parity'

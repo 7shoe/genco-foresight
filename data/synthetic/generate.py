@@ -69,6 +69,9 @@ def demands(profile, baseline_pd, baseline_qd, settings, seed):
 
 
 def prepare_benchmark(config):
+    if config.get('pilot', {}).get('reuse_labels'):
+        from scripts.pilots.reuse import benchmark_inputs
+        return benchmark_inputs(config)
     from gridfm_datakit.perturbations.load_perturbation import LoadScenariosFromAggProfile
     network = load_network(config=config)
     profile_path = eia_profile(config)
@@ -131,6 +134,8 @@ def prepare_benchmark(config):
 
 
 def label(config, maximum_hours=200, require_pilot=True, deadline_epoch=None):
+    if config.get('pilot', {}).get('reuse_labels'):
+        raise RuntimeError('This run audits existing labels; regeneration is forbidden')
     root, manifest, network, frame, scaled = prepare_benchmark(config)
     if maximum_hours > 200 and require_pilot:
         pilot_path = root / "pilot_report.json"

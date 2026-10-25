@@ -61,7 +61,8 @@ def build_cache(cfg, device, deadline_epoch=None):
             for r in rows:
                 state=r["target_state"] or {"vm":[np.nan]*net.n_bus,"va_rad":[np.nan]*net.n_bus,"pg_mw":[np.nan]*net.n_gen,"qg_mvar":[np.nan]*net.n_gen}
                 observed_bus.append(np.stack([r["pd_mw"],r["qd_mvar"],state["vm"],state["va_rad"]],axis=-1))
-                observed_gen.append(np.stack([state["pg_mw"],state["qg_mvar"]],axis=-1)[net.online_gen])
+                observed_gen.append(np.stack([np.asarray(state["pg_mw"])[net.online_gen].astype(float),
+                    np.asarray(state["qg_mvar"])[net.online_gen].astype(float)],axis=-1))
                 physics=physical_quantities(net,r["pd_mw"],r["qd_mvar"],state)
                 values=record_values(net,r)
                 targets.append(np.concatenate([np.asarray(values[k])[s["joint_score_mask"]]
