@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "protocol_version": "stage0-v1",
+  "stage": 0,
+  "recorded_before_submission": true,
+  "recipe": "configs/v4.yaml with configs/v2/stage0.yaml overrides",
+  "runs": ["on_a", "on_b"],
+  "seeds": [42, 42],
+  "origin_order": "First 300 entries of the full 4090-origin epoch-0 CPU randperm seeded with 42; no subset reshuffling",
+  "restart_points": [],
+  "comparison": {
+    "steps": 300,
+    "origins": 300,
+    "epochs": 0,
+    "cadence_steps": 1,
+    "exact_adapter": true,
+    "expected_manifest": {"seed": 42, "deterministic_algorithms": true, "world_size": 1, "origins_per_step": 1, "global_K": 8, "training_origins": 4090, "selection_origins": 36, "precision_policy": {"all_modules": "fp32", "loss_and_physics": "fp32"}},
+    "thresholds": {
+      "loss": {"atol": 0.0, "rtol": 0.0},
+      "energy": {"atol": 0.0, "rtol": 0.0},
+      "balance": {"atol": 0.0, "rtol": 0.0},
+      "gradient_norm": {"atol": 0.0, "rtol": 0.0},
+      "selection_energy_score": {"atol": 0.0, "rtol": 0.0}
+    },
+    "rule": "abs(a-b) <= atol + rtol*max(abs(a),abs(b)); finite values required; no division by near-zero values",
+    "justification": "Strict determinism, identical seed/order/noise and configuration require exact equality; no historical variability allowance",
+    "exact_fields": "All persisted non-timing non-metric fields, full final model/optimizer/scheduler/RNG trees, counters and configuration excluding run identity",
+    "excluded_fields": ["step_seconds", "worker_seconds", "cumulative_training_wall_seconds", "job IDs and timestamps"],
+    "selection_cadence": "Every complete epoch; none expected in this short trial",
+    "stopping_epoch_comparison": "Not applicable: no early stopping occurs"
+  },
+  "negative_control": {"fixture": "copy on_b comparison inputs into a separate fixture directory", "step": 150, "field": "loss", "delta": 1.0, "expected": "comparison fails specifically at step 150 loss", "protect_genuine_artifacts": true},
+  "job": {
+    "queue": "debug",
+    "account": "EpiCalib",
+    "nodes": 1,
+    "tiles_per_worker": 1,
+    "layout": "One MPI controller; fresh Python worker per run sequentially on isolated flat tile 0, each asserts one visible device and selects device 0",
+    "walltime_seconds": 3600,
+    "max_allocations": 1,
+    "cumulative_allocation_cap_seconds": 3600,
+    "worker_family_guard_seconds": 3000,
+    "checkpoint_interval_seconds": 60,
+    "budget_accounting": "Allocation start before module setup through job end; full worker subprocess startup, training, checkpoint and comparison elapsed times separately recorded; queue excluded",
+    "stop_conditions": ["Any worker failure", "Any nonfinite metric", "Any exact mismatch", "Missing cadence/evidence", "Failed negative control", "Resource or walltime cap"],
+    "retry_policy": "No automatic retry after failed verification; budget exhaustion is incomplete/fail, never pass"
+  },
+  "preparation": "Copy and hash-check the existing v4 embedding cache into the new V2 run root on compute; dataset, audit and scales read only; no dependency installation",
+  "checks": "Run focused harness tests on compute before the two real training runs",
+  "limitations": ["300 steps do not reach the 4090-origin epoch boundary", "No validation, patience-3 stopping or production OFF acceptance is claimed", "Synthetic profile timings are not acceptance evidence"]
+}

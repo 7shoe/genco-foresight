@@ -15,6 +15,7 @@ from models.genco import Genco
 from models.temporal import TemporalAdapter
 from scoring import fair_energy_score
 from training.inputs import CachedWindows
+from training.metrics import TrainingMetrics
 from training.state import (checkpoint,epoch_order,next_progress,restore,seed_all,
                             tensor_digest,train_state)
 
@@ -24,17 +25,29 @@ class TimeGuard(Exception): pass
 
 def make_manifest(cfg):
     dataset=Path(cfg["paths"]["temporal_root"])
-    return {"mode":"A","dataset_id":cfg["dataset"]["id"],"dataset_manifest_sha256":sha256(dataset/"manifest.json"),
+    manifest={"mode":"A","dataset_id":cfg["dataset"]["id"],"dataset_manifest_sha256":sha256(dataset/"manifest.json"),
         "benchmark_id":read_json(dataset/"manifest.json")["benchmark_id"],"base_checkpoint":cfg["checkpoint"],
         "graphkit":cfg["upstream"]["graphkit"],"seed":cfg["seed"],"settings":cfg["stage_b"],
         "coordinate_scales_sha256":sha256(ROOT/cfg["stage_b"]["coordinate_scales"]),
         "training_origins":cfg["task"]["split_episodes"]["train"]*409,
         "selection_origins":cfg["task"]["split_episodes"]["model_selection"]*18,
         "deterministic_algorithms":True,
+        "world_size":1,"origins_per_step":1,"precision_policy":{"all_modules":"fp32","loss_and_physics":"fp32"},
+        "global_K":cfg["stage_b"]["training_samples"],
+        "sample_partition":{"scheme":"serial_contiguous","sizes":[cfg["stage_b"]["training_samples"]]},
+        "optimizer_policy":{"name":"AdamW","foreach":False,"betas":[0.9,0.999],"eps":1e-8,
+            "scheduler":"constant","clip_once_per_update":True,**cfg["stage_b"]["optimizer"]},
         "python_hash_seed":os.environ.get("PYTHONHASHSEED"),
-        "source_sha256":{p:sha256(ROOT/p) for p in ("models/temporal.py","scoring.py","training/state.py","training/inputs.py","training/loop.py")},
+        "source_sha256":{p:sha256(ROOT/p) for p in ("models/temporal.py","scoring.py","training/state.py","training/inputs.py","training/loop.py","training/metrics.py")},
         "budget_definition":"Cumulative worker-job wall time including startup, validation and checkpointing; excludes queue wait, separate cache preparation and resume tests",
         "rng_protocol":"Restore Python/NumPy/Torch CPU/XPU/CUDA states; deterministic epoch permutation; independent fixed selection-noise generator"}
+    if "v2" in cfg:
+        folder=Path(cfg["paths"]["assets_root"])/"genco-opfdata"/cfg["checkpoint"]["directory"]
+        manifest.update(schema_version=2,run_identity=cfg["v2"]["run_identity"],configuration=cfg,
+            checkpoint_files_sha256={key:sha256(folder/cfg["checkpoint"][key])
+                for key in ("weights","normalizer","configuration")},
+            cache_manifest_sha256=sha256(Path(cfg["paths"]["training_run"])/"cache/manifest.json"))
+    return manifest
 
 
 def initialize(cfg,device):
@@ -130,6 +143,7 @@ def run(cfg,device,run_root=None,stop_after_steps=None,crash_at_steps=None,test_
     base_digest=tensor_digest(model.backbone.state_dict())
     state_path=root/"latest.pt"
     progress=restore(state_path,model,opt,sched,manifest) if state_path.exists() else next_progress()
+    progress.setdefault("origins_consumed",progress["steps"])
     if "initial_adapter_sha256" not in progress:
         progress["initial_adapter_sha256"]=tensor_digest(train_state(model))
     if progress["finished"] and not test_mode:
@@ -155,9 +169,12 @@ def run(cfg,device,run_root=None,stop_after_steps=None,crash_at_steps=None,test_
     write_json(root/"startup.json",startup_record)
     print({"training_ready":True,"startup_seconds":startup,"resume_step":steps_before,"device":device},flush=True)
     last_save=time.time();last_metrics=None
+    metrics=TrainingMetrics(root,progress,cfg["stage_b"].get("metrics_interval_steps",100))
+    write_json(root/"epochs.json",progress["epochs"])
     def used():return used_before+(time.time()-job_start)
     def save(path=state_path):
         progress["cumulative_training_wall_seconds"]=used()
+        metrics.sync()
         checkpoint(path,model,opt,sched,progress,manifest)
     def guard():
         if used() >= budget-15:
@@ -173,10 +190,15 @@ def run(cfg,device,run_root=None,stop_after_steps=None,crash_at_steps=None,test_
             while progress["step_in_epoch"]<len(order):
                 guard()
                 identity=cache.indices["train"][order[progress["step_in_epoch"]]]
+                step_started=time.perf_counter()
                 last_metrics=training_step(model,opt,sched,template,cache,identity,cfg,device)
+                synchronize(device)
+                step_seconds=time.perf_counter()-step_started
                 progress["step_sequence_sha256"]=hashlib.sha256((progress["step_sequence_sha256"]+
                     repr(identity)+last_metrics["noise_sha256"]).encode()).hexdigest()
                 progress["steps"]+=1;progress["step_in_epoch"]+=1
+                progress["origins_consumed"]+=1
+                metrics.record(progress,identity,last_metrics,step_seconds,time.time()-job_start)
                 if progress["steps"]==steps_before+1:
                     startup_record["first_optimizer_step_completed_seconds"]=time.time()-job_start
                     write_json(root/"startup.json",startup_record)
@@ -184,7 +206,7 @@ def run(cfg,device,run_root=None,stop_after_steps=None,crash_at_steps=None,test_
                 if crash_at_steps is not None and progress["steps"]==crash_at_steps:
                     save();os.kill(os.getpid(),9)
                 if stop_after_steps is not None and progress["steps"]>=stop_after_steps:
-                    progress["stop_reason"]="resume_test_step_limit";raise TimeGuard
+                    progress["stop_reason"]="resume_test_step_limit" if test_mode else "verification_step_limit";raise TimeGuard
                 if time.time()-last_save>=cfg["stage_b"]["checkpoint_interval_seconds"]:
                     save();last_save=time.time()
             # A mid-validation interruption resumes this phase with the same fixed noise.
@@ -209,9 +231,11 @@ def run(cfg,device,run_root=None,stop_after_steps=None,crash_at_steps=None,test_
     except BaseException as error:
         # Record the failure; do not automatically chain from a possibly invalid optimizer state.
         write_json(root/"failure.json",{"error":repr(error),"steps":progress["steps"],"job_id":os.environ.get("PBS_JOBID")})
+        metrics.close()
         raise
     synchronize(device)
     save()
+    metrics.close()
     if tensor_digest(model.backbone.state_dict())!=base_digest:raise RuntimeError("Frozen base weights changed")
     if progress["finished"]:status="finished"
     if test_mode:status="test_complete"
@@ -219,6 +243,7 @@ def run(cfg,device,run_root=None,stop_after_steps=None,crash_at_steps=None,test_
         "job_start_epoch":job_start,"job_end_epoch":time.time(),"startup_seconds":startup,
         "first_optimizer_step_completed_seconds":startup_record.get("first_optimizer_step_completed_seconds"),
         "steps_before":steps_before,"steps_after":progress["steps"],"steps_done":progress["steps"]-steps_before,
+        "origins_consumed":progress["origins_consumed"],
         "epochs_before":epochs_before,"epochs_reached":progress["epoch"],"step_in_epoch":progress["step_in_epoch"],
         "wall_used_seconds":time.time()-job_start,"cumulative_training_wall_seconds":used(),
         "training_loop_seconds":time.perf_counter()-started_steps,"stop_reason":progress["stop_reason"],

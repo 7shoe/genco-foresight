@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "stage": 0,
+  "passed": true,
+  "protocol_sha256": "7cc582ad251333737411f79e6be93072319dfe065766725c437d6ec3471bbc22",
+  "job_id": "8962405.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov",
+  "node": "x4504c1s2b0n0",
+  "start_epoch": 1792906705.0,
+  "workers": [
+    {
+      "name": "on_a",
+      "wall_seconds": 133.60794806480408
+    },
+    {
+      "name": "on_b",
+      "wall_seconds": 103.33042979240417
+    }
+  ],
+  "comparison_passed": true,
+  "state_exact": {
+    "model": true,
+    "optimizer": true,
+    "scheduler": true,
+    "rng": true,
+    "progress": true
+  },
+  "negative_control_detected": true,
+  "genuine_artifacts_unchanged": true,
+  "end_epoch": 1792906968.9479334,
+  "allocation_used_seconds": 263.94793343544006,
+  "allocation_reserved_seconds": 3600,
+  "cumulative_allocation_cap_seconds": 3600,
+  "status": "pass",
+  "protocol_path": "reports/v2/stage0.protocol.json",
+  "evidence_root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage0_20261025T052938Z",
+  "tests": {
+    "passed": 12
+  },
+  "timings": {
+    "on_a": {
+      "steps": 300,
+      "step_median_seconds": 0.2693062040489167,
+      "step_total_seconds": 82.9148620723281,
+      "worker_wall_seconds": 132.42611646652222,
+      "startup_seconds": 49.273388624191284
+    },
+    "on_b": {
+      "steps": 300,
+      "step_median_seconds": 0.27112975995987654,
+      "step_total_seconds": 83.48278286634013,
+      "worker_wall_seconds": 102.00649762153625,
+      "startup_seconds": 17.398372888565063
+    }
+  },
+  "adopted_configuration": {
+    "deterministic_algorithms": true,
+    "world_size": 1,
+    "origins_per_step": 1,
+    "global_K": 8,
+    "precision": "fp32"
+  },
+  "limitations": [
+    "300 steps do not reach the 4090-origin epoch boundary; no selection, early-stopping or boundary-resume model check."
+  ],
+  "evidence": {
+    "gate.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage0_20261025T052938Z/gate.json",
+      "sha256": "af80af1c150b165f9e9c9bea6d275b2d59998763595dffb85b85c93754051f38"
+    },
+    "prepared.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage0_20261025T052938Z/prepared.json",
+      "sha256": "786b6ee28ebb95c7f020967ffec06de51c8175017e578b7f5b3cf70599fdb4f1"
+    },
+    "comparison.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage0_20261025T052938Z/comparison.json",
+      "sha256": "24cf609979d42f11704e1abe85c9908315641555224128a8d9b95c873541fbe7"
+    },
+    "negative_control.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage0_20261025T052938Z/negative_control.json",
+      "sha256": "9ed8eb69867966c2cbd80dab82e0a773a932d654c69326d82a623b2356a2e9a4"
+    },
+    "state_comparison.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage0_20261025T052938Z/state_comparison.json",
+      "sha256": "c7ab147b4326212396aa97d05a53fa30c19828e3c745fad791cd6931bafde007"
+    },
+    "logs/tests.log": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage0_20261025T052938Z/logs/tests.log",
+      "sha256": "b152b0867d58ce294a27856ea53f4f54c4e6991cb9efd95a5f08d2690fdd7d02"
+    },
+    "pbs_final.txt": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage0_20261025T052938Z/pbs_final.txt",
+      "sha256": "0ef5243e6e394c9368f4df677b667b6355e04f2fcf42f657405fa3b602201ce3"
+    }
+  },
+  "pbs_wall_seconds": 269,
+  "pbs_exit_status": 0
+}
