@@ -318,7 +318,8 @@ def job(root):
     status = {"schema_version": 1, "job_id": os.environ["PBS_JOBID"], "start_epoch": start,
               "reserved_seconds": protocol["job"]["walltime_seconds"], "complete": False}
     try:
-        invoke([sys.executable, "-m", "pytest", "-q", "tests/test_v2_diagnosis.py"],
+        invoke([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider",
+                "--basetemp", str(root / "tmp/tests"), "tests/test_v2_diagnosis.py"],
                os.environ.copy(), root / "logs/tests.log", deadline)
         invoke([sys.executable, "-u", "-m", "scripts.v2.diagnose_stage1", "worker", "--root", str(root)],
                os.environ.copy(), root / "logs/worker.log", deadline)
