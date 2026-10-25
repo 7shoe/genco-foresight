@@ -191,7 +191,7 @@ def run(cfg,device,run_root=None,stop_after_steps=None,crash_at_steps=None,test_
         checkpoint(path,model,opt,sched,progress,manifest)
     def guard():
         if used() >= budget-15:
-            progress.update(finished=True,stop_reason="six_hour_budget");raise TimeGuard
+            progress.update(finished=True,stop_reason="six_hour_budget" if budget==21600 else "training_budget");raise TimeGuard
         if time.time()>=job_deadline-15:
             progress["stop_reason"]="job_walltime_guard";raise TimeGuard
     started_steps=time.perf_counter();status="continue"
