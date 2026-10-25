@@ -66,8 +66,9 @@ def run(cfg):
             if f == "thermal":
                 loading = np.concatenate([e["loading"][:, j] for eps in groups.values() for e in eps])
                 row.update(from_bus=int(net["bus_ids"][int(net["branch"][j, 0])]), to_bus=int(net["bus_ids"][int(net["branch"][j, 1])]),
-                    max_loading=float(np.nanmax(loading)), binding_hours=int((abs(loading - 1) <= 1e-6).sum()),
-                    rated=bool(net["branch"][j, 5] > 0))
+                    max_loading=float(loading[np.isfinite(loading)].max()) if np.isfinite(loading).any() else None,
+                    binding_hours=int((abs(loading[np.isfinite(loading)] - 1) <= 1e-6).sum()),
+                    rated=bool(net.rated_branches[j]))
             events[key].append(row)
     for s, vals in combined.items():
         events["partitions"][s] = {}

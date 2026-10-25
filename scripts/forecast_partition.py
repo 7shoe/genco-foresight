@@ -42,7 +42,12 @@ def components(cfg, device):
     torch.set_num_threads(1)
     torch.use_deterministic_algorithms(True)
     if device.startswith("xpu"):
-        torch.xpu.set_device(torch.device(device))
+        selected = torch.device(device)
+        if selected.index is None:
+            if os.environ.get("ZE_FLAT_DEVICE_HIERARCHY") != "FLAT" or not os.environ.get("ZE_AFFINITY_MASK") or torch.xpu.device_count() != 1:
+                raise ValueError("Unindexed XPU requires one launcher-isolated flat tile")
+            selected = torch.device("xpu:0")
+        torch.xpu.set_device(selected)
     net = load_network(config=cfg)
     load_temporal_manifest(cfg["paths"]["temporal_root"], net)
     base = Genco(Path(cfg["paths"]["assets_root"]) / "genco-opfdata", cfg["checkpoint"], device, grid=net)

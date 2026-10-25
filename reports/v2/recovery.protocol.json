@@ -1,0 +1,204 @@
+{
+  "schema_version": 1,
+  "protocol_version": "isolated-recovery-20261025-v1",
+  "recorded_before_submission": true,
+  "authorization": "Latest user instruction: original fleet job8964643, controller, pinned snapshot and runs immutable; separate evaluation and existing-label pilot recovery only.",
+  "protected_inputs": [
+    "GENCO/runs/v2/fleet_20261025_off_v1",
+    "GENCO/runs/v2/large_grid_pilots_20261025_repair_v2",
+    "released v3/v4 datasets, checkpoints and manifests"
+  ],
+  "job_order": "Evaluation submitted first; pilot controller also detached and submits when PBS permits. No modification of the existing debug-scaling controller.",
+  "jobs": {
+    "evaluation": {
+      "queue": "debug",
+      "nodes": 1,
+      "walltime_seconds": 3600,
+      "family_guard_seconds": 3300,
+      "max_allocations": 12,
+      "cumulative_reserved_node_seconds_cap": 43200,
+      "worker_seconds_per_chain": 21600,
+      "layout": "Up to12 independent evaluators, physical flat tile3*grid_index+seed; ZE_AFFINITY_MASK isolates one tile, local xpu:0. First nine completed models; case118 only after its training status is finished.",
+      "resubmission": "Detached controller checks every30s, resumes completed-origin checksums; scientific failure parks affected chain; exhausted allocation/worker budget stops. Queue time excluded. Each seed0 budget includes its grid mixture."
+    },
+    "pilots": {
+      "queue": "debug",
+      "account": "EpiCalib",
+      "nodes": 1,
+      "walltime_seconds": 3600,
+      "family_guard_seconds": 3300,
+      "chains_per_node": 2,
+      "flat_tiles_per_node": [
+        0,
+        2
+      ],
+      "launcher": "One MPI launcher rank, two independent tile-isolated worker processes using xpu:0.",
+      "layout": "One MPI launcher rank; independent case500 tile0 and case2000 tile2. Audit existing labels, no Ipopt generation. Training begins per grid after all Stage A gates.",
+      "max_allocations": 12,
+      "cumulative_reserved_node_seconds_cap": 43200,
+      "resubmission": "Dedicated detached pilot controller submits at most12 one-hour allocations, every30s while work/budget remain. Existing fleet driver is unchanged.",
+      "no_new_dependencies": true,
+      "status": "New recovery root/pilots/STATUS.md"
+    }
+  },
+  "evaluation": {
+    "cases": [
+      "case14_ieee",
+      "case30_ieee",
+      "case57_ieee",
+      "case118_ieee"
+    ],
+    "training_seeds": [
+      0,
+      1,
+      2
+    ],
+    "evaluation_seed": 42,
+    "origins": 72,
+    "partition": "test",
+    "modes": [
+      "C",
+      "P",
+      "P0",
+      "S",
+      "A",
+      "D"
+    ],
+    "samples": 64,
+    "deterministic_algorithms": true,
+    "precision": "fp32",
+    "scorer": "Unchanged scoring.py and replication completion/merge routines. Reproduce six modes from the first released v4 origin before evaluation.",
+    "scorer_thresholds": {
+      "atol": 1e-12,
+      "rtol": 1e-12,
+      "arrays": "exact with matching NaNs"
+    },
+    "threshold_justification": "Frozen-scorer reproduction threshold is the existing fleet protocol, not a comparison of newly trained models.",
+    "mixture": "Equal weights across three selected seed checkpoints; concatenate64 samples/seed into192, retain every cross-seed pair under frozen fair ES. Same fixed per-seed evaluation noise convention as the existing fleet.",
+    "summary": "Mean and sample SD across3 seeds for each mode; separately score192-sample A/D mixture; cross-grid ES descriptive because masks/scales differ.",
+    "checkpoint_policy": "Admit only finished training; copy best.pt and metadata to new root; hash originals before/after copies and before/after evaluation. Never call evaluate_stage_b.prepare, which edits training manifests. A budget-stopped case118 chain may also be admitted after its original controller records a terminal allocation/budget status and every owned job is finished; preserve original status unchanged and record this stop reason.",
+    "restart": "Resume individual solver references and per-origin completion hashes; incomplete origin recomputed; no training updates.",
+    "finite_policy": "Existing scorer permits null for undefined metrics, never fabricate values. Scientific failures park the chain."
+  },
+  "recipe": {
+    "source": "configs/v4.yaml",
+    "nominal_profile_range": [
+      0.8,
+      1.0
+    ],
+    "lambda_balance": 1.0,
+    "K": {
+      "case500_goc": 8,
+      "case2000_goc": 2
+    },
+    "B": 1,
+    "forecast_hours": 24,
+    "precision": "fp32 throughout",
+    "deterministic_algorithms": false,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.0001,
+      "weight_decay": 0.01,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-08,
+      "foreach": false,
+      "gradient_clip_norm": 1.0
+    },
+    "scheduler": "constant",
+    "covariance_rank": 8,
+    "global_fair_ES": "All distinct ordered sample pairs within each origin, all 24 hours, original masks and train-derived scales",
+    "frozen_GENCO": "Weights frozen; input-conditioning gradients retained",
+    "checkpoint": {
+      "repository": "gridfm/genco-opfdata",
+      "revision": "74e19e1e210a175aa17023f4db161f0ae9f753cb",
+      "seed": 42
+    },
+    "graphkit_revision": "f104900245cba26d1380037eea562cf633a97484",
+    "labels": {
+      "case500_goc": "K=8 pilot",
+      "case2000_goc": "K=2 pilot"
+    },
+    "exception": "case2000 is an explicitly authorized global K=2 pilot, covariance rank8 unchanged; not sample-parallel K8."
+  },
+  "training": {
+    "origins_per_epoch": 4090,
+    "selection_origins": 36,
+    "selection_K": 64,
+    "selection_noise_seed": 1042,
+    "patience": 3,
+    "cumulative_worker_budget_seconds": 43200,
+    "budget_definition": "Startup, training, selection and checkpoint wall time across all attempts; queue wait, data preparation and evaluation excluded and separately reported. Lost attempts conservatively charged a full hour and parked.",
+    "checkpoint_each_epoch": true,
+    "checkpoint_interval_seconds": 900,
+    "metrics_interval_steps": 100,
+    "resume": "Atomic checkpoints; exact manifest, model/optimizer/scheduler/RNG restoration; preserve epoch order and counters. Source snapshot and full configuration hashes checked before every worker.",
+    "failure_policy": "Park the affected chain/grid on scientific failure or unexpected worker exit; do not retry a failed optimizer state or relax any audit. Other chains continue.",
+    "max_epochs": 6,
+    "budget_justification": "Synthetic step estimates imply about7.8h for six epochs before selection/startup overhead; twelve worker hours bounds the pilot without promising completion. Patience3 and epoch cap6 apply."
+  },
+  "data": {
+    "pretraining_gates": [
+      "dataset/network/checkpoint-YAML case identity",
+      "pinned checkpoint and Graphkit",
+      "CPU parity against official Graphkit CLI and independent OPFData conversion",
+      "checked cold/warm/graph-roundtrip solves and dual-sign/units perturbation",
+      "full Stage A audit and retained pilot prefix",
+      "event-support report and train-only scales",
+      "mechanical headline components",
+      "embedding-cache checksums"
+    ],
+    "parity_thresholds": {
+      "input_atol": 0.0001,
+      "input_rtol": 2e-06,
+      "output_atol": 0.0001,
+      "output_rtol": 2e-05,
+      "dual_relative_error_max": 0.02
+    },
+    "threshold_justification": "Unchanged existing Stage A protocols and solver checks; no new scientific acceptance tolerance.",
+    "headline_rule": "All risk-calibration hourly components with >=5 positive days, >=5 negative days and prevalence <0.95; thermal components must also be rated. No test-based choice, top-N selection or fallback when empty.",
+    "prevalence_is_training_blocker": false,
+    "preparation_cap_seconds_per_grid": 21600,
+    "new_bulk_storage": "GENCO/runs/v2/recovery_20261025_v1",
+    "generation": "Forbidden: audit existing10080-hour labels per grid. Episodes symlink read-only; manifest copied, original source hashes validated against original generation snapshot; audit source hashes recorded separately.",
+    "parity_scope": "Reuse hash-verified subset parity (200), recorded IDs, CPU byte-identical. No new solves or parity regeneration.",
+    "temporal_audit": "Full10080-hour independent physical audit, retained200-hour prefix, source-calendar separation,72 held-out forecast days. No shortened temporal audit.",
+    "cache_graph_batch_size": 24,
+    "cache_resume": "Atomic per-episode embeddings, train/selection only; completed episodes reused after checksum/key validation; current incomplete cache episode recomputed.",
+    "pilot_gate": "Existing gate:200 attempted, >=1 independently valid, hashes verified; failures remain masked. Report every status and valid fraction; WORKER_UNRESOLVED parks the grid. Full Stage A audit remains prerequisite for training.",
+    "preparation_budget": "Carry prior data_seconds forward; maximum21600 seconds per grid total.",
+    "physics_fix": "Mask offline generators with GridSpec.online_gen before conversion/arithmetic; active null/nonfinite values still fail. Unchanged1e-5 physical tolerances."
+  },
+  "verification": {
+    "tests": "Recovery unit tests and existing solver/evaluation tests on compute. Pilot job additionally runs existing pilot, multigrid, identity and V2 tests.",
+    "stop": "Any failed test/audit stops dependent work; source/config mismatch stops. No new dependencies or tolerance changes."
+  },
+  "stage1_verdict": {
+    "rule": "User rule: each case30 OFF selected-checkpoint selection ES within or below historical three-seed ON range; otherwise report gap, no added slack.",
+    "historical_logical_seeds": [
+      0,
+      1,
+      2
+    ],
+    "historical_rng_seeds": [
+      42,
+      1,
+      2
+    ],
+    "off_rng_seeds": [
+      0,
+      1,
+      2
+    ],
+    "metrics": [
+      "best selected-checkpoint selection ES",
+      "last completed epoch selection ES",
+      "best epoch",
+      "C/P/P0/S/A/D test table"
+    ],
+    "confirmation": "One observed exceedance among six planned epoch comparisons; actual persisted epochs reported, not part of this verdict.",
+    "no_new_training": true
+  }
+}

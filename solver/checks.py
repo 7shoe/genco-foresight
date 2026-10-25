@@ -31,8 +31,10 @@ def physical_quantities(network, pd_mw, qd_mvar, state):
     """Recompute branch powers, bus balance residuals, and thermal loading"""
     b, g, e = (network[key] for key in ("bus", "gen", "branch"))
     base = network["baseMVA"]
-    vm, va = np.asarray(state["vm"]), np.asarray(state["va_rad"])
-    pg, qg = np.asarray(state["pg_mw"]), np.asarray(state["qg_mvar"])
+    vm, va = np.asarray(state["vm"], dtype=float), np.asarray(state["va_rad"], dtype=float)
+    online = network.online_gen
+    pg = np.asarray(state["pg_mw"])[online].astype(float)
+    qg = np.asarray(state["qg_mvar"])[online].astype(float)
 
     # build ℂ-valued, per-unit voltages
     v = vm * np.exp(1j*va)
@@ -55,8 +57,7 @@ def physical_quantities(network, pd_mw, qd_mvar, state):
 
     # accumulate generator outputs
     generation = np.zeros(len(b), dtype=complex)
-    online = network.online_gen
-    np.add.at(generation, network.gen_bus[online], (pg+1j*qg)[online])
+    np.add.at(generation, network.gen_bus[online], pg+1j*qg)
 
     #  balanced bus has generation minus demand equal
     residual = generation - np.asarray(pd_mw) - 1j*np.asarray(qd_mvar) - injection
@@ -109,9 +110,14 @@ def check_solution(network, pd_mw, qd_mvar, record, tolerance=1e-5):
     bound_error = lambda values, lower, upper: float(np.maximum(np.maximum(lower-values, values-upper), 0).max(initial=0))
     angle = state["va_rad"][e[:, 0].astype(int)] - state["va_rad"][e[:, 1].astype(int)]
     rated = q["rated"]
+    reference_bus = network.solver_reference_bus
+    if reference_bus is None:
+        reference_bus = network.reference_bus
 
     # quadratic cost structuee (c2 * Pg² + c1 * Pg + c0) assumed
-    objective = float(np.sum((cost[:, 4]*state["pg_mw"]**2 + cost[:, 5]*state["pg_mw"] + cost[:, 6])[network.online_gen]))
+    online = network.online_gen
+    pg = state["pg_mw"][online]
+    objective = float(np.sum(cost[online, 4]*pg**2 + cost[online, 5]*pg + cost[online, 6]))
 
     # errors retain their own units
     errors = {
@@ -122,7 +128,7 @@ def check_solution(network, pd_mw, qd_mvar, record, tolerance=1e-5):
         "qg_mvar": bound_error(state["qg_mvar"][network.online_gen], g[network.online_gen, 4], g[network.online_gen, 3]),
         "thermal_mva": float(np.maximum((q["loading"][rated]-1)*e[rated, 5], 0).max(initial=0)),
         "angle_rad": bound_error(angle[network.online_branch], np.deg2rad(e[network.online_branch, 11]), np.deg2rad(e[network.online_branch, 12])),
-        "reference_rad": float(abs(state["va_rad"][network["reference_bus"]])),
+        "reference_rad": float(abs(state["va_rad"][reference_bus])),
         "objective_relative": abs(objective-record.get("objective", objective))/max(1, abs(objective)),
     }
     # compare reported terminal flows

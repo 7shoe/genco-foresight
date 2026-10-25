@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "status": "running",
+  "job_id": "8963092.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov",
+  "source_commit": "1fec6e805c0eb2203c71df24ffbca3cdf426ca79",
+  "snapshot": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/fleet_20261025_off_v1/source",
+  "source_pin_sha256": "be99f936e092ae03f3529dc6aba30037cf64cf9ecb92d7606781699ea15b7b70",
+  "protocol_sha256": "e7b79bbcc777f6fbb49c7497ccecb0fcaf419e67d2a280c29f8e2020d166f076",
+  "evidence_root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/fleet_20261025_off_v1",
+  "status_path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/fleet/STATUS.md",
+  "controller": {
+    "pid": 3440483,
+    "host": "aurora-uan-0012",
+    "snapshot": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/fleet_20261025_off_v1/source"
+  },
+  "training_chains": 12,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "queue": "debug-scaling",
+  "nodes": [
+    "x4109c6s4b0n0",
+    "x4109c6s5b0n0"
+  ],
+  "walltime_seconds": 3600,
+  "training_budget_seconds_per_chain": 21600,
+  "test_results": {
+    "lightweight_controller_tests": "5 passed",
+    "model_and_compute_preflight": "55 passed on compute, 56.53 seconds",
+    "evidence": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/fleet_20261025_off_v1/logs/tests.log",
+    "evidence_sha256": "d508254ceea90b3cabac53faa292a12d824f70bd47cb72071474902b6b803a45"
+  },
+  "adopted_deterministic_algorithms": false,
+  "confirmation_job_8962843": "untouched",
+  "results": "pending",
+  "commits_not_merged_to_main": true,
+  "startup_observation": {
+    "case30_ieee": {
+      "data_ready": true,
+      "training_seeds_started": [
+        0,
+        1,
+        2
+      ],
+      "each_observed_at_least_steps": 200
+    },
+    "case14_ieee": "preparing data/parity",
+    "case57_ieee": "preparing data/parity",
+    "case118_ieee": "preparing data/parity"
+  }
+}

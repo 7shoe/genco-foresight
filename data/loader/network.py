@@ -31,6 +31,7 @@ class GridSpec:
     Yf: object
     Yt: object
     case_sha256: str
+    solver_reference_bus: int | None = None
 
     def __getitem__(self, key):
         return getattr(self, key)
@@ -97,8 +98,19 @@ def load_network(path=None, config=None):
     refs = np.flatnonzero(b[:, 1] == 3)
     if len(refs) != 1:
         raise ValueError(f"Expected one reference bus, found {len(refs)}")
-    return GridSpec(path, net, float(net.baseMVA), b, g, e, cost, gen_bus,
+    grid = GridSpec(path, net, float(net.baseMVA), b, g, e, cost, gen_bus,
                     net.original_bus_indices.astype(int), int(refs[0]), Y, Yf, Yt, sha256(path))
+    reference = (config or {}).get("solver", {}).get("reference_network")
+    if reference is not None:
+        if (reference["case_sha256"] != grid.case_sha256 or reference["bus_ids"] != grid.bus_ids.tolist()
+                or len(reference["reference_buses"]) != 1 or reference["constraint_va_rad"] != 0.0):
+            raise ValueError("PowerModels reference metadata does not match this network")
+        grid.solver_reference_bus = grid.bus_ids.tolist().index(reference["reference_buses"][0]["bus_i"])
+        if grid.reference_bus != grid.solver_reference_bus:
+            b[grid.reference_bus, 1] = 2 if np.any((gen_bus == grid.reference_bus) & grid.online_gen) else 1
+            grid.reference_bus = grid.solver_reference_bus
+            b[grid.reference_bus, 1] = 3
+    return grid
 
 
 def graph_tables(network, pd_mw, qd_mvar, state=None, scenario=0):

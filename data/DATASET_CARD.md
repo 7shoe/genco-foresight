@@ -160,3 +160,20 @@ OpenGridFM, OPFData and PGLib sources alongside this project.
 
 Dataset cards are publication drafts; local availability does not imply a public
 HF repository. All bulk artifacts stay on /lus/flare until the owner publishes.
+
+
+## V2 multigrid preparation amendment: subset parity (200)
+
+Case118, case500 and case2000 use **subset parity (200)** for the CPU
+integration check: NumPy default_rng(42) selects200 IDs without replacement
+from the sorted official/local test-ID intersection; execution IDs are sorted
+and saved before inference. The cap is1200 seconds per grid, including subset
+preparation and both CPU evaluations. Pass requires finite outputs with
+identical dtype and bytes against the pinned official Graphkit CLI. Existing
+independent32-snapshot parquet conversion evidence is retained by hash.
+This is not full-intersection parity and does not replace the full temporal
+Stage A audit, solver checks, event-support report or training-only scales.
+
+Each new dataset's external card links its recorded IDs and actual gate result.
+Historical case30 v3/v4 evidence above is unchanged. Pilot case500/case2000
+remain excluded from the small-grid cross-grid table.

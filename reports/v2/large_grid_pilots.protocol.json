@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "protocol_version": "large-grid-off-pilots-v1",
+  "recorded_before_submission": true,
+  "authorization": "Additional one-node debug family, independent of the active small-grid debug-scaling controller; pilots excluded from cross-grid table.",
+  "cases": [
+    "case500_goc",
+    "case2000_goc"
+  ],
+  "training_seeds": [
+    0
+  ],
+  "seed_mapping": "Literal training seed0; data generation seed42.",
+  "data_seed": 42,
+  "recipe": {
+    "source": "configs/v4.yaml",
+    "nominal_profile_range": [
+      0.8,
+      1.0
+    ],
+    "lambda_balance": 1.0,
+    "K": {
+      "case500_goc": 8,
+      "case2000_goc": 2
+    },
+    "B": 1,
+    "forecast_hours": 24,
+    "precision": "fp32 throughout",
+    "deterministic_algorithms": false,
+    "optimizer": {
+      "name": "AdamW",
+      "lr": 0.0001,
+      "weight_decay": 0.01,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-08,
+      "foreach": false,
+      "gradient_clip_norm": 1.0
+    },
+    "scheduler": "constant",
+    "covariance_rank": 8,
+    "global_fair_ES": "All distinct ordered sample pairs within each origin, all 24 hours, original masks and train-derived scales",
+    "frozen_GENCO": "Weights frozen; input-conditioning gradients retained",
+    "checkpoint": {
+      "repository": "gridfm/genco-opfdata",
+      "revision": "74e19e1e210a175aa17023f4db161f0ae9f753cb",
+      "seed": 42
+    },
+    "graphkit_revision": "f104900245cba26d1380037eea562cf633a97484",
+    "labels": {
+      "case500_goc": "K=8 pilot",
+      "case2000_goc": "K=2 pilot"
+    },
+    "exception": "case2000 is an explicitly authorized global K=2 pilot, covariance rank8 unchanged; not sample-parallel K8."
+  },
+  "training": {
+    "origins_per_epoch": 4090,
+    "selection_origins": 36,
+    "selection_K": 64,
+    "selection_noise_seed": 1042,
+    "patience": 3,
+    "cumulative_worker_budget_seconds": 43200,
+    "budget_definition": "Startup, training, selection and checkpoint wall time across all attempts; queue wait, data preparation and evaluation excluded and separately reported. Lost attempts conservatively charged a full hour and parked.",
+    "checkpoint_each_epoch": true,
+    "checkpoint_interval_seconds": 900,
+    "metrics_interval_steps": 100,
+    "resume": "Atomic checkpoints; exact manifest, model/optimizer/scheduler/RNG restoration; preserve epoch order and counters. Source snapshot and full configuration hashes checked before every worker.",
+    "failure_policy": "Park the affected chain/grid on scientific failure or unexpected worker exit; do not retry a failed optimizer state or relax any audit. Other chains continue.",
+    "max_epochs": 6,
+    "budget_justification": "Synthetic step estimates imply about7.8h for six epochs before selection/startup overhead; twelve worker hours bounds the pilot without promising completion. Patience3 and epoch cap6 apply."
+  },
+  "data": {
+    "pretraining_gates": [
+      "dataset/network/checkpoint-YAML case identity",
+      "pinned checkpoint and Graphkit",
+      "CPU parity against official Graphkit CLI and independent OPFData conversion",
+      "checked cold/warm/graph-roundtrip solves and dual-sign/units perturbation",
+      "full Stage A audit and retained pilot prefix",
+      "event-support report and train-only scales",
+      "mechanical headline components",
+      "embedding-cache checksums"
+    ],
+    "parity_thresholds": {
+      "input_atol": 0.0001,
+      "input_rtol": 2e-06,
+      "output_atol": 0.0001,
+      "output_rtol": 2e-05,
+      "dual_relative_error_max": 0.02
+    },
+    "threshold_justification": "Unchanged existing Stage A protocols and solver checks; no new scientific acceptance tolerance.",
+    "headline_rule": "All risk-calibration hourly components with >=5 positive days, >=5 negative days and prevalence <0.95; thermal components must also be rated. No test-based choice, top-N selection or fallback when empty.",
+    "prevalence_is_training_blocker": false,
+    "preparation_cap_seconds_per_grid": 21600,
+    "new_bulk_storage": "GENCO/runs/v2/large_grid_pilots_20261025_v1; independent runs/pilots symlink",
+    "generation": "Both grids: fixed v4 law, 200-hour solver pilot then all10080 hours across all20 episodes; four processes per grid own disjoint episode lists index modulo4. Atomic25-hour shards; exact demand/time/prefix verification before continuation.",
+    "parity_scope": "First32 sorted local/official test-intersection snapshots, CPU batch1; all32 independently checked against official parquet, hashes for all accessed cache groups. This bounded integration check is not full-intersection parity. Existing numerical tolerances unchanged.",
+    "temporal_audit": "Full10080-hour independent physical audit, retained200-hour prefix, source-calendar separation,72 held-out forecast days. No shortened temporal audit.",
+    "cache_graph_batch_size": 24,
+    "cache_resume": "Atomic per-episode embeddings, train/selection only; completed episodes reused after checksum/key validation; current incomplete cache episode recomputed."
+  },
+  "evaluation": {
+    "selection_only": true,
+    "selection_samples": 64,
+    "full_fleet_evaluation": false,
+    "cross_grid_table": false,
+    "precision": "fp32",
+    "selection_seed": 1042
+  },
+  "job": {
+    "queue": "debug",
+    "account": "EpiCalib",
+    "nodes": 1,
+    "walltime_seconds": 3600,
+    "family_guard_seconds": 3300,
+    "chains_per_node": 2,
+    "flat_tiles_per_node": [
+      0,
+      2
+    ],
+    "launcher": "One MPI launcher rank, two independent tile-isolated worker processes using xpu:0.",
+    "layout": "case500 seed0 tile0 K8; case2000 seed0 tile2 K2 pilot. Each grid starts training only after its own audit. Up to four Ipopt subprocesses per grid, eight total, one Julia thread each.",
+    "max_allocations": 24,
+    "cumulative_reserved_node_seconds_cap": 86400,
+    "resubmission": "Independent detached controller checks PBS every30s and submits next one-hour debug allocation at each boundary while work and budget remain. No changes to or dependencies on debug-scaling family.",
+    "no_new_dependencies": true,
+    "status": "GENCO/runs/pilots/STATUS.md at every boundary and controller update"
+  },
+  "verification": {
+    "compute_before_training": [
+      "pilot routing, budgets, next-job submission fixtures",
+      "interrupted/resumed synthetic shard prefix and tamper detection",
+      "existing fleet, case identity, multigrid, V2 harness and Stage1 mechanism tests",
+      "Stage A evidence gates before each grid trains"
+    ],
+    "preservation": "Original multigrid working tree and index untouched; all fleet workers execute a hashed snapshot from a separate worktree. Historical released v3/v4 manifests/checkpoints/data are protected by hashes.",
+    "pass_fail": "Passing tests and all Stage A gates authorize each pilot. Missing dependency, solver worker failure, failed audit, nonfinite training or unexpected worker exit parks only the affected grid; no tolerance relaxation. Return75 is a clean allocation boundary, not a scientific failure."
+  }
+}

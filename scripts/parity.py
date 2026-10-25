@@ -20,7 +20,7 @@ from data.loader.network import load_network
 from models.genco import Genco
 
 
-def prepare(config, download=False, spot_count=32):
+def prepare(config, download=False, spot_count=32, limit=None, batch_size=32):
     grid = load_network(config=config)
     cache = SnapshotDataset(config["paths"]["n1_cache"], grid=grid)
     assets = checkpoint_assets(config, download)
@@ -33,13 +33,19 @@ def prepare(config, download=False, spot_count=32):
     ids = np.intersect1d(local["test"], official)
     if len(ids) == 0:
         raise ValueError("Empty official/local test intersection")
-    protocol = {"canonical_ids": ids.tolist(), "count": len(ids),
+    if batch_size < 1 or (limit is not None and limit < spot_count):
+        raise ValueError("Parity limit must cover every independent spot check")
+    full_count = len(ids)
+    if limit is not None:ids = ids[:limit]
+    protocol = {"intersection_count": full_count, "limit": limit, "canonical_ids": ids.tolist(), "count": len(ids),
         "local_splits_sha256": sha256(local_path), "official_test_sha256": sha256(official_path),
         "input_rtol": 2e-6, "input_atol": 1e-4, "output_rtol": 2e-5, "output_atol": 1e-4,
-        "spot_check_ids": ids[:spot_count].tolist(), "batch_size": 32,
+        "spot_check_ids": ids[:spot_count].tolist(), "batch_size": batch_size,
         "reference": "unmodified pinned Graphkit evaluate CLI; derived contiguous IDs map to canonical IDs"}
     write_json(root / "protocol.json", protocol)  # Freeze before comparing results.
+    selected_groups = {int(i)//cache.manifest["group_size"] for i in ids}
     for record in cache.manifest["groups"]:
+        if limit is not None and record["group"] not in selected_groups:continue
         path = cache.folder / f"group_{record['group']}.pt"
         if sha256(path) != record["sha256"]:
             raise ValueError(f"Published OPFData cache checksum mismatch: {path}")
@@ -67,7 +73,7 @@ def prepare(config, download=False, spot_count=32):
     original = assets / config["checkpoint"]["directory"] / config["checkpoint"]["configuration"]
     settings = yaml.safe_load(original.read_text())
     settings["data"].update(workers=0, scenarios=[len(ids)], split_from_existing_files=str(split_root))
-    settings["training"].update(accelerator="cpu", devices=1, strategy="auto", batch_size=32)
+    settings["training"].update(accelerator="cpu", devices=1, strategy="auto", batch_size=batch_size)
     settings["verbose"] = False
     (root / "evaluate.yaml").write_text(yaml.safe_dump(settings, sort_keys=False))
     # Independent official parquet spot check protects the local schema adapter.
@@ -109,7 +115,7 @@ def evaluate(config):
         "--config", str(root/"evaluate.yaml"), "--data_path", str(root/"data"),
         "--model_path", str(folder/config["checkpoint"]["weights"]),
         "--normalizer_stats", str(folder/config["checkpoint"]["normalizer"]),
-        "--num_workers", "0", "--batch_size", "32", "--save_output", "--output_path", str(root/"official"),
+        "--num_workers", "0", "--batch_size", str(protocol["batch_size"]), "--save_output", "--output_path", str(root/"official"),
         "--log_dir", str(root/"mlruns"), "--exp_name", "genco-stage-a", "--run_name", "cpu-parity"]
     env = dict(os.environ, MLFLOW_ALLOW_FILE_STORE="true", MLFLOW_DISABLE_AGENT_HINT="1",
                OMP_NUM_THREADS="1", MKL_NUM_THREADS="1")
@@ -165,10 +171,12 @@ def main():
     parser.add_argument("--config", default="configs/v3.yaml")
     parser.add_argument("--prepare", action="store_true")
     parser.add_argument("--download", action="store_true")
+    parser.add_argument("--limit", type=int)
+    parser.add_argument("--batch-size", type=int, default=32)
     args = parser.parse_args()
     config = load_config(args.config)
     if args.prepare:
-        prepare(config, args.download)
+        prepare(config, args.download, limit=args.limit, batch_size=args.batch_size)
     else:
         evaluate(config)
 

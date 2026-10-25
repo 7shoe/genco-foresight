@@ -99,9 +99,10 @@ def main():
     artifacts["quality"] = read_json(quality_path) if quality_path.exists() else None
     manifest_path = temporal_root/"manifest.json"
     manifest = read_json(manifest_path) if manifest_path.exists() else None
+    generation_source = Path(config.get('pilot', {}).get('reuse_labels', {}).get('source_snapshot', ROOT))
     data_version_matches = bool(manifest and manifest["generation"] == config["generation"] and
         manifest["solver_budget"] == config["solver"].get("budget", {}) and
-        all(sha256(ROOT/name) == digest for name,digest in manifest["implementation_sha256"].items()))
+        all(sha256(generation_source/name) == digest for name,digest in manifest["implementation_sha256"].items()))
     parity_protocol = root/"parity/protocol.json"
     parity_matches = bool(artifacts["parity"] and parity_protocol.exists() and
         artifacts["parity"]["protocol_sha256"] == sha256(parity_protocol))
@@ -123,6 +124,8 @@ def main():
         "tests": bool(test_summary and test_summary["tests"] > 0 and
                       test_summary["failures"] == test_summary["errors"] == test_summary["skipped"] == 0)}
     evidence = {"stage": "A", "complete": all(gates.values()), "gates": gates,
+        "generation_source": str(generation_source),
+        "audit_source_sha256": {name: sha256(ROOT/name) for name in ('solver/checks.py', 'scripts/data_audit.py', 'scripts/collect_stage_a.py')},
         "python": sys.version, "hostname": platform.node(), "packages": packages,
         "datakit_source_sha256": datakit_files, "isolated_cli_packages": extra,
         "datakit_wheel_sha256": sha256(wheel) if wheel.exists() else None,

@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "as_of_utc": "2026-10-25T18:05:46.008280+00:00",
+  "source_commit": "8d93abb",
+  "root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/recovery_20261025_v1",
+  "original_fleet_untouched": true,
+  "evaluation": {
+    "nine_models_complete": true,
+    "all_twelve_seed_evaluations_complete": true,
+    "completed_mixtures": [
+      "case14_ieee",
+      "case30_ieee",
+      "case57_ieee"
+    ],
+    "case118_mixture_origins_complete": 65,
+    "case118_mixture_origins_required": 72,
+    "continuation_job": "8964879",
+    "continuation_state": "queued",
+    "first_job": "8964735",
+    "first_job_exit_status": 0,
+    "tests_passed": 16,
+    "frozen_scorer_passed": true,
+    "table": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/recovery_20261025_v1/evaluation/cross_grid.md"
+  },
+  "pilots": {
+    "case500_goc": {
+      "label": "K=8 pilot",
+      "K": 8,
+      "seed": 0,
+      "deterministic_algorithms": false,
+      "precision": "fp32",
+      "B": 1,
+      "max_epochs": 6,
+      "patience": 3,
+      "job": "8964751",
+      "status": "training",
+      "attempted": 10080,
+      "valid": 10080,
+      "unresolved": 0,
+      "full_stage_a_passed": true,
+      "labels_regenerated": false,
+      "pilot_preflight_tests_passed": 69,
+      "metrics_observed_through_step": 700,
+      "observed_metrics_finite": true,
+      "latest_observed_metrics": {
+        "balance": 2.587660074234009,
+        "energy": 23.81423568725586,
+        "epoch": 0,
+        "gradient_norm": 504.8597106933594,
+        "loss": 26.40189552307129,
+        "noise_sha256": "e3be4651548ba0da0707f961692ae3c375cbab97cb2495f657b67e1a36494fd0",
+        "origin": [
+          "train_05",
+          186
+        ],
+        "origins_consumed": 700,
+        "schema_version": 1,
+        "step_in_epoch": 700,
+        "step_seconds": 1.1174145530003443,
+        "step_sequence_sha256": "c37c8a208291f7398d1f7300f3ec9defd15d630b0c7137036ea6b033948f6aa3",
+        "steps": 700,
+        "worker_seconds": 804.0266215801239
+      },
+      "budget_at_last_boundary": {
+        "training_seconds": 0.0,
+        "data_seconds": 2831.843799352646
+      },
+      "cumulative_data_cap_seconds": 21600,
+      "cumulative_training_cap_seconds": 43200,
+      "excluded_from_cross_grid": true
+    },
+    "case2000_goc": {
+      "label": "K=2 pilot",
+      "K": 2,
+      "seed": 0,
+      "deterministic_algorithms": false,
+      "precision": "fp32",
+      "B": 1,
+      "max_epochs": 6,
+      "patience": 3,
+      "job": "8964751",
+      "status": "training",
+      "attempted": 10080,
+      "valid": 10080,
+      "unresolved": 0,
+      "full_stage_a_passed": true,
+      "labels_regenerated": false,
+      "pilot_preflight_tests_passed": 69,
+      "metrics_observed_through_step": 400,
+      "observed_metrics_finite": true,
+      "latest_observed_metrics": {
+        "balance": 20.4628963470459,
+        "energy": 46.77845001220703,
+        "epoch": 0,
+        "gradient_norm": 1111.8125,
+        "loss": 67.24134826660156,
+        "noise_sha256": "27cbf2a03d823ff1a71c8818fb306cda903db5eddc06411c522c0e9363b64061",
+        "origin": [
+          "train_07",
+          468
+        ],
+        "origins_consumed": 400,
+        "schema_version": 1,
+        "step_in_epoch": 400,
+        "step_seconds": 1.1118883200015262,
+        "step_sequence_sha256": "1ab07f67325063d7b9982f2ae51b45736ea14a3c48df75962a34090bfdb00d71",
+        "steps": 400,
+        "worker_seconds": 480.78779673576355
+      },
+      "budget_at_last_boundary": {
+        "training_seconds": 0.0,
+        "data_seconds": 3524.547216653824
+      },
+      "cumulative_data_cap_seconds": 21600,
+      "cumulative_training_cap_seconds": 43200,
+      "excluded_from_cross_grid": true
+    }
+  },
+  "controllers": {
+    "evaluation": {
+      "pid": 730566,
+      "status": "running",
+      "jobs": [
+        {
+          "id": "8964735.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov",
+          "state": "F",
+          "exit_status": 0
+        },
+        {
+          "id": "8964879.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov",
+          "state": "Q",
+          "exit_status": null
+        }
+      ],
+      "allocation_cap": 12
+    },
+    "pilots": {
+      "pid": 733698,
+      "status": "running",
+      "jobs": [
+        {
+          "id": "8964751.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov",
+          "state": "R",
+          "exit_status": null
+        }
+      ],
+      "allocation_cap": 12
+    }
+  },
+  "stage1_verdict": {
+    "complete": true,
+    "adopted_under_requested_rule": false,
+    "selection_gaps_above_ON_max": {
+      "0": 0.01697276367081535,
+      "1": 0.0005659436186155056,
+      "2": 0.0
+    },
+    "report": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/recovery_20261025_v1/stage1_verdict.md"
+  },
+  "evidence_sha256": {
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/recovery_20261025_v1/handover.json": "2125ea6560688cad73b29be84badd8d35eed124d254771d53e16f76c25238ab1"
+  }
+}

@@ -22,8 +22,10 @@ def calendar_features(times):
         np.sin(2*np.pi*d/7),np.cos(2*np.pi*d/7),(d>=5).astype(float)],axis=-1),dtype=torch.float32)
 
 
-def build_cache(cfg, device):
+def build_cache(cfg, device, deadline_epoch=None):
     started=time.perf_counter()
+    batch_size=int(cfg["stage_b"].get("cache_graph_batch_size",192))
+    if batch_size < 1:raise ValueError("Cache graph batch size must be positive")
     root=Path(cfg["paths"]["temporal_root"]);out=Path(cfg["paths"]["training_run"])/"cache"
     out.mkdir(parents=True,exist_ok=True)
     net=load_network(config=cfg)
@@ -40,15 +42,18 @@ def build_cache(cfg, device):
         key={"benchmark_id":manifest["benchmark_id"],"episode_sha256":sha256(path),
             "checkpoint":cfg["checkpoint"],"graphkit":cfg["upstream"]["graphkit"],
             "scales_sha256":sha256(ROOT/cfg["stage_b"]["coordinate_scales"]),"cache_version":1}
+        if batch_size != 192:key["graph_batch_size"]=batch_size
         dest=out/f"{name}.pt"
         if dest.exists():
             value=torch.load(dest,mmap=True,map_location="cpu",weights_only=True)
             if value["key"]!=key:raise ValueError("Stale embedding/history cache")
         else:
             rows=read_json(path)["records"];chunks={"bus":[],"gen":[]}
-            for lo in range(0,len(rows),192):
+            for lo in range(0,len(rows),batch_size):
+                if deadline_epoch is not None and time.time() >= deadline_epoch-60:
+                    return {"incomplete":True,"reason":"allocation_guard"}
                 # Only demand/static topology reaches frozen embeddings; solved state is separate.
-                graphs=[graph_for_demand(net,r["pd_mw"],r["qd_mvar"]) for r in rows[lo:lo+192]]
+                graphs=[graph_for_demand(net,r["pd_mw"],r["qd_mvar"]) for r in rows[lo:lo+batch_size]]
                 with torch.no_grad():_,emb=base.model(base.batch(graphs),return_embeddings=True)
                 for kind,n in (("bus",net.n_bus),("gen",net.n_online_gen)):chunks[kind].append(emb[kind].reshape(-1,n,emb[kind].shape[-1]).cpu())
             data={f"embedding_{k}":torch.cat(v) for k,v in chunks.items()}
@@ -56,7 +61,8 @@ def build_cache(cfg, device):
             for r in rows:
                 state=r["target_state"] or {"vm":[np.nan]*net.n_bus,"va_rad":[np.nan]*net.n_bus,"pg_mw":[np.nan]*net.n_gen,"qg_mvar":[np.nan]*net.n_gen}
                 observed_bus.append(np.stack([r["pd_mw"],r["qd_mvar"],state["vm"],state["va_rad"]],axis=-1))
-                observed_gen.append(np.stack([state["pg_mw"],state["qg_mvar"]],axis=-1)[net.online_gen])
+                observed_gen.append(np.stack([np.asarray(state["pg_mw"])[net.online_gen].astype(float),
+                    np.asarray(state["qg_mvar"])[net.online_gen].astype(float)],axis=-1))
                 physics=physical_quantities(net,r["pd_mw"],r["qd_mvar"],state)
                 values=record_values(net,r)
                 targets.append(np.concatenate([np.asarray(values[k])[s["joint_score_mask"]]

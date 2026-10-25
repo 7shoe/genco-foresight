@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "recorded_utc": "2026-10-25T09:25:31.200563+00:00",
+  "root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/subset200_20261025_v1",
+  "implementation_commit": "4e37e2c46fe7d229be1e3e32cd713305e70e378b",
+  "status": "all_subset_parity_passed; case118_released; pilots_training_blocked_by_retained_solver_gates",
+  "fleet_job": "8963510",
+  "pilot_prior_job": "8963555",
+  "pilot_continuation_job": "8963648",
+  "continuation_pid": 106738,
+  "case118_rollout_pid": 3542081,
+  "continuation_host": "aurora-uan-0012",
+  "case118_node": "x4211c3s1b0n0",
+  "additional_allocations_per_family": 12,
+  "per_chain_budgets_unchanged": true,
+  "source_pin_sha256": "ef37740ce6d37e2b16d083babf3388a4d3324d40905fea46420c7ec76f2112f3",
+  "subsets": {
+    "case118_ieee": {
+      "passed": true,
+      "label": "subset parity (200)",
+      "protocol_sha256": "9e9665b2b6aafecefac8ebd6b482dc6b7a925c1ae4b77c6c99e4176f62b7051d",
+      "report_sha256": "2cd388cd39017b23aeb6311810788a0b82a1a2dae6a030d259d949f18d31becd",
+      "wall_seconds": 88.48890113830566,
+      "bit_identical": true,
+      "job_id": "8963510.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov",
+      "host": "x4211c3s1b0n0",
+      "worker_wall_seconds": 98.89948272705078,
+      "gate_sha256": "edc236dd8aff866eef2d5fc16b681c9af27852c3f3e38cc9d0c9be8c53580181",
+      "promotion_sha256": "f5e3d29297cd8738676e69de2cd0672e0e3c72bdb858ecc95e5f528c9253bf89",
+      "max_abs": {
+        "Vm_pred": 0.0,
+        "Va_pred": 0.0,
+        "Pg_pred": 0.0,
+        "Qg_pred": 0.0
+      },
+      "model_dtype": "torch.float32",
+      "dataset_card": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/fleet_20261025_off_v1/case118_ieee/data/DATASET_CARD.md",
+      "dataset_card_sha256": "9573c5248c17eec538a2eb251da7e4dfe484ccb15e3a2b575c3bf79cef094a24"
+    },
+    "case500_goc": {
+      "passed": true,
+      "label": "subset parity (200)",
+      "protocol_sha256": "998ed60d058ceb8736e2738fac557da533317406df3b2804d0fdd85727e74094",
+      "report_sha256": "4019a610f640cc3c41fba2d8c6c425925ffde8591b309c28f57b21abbb6c9a3a",
+      "wall_seconds": 200.13753509521484,
+      "bit_identical": true,
+      "job_id": "8963648.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov",
+      "host": "x4306c7s6b0n0",
+      "worker_wall_seconds": 210.0131402015686,
+      "gate_sha256": "4ba04c742f411211a9bee77bc7371d281aa09f0ef33271cecc834730e6272f8e",
+      "promotion_sha256": "154e97e799cfe2165cd6fd2ed27be43da2b8ffc273ed91f201218442393756ff",
+      "max_abs": {
+        "Vm_pred": 0.0,
+        "Va_pred": 0.0,
+        "Pg_pred": 0.0,
+        "Qg_pred": 0.0
+      },
+      "model_dtype": "torch.float32",
+      "dataset_card": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/large_grid_pilots_20261025_v1/case500_goc/data/DATASET_CARD.md",
+      "dataset_card_sha256": "d6b55ae7ac82cc4d8dcee31c323e54cb1f4414238193426978dafa8a4e752e71"
+    },
+    "case2000_goc": {
+      "passed": true,
+      "label": "subset parity (200)",
+      "protocol_sha256": "8df971a7244d35b1013a063bcd2237554309b7ced36f23e12f03ddadb2f44da8",
+      "report_sha256": "df0f91a049de7525fb063621c37b53a3963c6fe7bd73a13b97e643e57601698a",
+      "wall_seconds": 611.2773697376251,
+      "bit_identical": true,
+      "job_id": "8963648.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov",
+      "host": "x4306c7s6b0n0",
+      "worker_wall_seconds": 621.2665278911591,
+      "gate_sha256": "10f10f0934bbe022b0e2aae08dcce328e1185531a9af1f80ec25577b7edbba15",
+      "promotion_sha256": "4847bf483627fb2c3148447b7c4034297752df683e99db6c76f3b5f3e7d86fed",
+      "max_abs": {
+        "Vm_pred": 0.0,
+        "Va_pred": 0.0,
+        "Pg_pred": 0.0,
+        "Qg_pred": 0.0
+      },
+      "model_dtype": "torch.float32",
+      "dataset_card": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/large_grid_pilots_20261025_v1/case2000_goc/data/DATASET_CARD.md",
+      "dataset_card_sha256": "bb2bd089d7a82066b71dbbc8c7c5dbb336a1b0c841266ea0c2f2b4c207670d8a"
+    }
+  },
+  "pilot_solver_failures": {
+    "case500_goc": {
+      "status": "LOCALLY_SOLVED",
+      "reference_rad": 0.0936725353641718,
+      "tolerance": 1e-05,
+      "evidence": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/large_grid_pilots_20261025_v1/case500_goc/stage_a/solver_smoke.json",
+      "sha256": "795492b58508660ab01fa3ac3ecdee626096d707f60fbcfb1667729075b70b6c"
+    },
+    "case2000_goc": {
+      "status": "TIME_LIMIT",
+      "solve_seconds": 5.7282490730285645,
+      "p_balance_mw": 2.2411576497845545,
+      "q_balance_mvar": 0.895158996062273,
+      "tolerance": 1e-05,
+      "evidence": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/large_grid_pilots_20261025_v1/case2000_goc/stage_a/solver_smoke.json",
+      "sha256": "e34d255ce9f5781289ef0a7e14fbefbd4514f91a21771eba32fa51258e8fcc3b"
+    }
+  },
+  "pilot_training": "blocked by original solver gates; subset verification is independent",
+  "local_tests": {
+    "passed": 2,
+    "seconds": 49.28
+  },
+  "case118_release": {
+    "job_id": "8963510.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov",
+    "deadline": 1792922264.0,
+    "time_epoch": 1792920256.6986532,
+    "gate_sha256": "edc236dd8aff866eef2d5fc16b681c9af27852c3f3e38cc9d0c9be8c53580181"
+  },
+  "updated_utc": "2026-10-25T09:38:20.711354+00:00",
+  "continuation_health": {
+    "pid": 106738,
+    "host": "aurora-uan-0012",
+    "updated_epoch": 1792921088.2690122,
+    "families": {
+      "fleet": {
+        "status": "running",
+        "returncode": 0,
+        "submitted": 0,
+        "last_job": "8963510.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov"
+      },
+      "pilots": {
+        "status": "complete_or_blocked",
+        "returncode": 0,
+        "submitted": 1,
+        "last_job": "8963648.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov"
+      }
+    }
+  }
+}
