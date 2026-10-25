@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "recorded_utc": "2026-10-25T09:25:31.200563+00:00",
+  "root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/subset200_20261025_v1",
+  "implementation_commit": "4e37e2c46fe7d229be1e3e32cd713305e70e378b",
+  "status": "running",
+  "fleet_job": "8963510",
+  "pilot_prior_job": "8963555",
+  "pilot_continuation_job": "8963648",
+  "continuation_pid": 106738,
+  "case118_rollout_pid": 3542081,
+  "continuation_host": "aurora-uan-0012",
+  "case118_node": "x4211c3s1b0n0",
+  "additional_allocations_per_family": 12,
+  "per_chain_budgets_unchanged": true,
+  "source_pin_sha256": "ef37740ce6d37e2b16d083babf3388a4d3324d40905fea46420c7ec76f2112f3",
+  "subsets": {
+    "case118_ieee": {
+      "status": "pending",
+      "protocol_sha256": "9e9665b2b6aafecefac8ebd6b482dc6b7a925c1ae4b77c6c99e4176f62b7051d"
+    },
+    "case500_goc": {
+      "status": "pending",
+      "protocol_sha256": "998ed60d058ceb8736e2738fac557da533317406df3b2804d0fdd85727e74094"
+    },
+    "case2000_goc": {
+      "status": "pending",
+      "protocol_sha256": "8df971a7244d35b1013a063bcd2237554309b7ced36f23e12f03ddadb2f44da8"
+    }
+  },
+  "pilot_solver_failures": {
+    "case500_goc": {
+      "status": "LOCALLY_SOLVED",
+      "reference_rad": 0.0936725353641718,
+      "tolerance": 1e-05
+    },
+    "case2000_goc": {
+      "status": "TIME_LIMIT",
+      "solve_seconds": 5.7282490730285645,
+      "p_balance_mw": 2.2411576497845545,
+      "q_balance_mvar": 0.895158996062273,
+      "tolerance": 1e-05
+    }
+  },
+  "pilot_training": "blocked by original solver gates; subset verification is independent",
+  "local_tests": {
+    "passed": 2,
+    "seconds": 49.28
+  }
+}
