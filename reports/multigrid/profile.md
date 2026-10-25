@@ -73,6 +73,6 @@ The requested ‘upper bound under ideal scaling’ applies to speedup: ceil(hou
 
 ![Step time by grid and K](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/multigrid/profile/20261025T041341Z/step_time.png)
 
-Single-tile 1 h estimate: none established.  
-Requires chained 1 h jobs under this recipe: case14_ieee, case30_ieee, case57_ieee, case118_ieee, case500_goc, case2000_goc.  
-Single-tile six-hour target exceeded or a valid step not established: case118_ieee, case500_goc, case2000_goc; synthetic timing does not establish convergence.
+- Single-tile 1 h estimate: none established.
+- Requires chained 1 h jobs under this recipe: case14_ieee, case30_ieee, case57_ieee, case118_ieee, case500_goc, case2000_goc.
+- Single-tile six-hour target exceeded or a valid step not established: case118_ieee, case500_goc, case2000_goc; synthetic timing does not establish convergence.

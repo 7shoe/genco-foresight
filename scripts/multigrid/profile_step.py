@@ -433,9 +433,9 @@ def report(args, summary):
     fig.savefig(args.output / "step_time.png", dpi=160)
     plt.close(fig)
     lines.extend(["", f"![Step time by grid and K]({args.output}/step_time.png)", "",
-                  "Single-tile 1 h estimate: " + (", ".join(under_hour) or "none established") + ".  ",
-                  "Requires chained 1 h jobs under this recipe: " + (", ".join(chained) or "none established") + ".  ",
-                  "Single-tile six-hour target exceeded or a valid step not established: " + (", ".join(unviable) or "none among completed configurations") + "; synthetic timing does not establish convergence."])
+                  "- Single-tile 1 h estimate: " + (", ".join(under_hour) or "none established") + ".",
+                  "- Requires chained 1 h jobs under this recipe: " + (", ".join(chained) or "none established") + ".",
+                  "- Single-tile six-hour target exceeded or a valid step not established: " + (", ".join(unviable) or "none among completed configurations") + "; synthetic timing does not establish convergence."])
     target = ROOT / "reports/multigrid/profile.md"
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text("\n".join(lines) + "\n")
