@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "stage": 1,
+  "gate_kind": "revised_epoch_acceptance",
+  "passed": false,
+  "source_commit": "327e225",
+  "diagnosis_commit": "b49a177",
+  "protocol": "reports/v2/stage1_epoch.protocol.json",
+  "protocol_sha256": "86b8591c03c0642bb90201bd6d7eb9ea2db2b6bb56c17f93603adb9146e1ef08",
+  "reason": "OFF B epoch-1 selection ES is below the literal historical min/max envelope; lower ES is better",
+  "observed": 0.502823993563652,
+  "allowed_minimum": 0.5118635098139445,
+  "allowed_maximum": 0.6171770658757951,
+  "failure_side": "better_than_historical_minimum",
+  "all_persisted_metrics_finite": true,
+  "boundary_restore_exact": true,
+  "deterministic_resume_mechanism_passed": true,
+  "harness_tests_passed": 18,
+  "completed_three_epoch_acceptance": false,
+  "early_stopping_observed": false,
+  "adopted_production_default": "main retains determinism ON and fp32",
+  "OFF_status": "candidate only; production gate failed",
+  "stage2_started": false,
+  "local_main_merge": null,
+  "main_unchanged": "a6ae620264ff4cdfda9e1b4f31eeca377cb6f938",
+  "evidence_root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_epoch_20261025_v2",
+  "evidence_sha256": {
+    "protocol.json": "86b8591c03c0642bb90201bd6d7eb9ea2db2b6bb56c17f93603adb9146e1ef08",
+    "prepared.json": "45867f26870797f90da92d79966f4b46afb264ba6f3d49308e4c8f8241012b0c",
+    "gate.json": "021ad9365ac5b26ffa8f8228a81801f103d3934e4189a66ef4f72f58c7f3c698",
+    "epoch_failure.json": "53de207f920bed0ea01c0a2a43a2fc738a1298a820952c7a40752c4cd87d6d0c",
+    "artifact_sha256.json": "ee64cac1e048f5dd23204a12127a9d852cab8f62e2dc112f6cb03b461893bcff",
+    "preservation_audit.json": "08c2337cb646b3ef15ac9a7175c513a289c552b7b6ef00acb11eec657e408c60",
+    "failure_analysis.json": "3652907dad5db40faf224ef4ffd0e603721506270a8e7e6f50dad8d4e05a4ebe",
+    "pbs_accounting.txt": "941c6d14e949da9cf45bc7172f2060292673bf1e9701ffb3840671a29494d699",
+    "jobs/8962608.json": "687e5c27e4b3881450cadb8711873a5975047bef4f65872cb7890aa22aa6db02",
+    "mechanism/xpu.json": "65179332dea4d0400a1964db7d52d8f3ae0b7f1fd5e92c8f08dea9903e4275f2",
+    "logs/tests.log": "0b2e3d21bfb0f2b2da879a56acdf2419299d2d283247e2d131178a7963291f52"
+  },
+  "job_ids": [
+    "8962608.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov"
+  ],
+  "budget": {
+    "submitted_allocations": 1,
+    "reserved_node_seconds": 3600,
+    "PBS_actual_node_seconds": 925,
+    "launcher_actual_seconds": 924.504501581192,
+    "cumulative_stage1_reserved_node_seconds": 8400,
+    "cumulative_stage1_PBS_actual_node_seconds": 1423,
+    "cumulative_stage1_conservative_charge_seconds": 4600
+  },
+  "median_step_seconds": {
+    "off_a": 0.16081607551313937,
+    "off_b": 0.16083061904646456,
+    "on_reference": 0.26796993357129395
+  },
+  "measured_step_speedups": {
+    "off_a": 1.6663131015742245,
+    "off_b": 1.6661624208128953
+  },
+  "limitations": [
+    "Literal min/max envelope rejects improvement below the historical best",
+    "Only one OFF epoch completed; no ON epoch validation",
+    "No full-run speedup, production stopping-epoch comparison or case118 timing",
+    "Original and revised failures remain unchanged; dependent stages stopped"
+  ]
+}

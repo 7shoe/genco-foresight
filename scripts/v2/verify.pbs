@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#PBS -N genco-v2-stage0
+#PBS -N genco-v2-check
 #PBS -A EpiCalib
 #PBS -q debug
 #PBS -l select=1
@@ -25,4 +25,4 @@ export TMPDIR="${GENCO_V2_ROOT:?}/tmp"
 mkdir -p "$TMPDIR"
 v2_python=/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/bin/python
 mpiexec --pmi=pmix --envall -n 1 --ppn 1 --cpu-bind none \
-    "$v2_python" -u -m scripts.v2.verify_stage job --root "$GENCO_V2_ROOT"
+    "$v2_python" -u -m scripts.v2.verify_stage job --root "$GENCO_V2_ROOT" --stage "${GENCO_V2_STAGE:-0}"

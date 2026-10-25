@@ -1,0 +1,4 @@
+# Apply to the selected grid recipe through load_config(overrides=...).
+stage_b:
+  deterministic_algorithms: false
+  metrics_interval_steps: 1

@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "stage": 1,
+  "status": "submitted_pending",
+  "passed": null,
+  "job_id": "8962843.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov",
+  "source_commit": "c8b6f6bfee33ef3533a81df347bb3dadde096193",
+  "protocol": "reports/v2/stage1_confirmation.protocol.json",
+  "protocol_sha256": "72d15b6e27edd51af5e4a3b9245a2e6ced7601303158cdbde16bd4d57c658273",
+  "evidence_root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_confirmation_20261025_v3",
+  "runtime_gate": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_confirmation_20261025_v3/gate.json",
+  "runs": [
+    "off_a",
+    "off_b"
+  ],
+  "epochs_per_run": 3,
+  "seed": 42,
+  "upper_bounds": {
+    "1": 0.6221770658757951,
+    "2": 0.4630226242542267,
+    "3": 0.4442866889635722
+  },
+  "boundary_restart": {
+    "run": "off_b",
+    "steps": 4090,
+    "before_selection": true
+  },
+  "new_on_reference_chain": false,
+  "fleet_launch_blocked_by_confirmation": false,
+  "budget": {
+    "allocations": 1,
+    "reserved_node_seconds": 3600,
+    "actual_node_seconds": null,
+    "previous_stage1_reserved_node_seconds": 8400,
+    "previous_stage1_actual_node_seconds": 1423,
+    "previous_stage1_conservative_charge_seconds": 4600
+  },
+  "validation": {
+    "syntax_and_protocol_consistency": "passed",
+    "recipe_matches_8962608": "passed_except_identity_protocol_output_path",
+    "compute_tests_and_resume_mechanism": "pending",
+    "production_gate": "pending"
+  },
+  "submission_artifacts_sha256": {
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_confirmation_20261025_v3/prepared.json": "e667cf31cddaa0cae59a3a1ea03a3788fc9857ea7855926d6ee8d7ac8422c994",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_confirmation_20261025_v3/configuration.json": "12e0344c41d66dc1d4e7768a20e640decb12103fdeee9742b14862abecc3a175",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_confirmation_20261025_v3/protocol.json": "72d15b6e27edd51af5e4a3b9245a2e6ced7601303158cdbde16bd4d57c658273",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_confirmation_20261025_v3/submission.json": "861b259501b3f8e843438a8236a3759beeb4802ac46d4ae5f793dd8a5234224d",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_confirmation_20261025_v3/submission_preservation.json": "407308600aaa2c05f7e6ffed6efdb570747d8b0e6af4928dbc6e90d440dd7fcd"
+  },
+  "limitations": [
+    "Confirmation is running in the background; no acceptance verdict or local main merge yet.",
+    "No new ON chain or case118 timing in this allocation.",
+    "Stopping epoch comparison is deferred to the first full fleet run."
+  ]
+}

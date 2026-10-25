@@ -24,6 +24,7 @@ def fixture(tmp_path):
         (root / "latest.pt").write_bytes(b"checkpoint-fixture")
         put(root / "epochs.json", [])
         put(root / "status.json", {"base_unchanged": True, "steps_after": 2, "epochs_reached": 0,
+            "stop_reason": "verification_step_limit",
             "origins_consumed": 2, "step_in_epoch": 2, "base_sha256": "base", "adapter_sha256": "adapter",
             "step_sequence_sha256": "sequence2", "checkpoint_sha256": digest(root / "latest.pt")})
         rows = [dict(schema_version=1, steps=i, origins_consumed=i, epoch=0, step_in_epoch=i,
@@ -89,10 +90,60 @@ def test_epoch_coverage_and_selection_curve(tmp_path):
     assert not compare_runs(*roots, protocol)["passed"]
 
 
+def test_epoch_gate_preserves_noise_finiteness_and_declared_envelope(tmp_path):
+    roots, protocol = fixture(tmp_path)
+    protocol["comparison"].update(numerical_acceptance="epoch_envelope", epochs=1,
+        epoch_envelopes={"1": {"minimum": .2, "maximum": .4}})
+    protocol["comparison"].pop("thresholds")
+    for root, score in zip(roots, (.2, .4)):
+        put(root / "epochs.json", [{"epoch": 1, "steps": 2, "selection_energy_score": score}])
+        status = json.loads((root / "status.json").read_text())
+        status["epochs_reached"] = 1
+        put(root / "status.json", status)
+    change_row(roots[1], {"loss": 100., "gradient_norm": 1e6})
+    assert compare_runs(*roots, protocol)["passed"]
+    change_row(roots[1], {"noise_sha256": "different"})
+    assert not compare_runs(*roots, protocol)["passed"]
+    change_row(roots[1], {"noise_sha256": "noise1", "loss": float("nan")})
+    assert not compare_runs(*roots, protocol)["passed"]
+    change_row(roots[1], {"loss": 100.})
+    put(roots[1] / "epochs.json", [{"epoch": 1, "steps": 2, "selection_energy_score": .400000001}])
+    assert not compare_runs(*roots, protocol)["passed"]
+
+
 def test_absolute_floor_handles_near_zero():
     assert close(0., 1e-9, {"atol": 2e-9, "rtol": 1e-3})
     assert not close(0., 1e-9, {"atol": 0., "rtol": 1e-3})
     assert not close(float("nan"), 0., {"atol": 1., "rtol": 1.})
+
+
+def test_one_sided_gate_accepts_improvement_and_exempts_on_reference(tmp_path):
+    roots, protocol = fixture(tmp_path)
+    comparison = protocol["comparison"]
+    comparison.update(numerical_acceptance="epoch_noninferiority", epochs=1,
+        epoch_upper_bounds={"1": {"historical_maximum": .4, "slack": .005}}, compare_stopping_epochs=False)
+    comparison.pop("thresholds")
+    comparison["expected_manifest"]["deterministic_algorithms"] = False
+    for root, score in zip(roots, (.1, .405)):
+        manifest = json.loads((root / "manifest.json").read_text())
+        manifest["deterministic_algorithms"] = False
+        put(root / "manifest.json", manifest)
+        put(root / "epochs.json", [{"epoch": 1, "steps": 2, "selection_energy_score": score}])
+        status = json.loads((root / "status.json").read_text())
+        status["epochs_reached"] = 1
+        put(root / "status.json", status)
+    assert compare_runs(*roots, protocol)["passed"]
+    put(roots[1] / "epochs.json", [{"epoch": 1, "steps": 2, "selection_energy_score": .405000001}])
+    assert not compare_runs(*roots, protocol)["passed"]
+    manifest["deterministic_algorithms"] = True
+    put(roots[1] / "manifest.json", manifest)
+    comparison["manifest_differences"] = {"deterministic_algorithms": [False, True]}
+    put(roots[1] / "epochs.json", [{"epoch": 1, "steps": 2, "selection_energy_score": 9.}])
+    assert compare_runs(*roots, protocol)["passed"]
+    put(roots[1] / "epochs.json", [{"epoch": 1, "steps": 2, "selection_energy_score": float("nan")}])
+    assert not compare_runs(*roots, protocol)["passed"]
+    put(roots[1] / "epochs.json", [])
+    assert not compare_runs(*roots, protocol)["passed"]
 
 
 def test_recovery_archives_only_uncommitted_tail(tmp_path):

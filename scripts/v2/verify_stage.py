@@ -39,6 +39,10 @@ def prepare(protocol_path, root):
     cfg = load_config(ROOT / "configs/v4.yaml", overrides=overrides)
     cfg["v2"]["protocol_sha256"] = sha256(root / "protocol.json")
     write_json(root / "configuration.json", cfg)
+    return freeze_preparation(root,protocol_path,protocol)
+
+
+def freeze_preparation(root,protocol_path,protocol):
     files = set(subprocess.check_output(["git", "ls-files"], cwd=ROOT, text=True).splitlines())
     for directory in ("scripts/v2", "training", "configs/v2", "tests"):
         files.update(str(p.relative_to(ROOT)) for p in (ROOT / directory).glob("*.*") if p.suffix in (".py", ".pbs", ".yaml"))
@@ -51,7 +55,7 @@ def prepare(protocol_path, root):
             path = V2_ROOT.parent / f"adapter_{version}" / name
             if path.exists():
                 protected[str(path)] = sha256(path)
-    write_json(root / "prepared.json", {"schema_version": 1, "stage": 0,
+    write_json(root / "prepared.json", {"schema_version": 1, "stage": protocol["stage"],
         "created_epoch": time.time(), "protocol_sha256": sha256(root / "protocol.json"),
         "configuration_sha256": sha256(root / "configuration.json"), "source_sha256": sources,
         "protected_sha256": protected, "tag_v0.1.0": subprocess.check_output(
@@ -227,8 +231,13 @@ def main():
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--protocol", type=Path)
     parser.add_argument("--name")
+    parser.add_argument("--stage", type=int, choices=[0, 1], default=0)
     args = parser.parse_args()
     root = checked_root(args.root)
+    if args.stage == 1:
+        from scripts.v2.stage1 import dispatch
+        dispatch(args, root)
+        return
     if args.action == "prepare":
         print(prepare(args.protocol, root))
     elif args.action == "submit":

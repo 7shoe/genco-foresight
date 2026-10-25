@@ -8,6 +8,8 @@ import tempfile
 import numpy as np
 import torch
 
+from common import write_json
+
 
 def cpu_tree(value):
     if isinstance(value, torch.Tensor): return value.detach().cpu().clone()
@@ -21,6 +23,26 @@ def tensor_digest(state):
     digest=hashlib.sha256()
     for name,value in sorted(state.items()):
         digest.update(name.encode()); digest.update(value.detach().cpu().contiguous().numpy().tobytes())
+    return digest.hexdigest()
+
+
+def tree_digest(value):
+    """Hash typed state values independently of tensor device or pickle storage IDs."""
+    digest=hashlib.sha256()
+    def visit(item):
+        if isinstance(item,torch.Tensor):
+            digest.update(f"tensor:{item.dtype}:{tuple(item.shape)}:".encode())
+            digest.update(item.detach().cpu().contiguous().numpy().tobytes())
+        elif isinstance(item,dict):
+            digest.update(b"dict{")
+            for key in sorted(item,key=repr):visit(key);visit(item[key])
+            digest.update(b"}")
+        elif isinstance(item,(tuple,list)):
+            digest.update(type(item).__name__.encode()+b"[")
+            for entry in item:visit(entry)
+            digest.update(b"]")
+        else:digest.update(f"{type(item).__name__}:{item!r};".encode())
+    visit(value)
     return digest.hexdigest()
 
 
@@ -66,7 +88,7 @@ def checkpoint(path, model, optimizer, scheduler, progress, manifest):
         "scheduler":scheduler.state_dict(),"rng":rng_state(),"progress":progress,"manifest":manifest})
 
 
-def restore(path, model, optimizer, scheduler, manifest):
+def restore(path, model, optimizer, scheduler, manifest, audit_path=None):
     value=torch.load(path,map_location="cpu",weights_only=True)
     if value["manifest"] != manifest: raise ValueError("Checkpoint run manifest mismatch")
     missing,unexpected=model.load_state_dict(value["model"],strict=False)
@@ -76,6 +98,16 @@ def restore(path, model, optimizer, scheduler, manifest):
         raise ValueError("Unfrozen backbone missing from checkpoint")
     optimizer.load_state_dict(value["optimizer"]);scheduler.load_state_dict(value["scheduler"])
     restore_rng(value["rng"])
+    if audit_path is not None:
+        restored={"model":train_state(model),"optimizer":optimizer.state_dict(),
+            "scheduler":scheduler.state_dict(),"rng":rng_state()}
+        checks={key:{"saved_sha256":tree_digest(value[key]),"restored_sha256":tree_digest(state)}
+            for key,state in restored.items()}
+        passed=all(row["saved_sha256"]==row["restored_sha256"] for row in checks.values())
+        write_json(audit_path,{"schema_version":1,"passed":passed,"state":checks,
+            "manifest_exact":True,"manifest_sha256":tree_digest(manifest),
+            "progress_sha256":tree_digest(value["progress"]),"progress":value["progress"]})
+        if not passed:raise ValueError("Checkpoint state did not restore exactly")
     return value["progress"]
 
 

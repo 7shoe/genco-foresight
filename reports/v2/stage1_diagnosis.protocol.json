@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "protocol_version": "stage1-diagnosis-v1",
+  "stage": 1,
+  "purpose": "User-authorized diagnosis of failed Stage 1 gradients, without revising its failed gate",
+  "fixture": {
+    "source_run": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_20261025T0605Z",
+    "seed": 42,
+    "origin": ["train_09", 123],
+    "initial_adapter_sha256": "aaedb0c038aec1a770a8e60d075323d12bc0e14c56f000e005e788ec4b34c647",
+    "noise_sha256": "0f729e6250810269bc694b25a93c82de179f02ebd3b33d5d6afcd45133534bd1",
+    "noise_recovery": "Reconstruct using original seeded XPU initialization/order; require recorded digest equality, then persist the exact tensors. The original log retained a hash, not noise tensors.",
+    "data": "case30 v4, identical cached history/calendar/target, masks, train-derived scales, seed42 backbone checkpoint and saved normalizer",
+    "global_K": 8,
+    "covariance_rank": 8,
+    "hours": 24,
+    "origins_per_step": 1,
+    "world_size": 1,
+    "optimizer_steps": 0,
+    "epochs": 0,
+    "restart_points": [],
+    "gradient": "Unclipped loss gradient at identical initial parameters; no optimizer or scheduler updates"
+  },
+  "reference": {
+    "device": "cpu",
+    "dtype": "float64",
+    "deterministic_algorithms": true,
+    "evaluations": 1,
+    "cpu_threads": 16,
+    "policy": "Cast the original fp32 adapter, frozen backbone, floating buffers, cached inputs, calendar, graph attributes, noise, target and scales to fp64; preserve integer indices and Boolean masks. Cached history embeddings are the same recorded fp32 values promoted to double, not recomputed embeddings.",
+    "loss": "Same all-pairs fair ES and balance weighting; sqrt(observed dimension), ES reductions and squared balance residual reduction evaluated in fp64. This corrects the existing integer sqrt's default fp32 result only in this diagnostic."
+  },
+  "comparisons": {
+    "device": "xpu",
+    "dtype": "float32",
+    "ON_evaluations": 1,
+    "OFF_evaluations": 5,
+    "order": "CPU reference, fp32 ON, fp32 OFF 1..5, then conditional policies in listed order",
+    "reinitialization": "Each evaluation clones the same fixture parameters and uses identical recorded noise, without consuming new noise",
+    "cadence": "Save outputs, every trainable parameter gradient and comparison metrics after each evaluation",
+    "baseline_loss": "Unmodified production fair_energy_score and balance"
+  },
+  "parameter_groups": {
+    "observed_projections": ["bus_observed", "gen_observed"],
+    "GRUs": ["bus_gru", "gen_gru"],
+    "conditioning": ["bus_conditioning", "gen_conditioning"],
+    "calendar": ["future_projection"],
+    "heads": ["bus_head", "gen_head"]
+  },
+  "metrics": {
+    "gradient": ["cosine", "candidate_norm/reference_norm", "difference_norm", "per_parameter_and_group_norms"],
+    "gradient_norm_floor": 1e-12,
+    "near_zero_policy": "If either vector norm is <= floor, cosine is null and cannot pass; norm ratio is null if reference norm is <= floor. Absolute difference norm is always reported. No epsilon can turn an undefined cosine into a pass.",
+    "forward": ["Vm mean/max/p95 absolute delta in p.u.", "joint mean/max/p95 absolute delta in mixed physical units"],
+    "forward_threshold": null,
+    "forward_role": "Descriptive diagnostic, no unrequested output gate",
+    "ON_closer": "Compare ON cosine to OFF min/median/max separately for each group; report norm-ratio error from one and normalized difference norm as additional evidence. Mixed directions must not be called uniformly closer."
+  },
+  "decision": {
+    "usable_at_least": 0.99,
+    "unreliable_below": 0.95,
+    "justification": "Thresholds supplied by the user before this diagnostic",
+    "usable": "Every group in all six baseline fp32 evaluations has cosine >=0.99: candidate for OFF under the user's separate epoch-level acceptance gate; this single-batch experiment itself supplies no epoch acceptance evidence",
+    "unreliable": "Any group in either mode has cosine <0.95: current fp32 gradient is unreliable on this fixture; run the conditional loss/head fp64 tests and record a methods note before speedup work",
+    "intermediate": "Any unresolved or [0.95,0.99) group without a <0.95 group: inconclusive; hold Stage 2",
+    "epoch_gate_if_usable": "Use matching v4 seed42/1/2 per-epoch min/max selection ES envelopes, not final-score spreads. Check stopping epoch within one only where early stopping occurred; budget stops are censored. Require finite metrics. A new acceptance protocol and passing evidence are required before a stage merge."
+  },
+  "conditional_policies": ["loss64", "heads64", "heads_loss64"],
+  "conditional_details": {
+    "trigger": "Any baseline group cosine <0.95",
+    "repeats": "Each policy: ON once, OFF five times, same fixture and CPU reference",
+    "loss64": "Backbone, adapter and physics remain fp32; promote joint, target, scales and final per-bus P/Q residuals before fair ES, square/mean balance and weighted loss accumulation",
+    "heads64": "Only bus_head, gen_head, backbone.mlp_bus and backbone.mlp_gen parameters/operations and their input activations are fp64; cast each module output back to fp32 before innovation/conditioning, bounds or physics. Frozen backbone readouts remain frozen; trainable head gradients are double. Other parameters/operations/loss are fp32.",
+    "heads_loss64": "Composition of the two specified policies",
+    "evaluation": "Report the same five-group metrics and supplied cosine categories; no production precision adoption from one batch"
+  },
+  "job": {
+    "queue": "debug",
+    "account": "EpiCalib",
+    "nodes": 1,
+    "processes": 1,
+    "visible_tiles": 1,
+    "launcher": "mpiexec --pmi=pmix --envall -n 1 --ppn 1 --cpu-bind none",
+    "device_convention": "ZE_FLAT_DEVICE_HIERARCHY=FLAT, ZE_AFFINITY_MASK=0; assert exactly one visible XPU tile",
+    "walltime_seconds": 1200,
+    "worker_guard_seconds": 1080,
+    "maximum_allocations": 1,
+    "cumulative_reserved_node_seconds": 1200,
+    "maximum_model_evaluations": 25,
+    "accounting": "One reserved 20-minute node allocation; also record actual full job/worker cost and per-evaluation times, including CPU reference. Diagnostic timings include cold-start and serialization overhead, not production speed estimates.",
+    "stop_conditions": ["provenance or fixture hash mismatch", "failed diagnostic unit test", "nonfinite loss/output/gradient", "unexpected missing adapter gradient or nonzero frozen-backbone gradient", "model parameter mutation", "unsupported precision kernel", "1080-second worker guard or allocation limit"],
+    "guard_behavior": "Save atomic results after every evaluation; parent terminates the worker process group on timeout; record incomplete diagnosis and launch no retry",
+    "environment": "Existing Aurora frameworks/vendor torch and existing venv; no installation or upgrades"
+  },
+  "limitations": ["One initial case30 origin, not a training trajectory or production acceptance", "CPU fp64 is a higher-precision numerical reference, not an analytic exact gradient", "ON once cannot estimate ON repeat variability", "FP64 selective heads do not promote message passing or physics", "No Stage 2 compute in this diagnostic allocation"]
+}

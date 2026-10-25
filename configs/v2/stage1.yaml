@@ -1,0 +1,11 @@
+# Three complete epochs; production acceptance remains separate from resume_test.
+v2:
+  stage: 1
+  run_identity: stage1-unassigned
+stage_b:
+  deterministic_algorithms: false
+  metrics_interval_steps: 1
+  max_epochs: 3
+  training_budget_seconds: 9000
+  checkpoint_interval_seconds: 120
+  job_training_guard_seconds: 3300

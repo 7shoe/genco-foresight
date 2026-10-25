@@ -1,5 +1,6 @@
 """Budgeted training with resumable mid-epoch order and selection-only stopping."""
 import hashlib
+from copy import deepcopy
 import os
 from pathlib import Path
 import platform
@@ -23,6 +24,13 @@ from training.state import (checkpoint,epoch_order,next_progress,restore,seed_al
 class TimeGuard(Exception): pass
 
 
+def deterministic_setting(cfg):
+    value=cfg["stage_b"].get("deterministic_algorithms",True)
+    if not isinstance(value,bool):
+        raise ValueError("deterministic_algorithms must be a Boolean")
+    return value
+
+
 def make_manifest(cfg):
     dataset=Path(cfg["paths"]["temporal_root"])
     manifest={"mode":"A","dataset_id":cfg["dataset"]["id"],"dataset_manifest_sha256":sha256(dataset/"manifest.json"),
@@ -31,7 +39,7 @@ def make_manifest(cfg):
         "coordinate_scales_sha256":sha256(ROOT/cfg["stage_b"]["coordinate_scales"]),
         "training_origins":cfg["task"]["split_episodes"]["train"]*409,
         "selection_origins":cfg["task"]["split_episodes"]["model_selection"]*18,
-        "deterministic_algorithms":True,
+        "deterministic_algorithms":deterministic_setting(cfg),
         "world_size":1,"origins_per_step":1,"precision_policy":{"all_modules":"fp32","loss_and_physics":"fp32"},
         "global_K":cfg["stage_b"]["training_samples"],
         "sample_partition":{"scheme":"serial_contiguous","sizes":[cfg["stage_b"]["training_samples"]]},
@@ -51,7 +59,7 @@ def make_manifest(cfg):
 
 
 def initialize(cfg,device):
-    torch.use_deterministic_algorithms(True)
+    torch.use_deterministic_algorithms(deterministic_setting(cfg))
     seed_all(cfg["seed"])
     torch.set_num_threads(1 if device=="xpu" else 16)
     net=load_network(config=cfg)
@@ -126,6 +134,10 @@ def walltime_seconds(value):
 
 
 def run(cfg,device,run_root=None,stop_after_steps=None,crash_at_steps=None,test_mode=False):
+    if test_mode:
+        # Serialization/order/RNG trials always retain strict deterministic kernels.
+        cfg=deepcopy(cfg)
+        cfg["stage_b"]["deterministic_algorithms"]=True
     entry=time.time();job_start=float(os.environ.get("GENCO_JOB_START_EPOCH",entry))
     root=Path(run_root or cfg["paths"]["training_run"]);root.mkdir(parents=True,exist_ok=True)
     if (root/"failure.json").exists():raise RuntimeError("Prior worker failed; inspect failure.json before resuming")
@@ -142,7 +154,8 @@ def run(cfg,device,run_root=None,stop_after_steps=None,crash_at_steps=None,test_
     model,opt,sched,template,cache=initialize(cfg,device)
     base_digest=tensor_digest(model.backbone.state_dict())
     state_path=root/"latest.pt"
-    progress=restore(state_path,model,opt,sched,manifest) if state_path.exists() else next_progress()
+    progress=restore(state_path,model,opt,sched,manifest,
+        audit_path=root/"restores"/f"{time.time_ns()}.json") if state_path.exists() else next_progress()
     progress.setdefault("origins_consumed",progress["steps"])
     if "initial_adapter_sha256" not in progress:
         progress["initial_adapter_sha256"]=tensor_digest(train_state(model))

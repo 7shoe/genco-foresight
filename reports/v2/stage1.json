@@ -1,0 +1,256 @@
+{
+  "schema_version": 1,
+  "stage": 1,
+  "status": "fail",
+  "passed": false,
+  "adopted_configuration": {
+    "deterministic_algorithms": true,
+    "world_size": 1,
+    "origins_per_step": 1,
+    "global_K": 8,
+    "precision": "fp32",
+    "branch": "main"
+  },
+  "main_merge": "a6ae620264ff4cdfda9e1b4f31eeca377cb6f938",
+  "stage1_merged": false,
+  "reason": "Same-seed OFF curves exceed predeclared bounds from step 1; stopped under protocol stop conditions",
+  "protocol_version": "stage1-v1",
+  "protocol_sha256": "71948ce147d2bfcfba0660fe1e315280cdc882de63d9ce63601a9880bb33b04b",
+  "protocol_source_sha256": "92ad812e9db42376d229e81ffca124ff7c456af7ce66eaae6b81f69bb40016bb",
+  "evidence_root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_20261025T0605Z",
+  "job_ids": [
+    "8962445.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov"
+  ],
+  "withdrawn_before_execution_job_id": "8962442",
+  "withdrawn_job_compute_seconds": 0,
+  "pbs_wall_seconds": 423,
+  "charged_allocation_seconds": 3600,
+  "cumulative_allocation_cap_seconds": 14400,
+  "tests_passed": 17,
+  "deterministic_resume_mechanism_passed": true,
+  "initial_adapters_equal": true,
+  "all_persisted_metrics_finite": true,
+  "comparisons": [
+    {
+      "left": "off_a",
+      "right": "off_b",
+      "steps_compared": 1089,
+      "order_noise_counters_exact": true,
+      "metrics": {
+        "loss": {
+          "failures": 1046,
+          "max_absolute_difference": 3.6440353393554688,
+          "first_failure": {
+            "step": 4,
+            "left": 7.160634994506836,
+            "right": 7.2745208740234375,
+            "absolute_difference": 0.11388587951660156,
+            "allowed_difference": 0.03647260437011719
+          }
+        },
+        "energy": {
+          "failures": 1042,
+          "max_absolute_difference": 3.569140672683716,
+          "first_failure": {
+            "step": 4,
+            "left": 6.5328593254089355,
+            "right": 6.641021251678467,
+            "absolute_difference": 0.10816192626953125,
+            "allowed_difference": 0.033305106258392336
+          }
+        },
+        "balance": {
+          "failures": 1056,
+          "max_absolute_difference": 0.08349066972732544,
+          "first_failure": {
+            "step": 6,
+            "left": 0.7606977820396423,
+            "right": 0.772351086139679,
+            "absolute_difference": 0.011653304100036621,
+            "allowed_difference": 0.00773351086139679
+          }
+        },
+        "gradient_norm": {
+          "failures": 1033,
+          "max_absolute_difference": 3138.3858947753906,
+          "first_failure": {
+            "step": 1,
+            "left": 366.3372497558594,
+            "right": 325.8953552246094,
+            "absolute_difference": 40.44189453125,
+            "allowed_difference": 7.326844995117187
+          }
+        }
+      }
+    },
+    {
+      "left": "off_a",
+      "right": "on_reference",
+      "steps_compared": 688,
+      "order_noise_counters_exact": true,
+      "metrics": {
+        "loss": {
+          "failures": 657,
+          "max_absolute_difference": 3.615784168243408,
+          "first_failure": {
+            "step": 2,
+            "left": 9.991344451904297,
+            "right": 9.7060546875,
+            "absolute_difference": 0.2852897644042969,
+            "allowed_difference": 0.050056722259521486
+          }
+        },
+        "energy": {
+          "failures": 656,
+          "max_absolute_difference": 3.5447345972061157,
+          "first_failure": {
+            "step": 2,
+            "left": 9.141921043395996,
+            "right": 8.869632720947266,
+            "absolute_difference": 0.27228832244873047,
+            "allowed_difference": 0.045809605216979986
+          }
+        },
+        "balance": {
+          "failures": 645,
+          "max_absolute_difference": 0.0961700975894928,
+          "first_failure": {
+            "step": 2,
+            "left": 0.8494235873222351,
+            "right": 0.8364223837852478,
+            "absolute_difference": 0.013001203536987305,
+            "allowed_difference": 0.008504235873222351
+          }
+        },
+        "gradient_norm": {
+          "failures": 643,
+          "max_absolute_difference": 1080.4384307861328,
+          "first_failure": {
+            "step": 1,
+            "left": 366.3372497558594,
+            "right": 290.00201416015625,
+            "absolute_difference": 76.33523559570312,
+            "allowed_difference": 7.326844995117187
+          }
+        }
+      }
+    }
+  ],
+  "timings": {
+    "off_a": {
+      "completed_steps": 1089,
+      "completed_epochs": 0,
+      "window_steps": [
+        101,
+        600
+      ],
+      "window_count": 500,
+      "median_step_seconds": 0.16715164249762893,
+      "p90_step_seconds": 0.16767563694156706,
+      "measured_worker_seconds_through_last_record": 195.04922652244568,
+      "startup_seconds": 9.384568691253662,
+      "last_record_step_seconds_total": 184.68511472130194,
+      "full_worker_exit_cost_available": false
+    },
+    "off_b": {
+      "completed_steps": 1120,
+      "completed_epochs": 0,
+      "window_steps": [
+        101,
+        600
+      ],
+      "window_count": 500,
+      "median_step_seconds": 0.16251365595962852,
+      "p90_step_seconds": 0.16290383110754192,
+      "measured_worker_seconds_through_last_record": 195.02590370178223,
+      "startup_seconds": 9.379919052124023,
+      "last_record_step_seconds_total": 184.70102774933912,
+      "full_worker_exit_cost_available": false
+    },
+    "on_reference": {
+      "completed_steps": 688,
+      "completed_epochs": 0,
+      "window_steps": [
+        101,
+        600
+      ],
+      "window_count": 500,
+      "median_step_seconds": 0.2654412485426292,
+      "p90_step_seconds": 0.2659976268187165,
+      "measured_worker_seconds_through_last_record": 195.03589272499084,
+      "startup_seconds": 9.378055572509766,
+      "last_record_step_seconds_total": 184.90834894799627,
+      "full_worker_exit_cost_available": false
+    }
+  },
+  "diagnostic_speedup": {
+    "off_a": 1.5880265642402795,
+    "off_b": 1.6333473453367502
+  },
+  "not_completed": [
+    "Three complete production epochs",
+    "Controlled production restart crossing epoch/validation boundary",
+    "Per-epoch production selection comparison",
+    "Production early stopping (separate controller fixture passed)",
+    "Final production frozen-backbone check",
+    "Complete production worker teardown accounting",
+    "case118 preparation and matched production timings"
+  ],
+  "dependent_stages": {
+    "2": "not started after failed gate",
+    "3": "not started after failed gate",
+    "4": "not started after failed gate"
+  },
+  "thresholds_relaxed": false,
+  "extra_experiments_after_failure": false,
+  "evidence": {
+    "gate.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_20261025T0605Z/gate.json",
+      "sha256": "727672bfb7738668683879dbf0fd115dff6537914fa12f5570bb6a0fe2d33c20"
+    },
+    "protocol.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_20261025T0605Z/protocol.json",
+      "sha256": "71948ce147d2bfcfba0660fe1e315280cdc882de63d9ce63601a9880bb33b04b"
+    },
+    "prepared.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_20261025T0605Z/prepared.json",
+      "sha256": "487f4345e85c6d3943514c6c8e501248d9cf2cdee9768c990a9f65bbde0ba8cc"
+    },
+    "artifact_sha256.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_20261025T0605Z/artifact_sha256.json",
+      "sha256": "294f63c3f4a5133c06071bf5820ac1272053e10a82b1e28b45b5ab22ff9e892d"
+    },
+    "failure_analysis.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_20261025T0605Z/failure_analysis.json",
+      "sha256": "6f85ba350615e5259caea9547b1d5bdfceaa044e9bfc7335bc9f3bb8ede3fe19"
+    },
+    "checkpoint_inspection.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_20261025T0605Z/checkpoint_inspection.json",
+      "sha256": "63f72d70cfa51bfc58e5c417fd83b84404aa8e9e0f07c5347ce9785d064e305c"
+    },
+    "mechanism/xpu.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_20261025T0605Z/mechanism/xpu.json",
+      "sha256": "65179332dea4d0400a1964db7d52d8f3ae0b7f1fd5e92c8f08dea9903e4275f2"
+    },
+    "logs/tests.log": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_20261025T0605Z/logs/tests.log",
+      "sha256": "9a9cf825cf874fa3acdaea260ee08ac6960878a9af60b15255ac03b91efe66ce"
+    },
+    "pbs_final.txt": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_20261025T0605Z/pbs_final.txt",
+      "sha256": "a2e0ff3ea7c87679983fa43c1c57b2c9613c8a94af73fd6c236868470ec91019"
+    },
+    "prefix_check_1792908612.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_20261025T0605Z/prefix_check_1792908612.json",
+      "sha256": "016f58ccfc0761f31a7e92143acc5f5e31876ef32b45f9d9ea517e15db0d57a8"
+    },
+    "comparison_off_a__off_b.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_20261025T0605Z/comparison_off_a__off_b.json",
+      "sha256": "8bf668df2d3ff625f4bb1ff77cb51b6a3a0b368f7693f2ede98f9b77c81b1d7e"
+    },
+    "comparison_off_a__on_reference.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/stage1_20261025T0605Z/comparison_off_a__on_reference.json",
+      "sha256": "877ac1ff26515460f62a5dc2780b2ca6ecfd4c857fd5ec633758eebafe1082fe"
+    }
+  }
+}
