@@ -2,6 +2,7 @@
 import argparse
 from datetime import datetime,timezone
 import hashlib
+import fcntl
 import json
 import os
 from pathlib import Path
@@ -43,7 +44,8 @@ def inventory(root):
         if not source and snapshot and 'recovery_20261025_v1/source' in snapshot:source='8d93abb'
         ended=state.get('attempts',[{}])[-1].get('ended') if state.get('attempts') else None
         category=task.get('category','evaluation')
-        if category in ('ensemble-depth','ablation') and state.get('status')=='running':category='post-freeze'
+        if category in ('ensemble-depth','ablation') and (state.get('status')=='running' or (ended is not None and ended>freeze)):
+            category='post-freeze'
         rows.append(dict(run_directory=task.get('run_directory'),category=category,status=state.get('status','not started'),
             task_id=task['id'],snapshot=snapshot,commit=source,source_pin=str(pin_path),snapshot_sha256=sha(pin_path) if pin else None,
             ended_epoch=ended,worker_seconds=state.get('worker_seconds',0)))
@@ -140,9 +142,10 @@ def consolidate(root,config):
 def main():
     p=argparse.ArgumentParser();p.add_argument('--root',type=Path,required=True);p.add_argument('--config',type=Path,required=True);a=p.parse_args()
     root=a.root;cfg=read(a.config);freeze=read(root/'protocol.json')['freeze_epoch'];guarded=False;last_report=0
+    lock=(root/'finalizer.lock').open('a');fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
     while time.time()<freeze:
         if not guarded and time.time()>=freeze-90:stop_submitters(root);guarded=True
-        if time.time()-last_report>=300:
+        if time.time()-last_report>=300 and time.time()<freeze-120:
             result=subprocess.run([sys.executable,str(root/'final_operations/report.py'),'--root',str(root)])
             if result.returncode:write(root/'report_error.json',dict(returncode=result.returncode,at=time.time()))
             last_report=time.time()
