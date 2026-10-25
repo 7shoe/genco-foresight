@@ -226,7 +226,7 @@ def audit(root):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--config", default="config.yaml")
+    parser.add_argument("--config", default="configs/v3.yaml")
     parser.add_argument("--hours", type=int, default=200)
     args = parser.parse_args()
     if not 1 <= args.hours <= 10080:

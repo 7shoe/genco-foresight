@@ -2,14 +2,19 @@
 from __future__ import annotations
 
 import argparse
+import requests
 from pathlib import Path
 from datetime import datetime, timezone
 
 import pandas as pd
-import requests
+
 from huggingface_hub import HfApi, hf_hub_download
 
-from common import load_config, read_json, sha256, write_json
+# workhorse loader
+from common import (load_config,
+                    read_json,
+                    sha256,
+                    write_json)
 
 
 DATASET_REVISION = "64bfe542a7fd195abe0b4b6e0a82520b43a73569"
@@ -17,11 +22,20 @@ DATASET_REPOSITORY = "gridfm/opfdata_case30_ieee"
 
 
 def checkpoint_assets(config, download=False):
+    """
+    Check if checkpoints are in if not download
+    """
+    
+    # check if OK on your system
     settings = config["checkpoint"]
     root = Path(config["paths"]["assets_root"]) / "genco-opfdata"
     previous = read_json(root / "manifest.json") if (root / "manifest.json").exists() else None
+    
+    # validity check
     if previous and (previous["repository"], previous["revision"]) != (settings["repository"], settings["revision"]):
         raise ValueError("Checkpoint asset directory belongs to another repository/revision")
+
+    # paths
     names = [f"{settings['directory']}/{settings[key]}"
              for key in ("weights", "normalizer", "configuration")]
     names += [f"splits/{part}.pt" for part in ("train", "val", "test", "shuffled_indices")]
@@ -36,15 +50,22 @@ def checkpoint_assets(config, download=False):
         if previous and name in previous["files"] and entry != previous["files"][name]:
             raise ValueError(f"Pinned checkpoint asset changed: {path}")
         manifest["files"][name] = entry
+    
+    # write log
     write_json(root / "manifest.json", manifest)
+    
     return root
 
 
 def converted_partitions(partitions, destination, download=False):
-    """Acquire a small official reference subset, rather than all 300K graphs."""
+    """Prepare selected OPFData partitions w/o downloadig the full dataset"""
+    
+    # check path on your system
     root = Path(destination)
     root.mkdir(parents=True, exist_ok=True)
     inventory_path = root / "hf_inventory.json"
+    
+    # cache the file listing to avoid repeating the API request
     if inventory_path.exists():
         inventory = read_json(inventory_path)
     else:
@@ -66,17 +87,26 @@ def converted_partitions(partitions, destination, download=False):
             hf_hub_download(DATASET_REPOSITORY, name, repo_type="dataset", revision=DATASET_REVISION,
                             local_dir=root)
         selected.append({"path": name, "sha256": sha256(path), "bytes": path.stat().st_size})
+        
+    # each partition needs one bus, generator & branch file
     if len(selected) != 3 * len(set(partitions)):
         raise ValueError("Expected one parquet per requested partition and table")
+    
+    # write manifsest
     write_json(root / "download_manifest.json", {"repository": DATASET_REPOSITORY,
                "revision": DATASET_REVISION, "files": selected})
+
     return root
 
 
 def eia_profile(config, download=False):
     """Hourly ERCO demand for 2025 from the public EIA v2 API, in UTC."""
+    
+    # path for temporal data
     root = Path(config["paths"]["assets_root"]) / "profiles"
     root.mkdir(parents=True, exist_ok=True)
+    
+    # key CSV to simulate synthetic temporal evolution
     target = root / "eia_erco_demand_2025.csv"
     provenance = root / "eia_erco_demand_2025.json"
     expected_hash = config.get("asset_hashes", {}).get("ercot_2025_csv")
@@ -121,7 +151,7 @@ def eia_profile(config, download=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--config", default="config.yaml")
+    parser.add_argument("--config", default="configs/v3.yaml", help="Currently, v3 is the default")
     parser.add_argument("--download", action="store_true", help="Explicitly allow missing-asset downloads")
     parser.add_argument("--profile", action="store_true")
     parser.add_argument("--reference-partitions", nargs="*", type=int,
@@ -129,6 +159,8 @@ def main():
     args = parser.parse_args()
     config = load_config(args.config)
     print("Checkpoint assets:", checkpoint_assets(config, args.download), flush=True)
+    
+    # check validity
     if args.profile:
         print("Profile:", eia_profile(config, args.download), flush=True)
     if args.reference_partitions is not None:

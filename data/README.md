@@ -31,7 +31,7 @@ The same module provides an official-parquet reader for downloaded partitions;
 Use existing OPFData and split files read-only. Keep acquisition/preparation
 source in `download/`, conversion/window source in `loader/`, and temporal
 generation source in `synthetic/`. Store downloaded assets, generated shards,
-manifests, and run outputs at the external locations in `../config.yaml`.
+manifests, and run outputs at the external locations in `../configs/v3.yaml`.
 The external `GENCO/{runs,assets,data}/` directories now exist. The selected
 dataset is `GENCO/data/temporal_case30_v3/`; its manifest records the final
 calendar-interleaved source pools, source dates, seeds, sampling law, budgets,
