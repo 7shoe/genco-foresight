@@ -1,0 +1,15 @@
+# Independent evaluation and pilot recovery
+
+All changes are in the multigrid-pilots worktree. The original fleet controller, source snapshot and run directories are unchanged. Job8964643 ended normally; subsequent fleet jobs were submitted by its pre-existing controller, not this recovery.
+
+The new source snapshot is commit8d93abb under `/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/recovery_20261025_v1/source`. Its source_pin.json hashes the actual copied worktree files and all new configurations. Unrelated working-tree edits remain uncommitted; their copied bytes are included in snapshot provenance.
+
+Evaluation job8964735 runs in debug on one node, one hour maximum. Sixteen recovery/solver/evaluation tests passed on compute, and all six frozen-scorer modes reproduced the first released v4 origin at the predeclared tolerances, with exact detailed arrays. Each worker sees one physical flat tile and selects its local xpu:0. It reads a private, hash-verified copy of a finished checkpoint; evaluation writes are restricted to the new recovery root. C/P/P0/S/A/D, three-seed summaries and192-sample equal-weight A/D mixtures use the existing replication evaluation routines. No training runs or historical manifests are modified.
+
+Pilot job8964751 is queued in debug with a separate detached controller. The audit helper now applies GridSpec.online_gen before casting and arithmetic, so offline null/NaN outputs cannot contaminate bus injections or objective calculations. Active nonfinite labels remain invalid. The same mask is applied to cached generator histories. Offline/unrated thermal event summaries retain undefined maxima as null. All10080 existing labels per grid will be re-audited; generation is explicitly prohibited. Original generation provenance is checked against its original snapshot, and current audit hashes are recorded separately. Accepted CPU subset parity(200) is reused by hash. case500 K8 and case2000 K2 pilots are independent, OFF/fp32/B1, seed0, epoch cap6, patience3, and excluded from fleet tables.
+
+Each new family has a detached PPID1 controller and a twelve-allocation cap. The pilot carries prior data budget usage forward and retains its original cumulative data/training caps. Normal walltime exits resume; scientific failures stop the affected chain. Queue wait is separately observable in PBS. Neither continuation depends on this conversation. There are no package installations.
+
+The provisional Stage1 comparison records two OFF selected-checkpoint scores above the ON maximum. See [stage1_verdict.md](stage1_verdict.md); the final test table is pending evaluation. Historical logical seed0 uses RNG42; new fleet seed0 uses RNG0. The confirmation failure is contextual and does not decide this verdict.
+
+Protocol: [recovery.protocol.json](recovery.protocol.json). Live status and bulk evidence: `/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/recovery_20261025_v1/STATUS.md`. No Stage2–4 gate is asserted, no main merge is claimed, and no tags or remote refs are changed.

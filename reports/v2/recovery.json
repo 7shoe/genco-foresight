@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "source_commit": "8d93abb",
+  "root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/recovery_20261025_v1",
+  "evaluation_job": "8964735",
+  "pilot_job": "8964751",
+  "evaluation_tests": {
+    "passed": true
+  },
+  "frozen_scorer_passed": true,
+  "items": {
+    "evaluation": "running",
+    "pilots": "queued",
+    "stage1": "selection gaps recorded; test pending"
+  },
+  "original_fleet_untouched": true
+}
