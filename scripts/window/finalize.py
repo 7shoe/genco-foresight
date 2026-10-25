@@ -148,7 +148,7 @@ def main():
     while time.time()<freeze:
         if not guarded and time.time()>=freeze-90:stop_submitters(root);guarded=True
         if time.time()-last_report>=300 and time.time()<freeze-120:
-            result=subprocess.run([sys.executable,str(root/'final_operations/report.py'),'--root',str(root)])
+            result=subprocess.run([sys.executable,str(Path(__file__).with_name('report.py')),'--root',str(root)])
             if result.returncode:write(root/'report_error.json',dict(returncode=result.returncode,at=time.time()))
             last_report=time.time()
         write(root/'finalizer_status.json',dict(pid=os.getpid(),status='scheduled',updated=time.time(),freeze_epoch=freeze))
@@ -161,7 +161,7 @@ def main():
         except Exception as error:write(root/'finalizer_poll_error.json',dict(error=repr(error),at=time.time()))
         write(root/'finalizer_status.json',dict(pid=os.getpid(),status='waiting for already-submitted jobs',updated=time.time()))
         time.sleep(30)
-    subprocess.run([sys.executable,str(root/'final_operations/report.py'),'--root',str(root)],check=True)
+    subprocess.run([sys.executable,str(Path(__file__).with_name('report.py')),'--root',str(root)],check=True)
     shutil.copyfile(root.parent/'FREEZE.md',root/'FREEZE.md')
     consolidate(root,cfg)
 

@@ -67,13 +67,18 @@ def submit_shards(root,spec_path,case,seed):
 def mixtures(root,case,source):
     baseline=root.parent/'recovery_20261025_v1/evaluation'/case
     for size in (2,5,8):
-        members=[baseline/f'seed{s}/stage_b' if s<3 else root/'evaluation'/case/f'seed{s}/stage_b' for s in range(size)]
-        if not all((m/'completion.json').exists() for m in members):continue
+        candidates=[baseline/f'seed{s}/stage_b' if s<3 else root/'evaluation'/case/f'seed{s}/stage_b' for s in range(8)]
+        seeds=list(range(size));members=[candidates[s] for s in seeds]
+        if not all((m/'completion.json').exists() for m in members):
+            if time.time()<read(root/'phase_d.protocol.json').get('phase_c_snapshot_epoch',float('inf')):continue
+            seeds=[s for s,m in enumerate(candidates) if (m/'completion.json').exists()][:size]
+            if len(seeds)<size:continue
+            members=[candidates[s] for s in seeds]
         out=root/'mixtures'/case/f'size{size}'; spec_path=out/'spec.json'
         if spec_path.exists():continue
         cache_base=Path('/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v4/stage_b') if case=='case30_ieee' else baseline/'seed0/stage_b'
         spec=dict(kind='mixture',source=str(source),config=str(root.parent/'recovery_20261025_v1/evaluation/configs'/f'{case}_seed0.yaml'),
-                  baseline=str(baseline/'seed0/stage_b'),out=str(out),members=[str(m) for m in members],seeds=list(range(size)),
+                  baseline=str(baseline/'seed0/stage_b'),out=str(out),members=[str(m) for m in members],seeds=seeds,
                   pairs=str(cache_base/'variogram_pairs.npz'),input_sha256={str(m/'completion.json'):sha(m/'completion.json') for m in members},
                   headlines=str(root.parent/'fleet_20261025_off_v1'/case/'stage_a/stage_a_followup/headline_components.json'),
                   audit=str(root/'evaluation'/case/'evaluation.json'))

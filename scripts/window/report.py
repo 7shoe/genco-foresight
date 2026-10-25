@@ -24,7 +24,8 @@ def report(root):
             if state.get('status') in ('complete','budget_capped') and state['attempts'][-1].get('ended',float('inf'))<=freeze:eligible.append(seed)
         for size in (1,2,3,5,8):
             path=(recovery/case/'seed0/stage_b/report.json' if size==1 else recovery/case/'mixture/report.json' if size==3 else root/'mixtures'/case/f'size{size}/report.json')
-            completion=path.with_name('completion.json');value=read(path);members=list(range(size))
+            completion=path.with_name('completion.json');value=read(path)
+            members=value.get('seeds',read(path.with_name('spec.json')).get('seeds',list(range(size))))
             ready=completion.exists() and all(s in eligible for s in members)
             h=value.get('headlines',{}).get('A',value.get('modes',{}).get('A',{})) if ready else {}
             full=value.get('modes',{}).get('A',{}) if ready else {}
@@ -37,9 +38,9 @@ def report(root):
                              all_bus_vm_coverage90_pct=100*voltage['coverage_90'] if voltage.get('coverage_90') is not None else None))
             if ready:hashes[str(path)]=sha(path)
     lines=['# Mixture-size curves','',f'Updated {datetime.now(timezone.utc).isoformat()}. Training eligibility cutoff: 2026-10-25 19:00 CT.',
-           '', 'Nested seed prefixes 0..m−1, 64 draws per seed, equal weights, jointly rescored with every cross-seed pair. Samples share the existing fixed-noise convention across checkpoints; this is a descriptive empirical mixture curve. Missing sizes are not interpolated. ES scales/masks differ across grids.',
-           '', '| Grid | Size | Finished seeds | ES | Vm CRPS | Coverage90 % | P imbalance MW | Status |','|---|---:|---|---:|---:|---:|---:|---|']
-    for r in rows:lines.append(f"| {r['case']} | {r['size']} | {','.join(map(str,r['finished_seeds']))} | "+' | '.join(fmt(r['metrics'][m]) for m in metrics)+f" | {r['status']} |")
+           '', 'Prefer seed prefixes 0..m−1; from18:15CT, an unavailable prefix may use the first m finished/evaluated seeds in ascending ID order. Membership is frozen once, without using scores. Each seed contributes64 draws, equally weighted and jointly rescored with every cross-seed pair. Samples share the existing fixed-noise convention across checkpoints; this is a descriptive empirical mixture curve. Missing sizes are not interpolated. ES scales/masks differ across grids.',
+           '', '| Grid | Size | Mixture members | Finished seeds | ES | Vm CRPS | Coverage90 % | P imbalance MW | Status |','|---|---:|---|---|---:|---:|---:|---:|---|']
+    for r in rows:lines.append(f"| {r['case']} | {r['size']} | {','.join(map(str,r['seeds']))} | {','.join(map(str,r['finished_seeds']))} | "+' | '.join(fmt(r['metrics'][m]) for m in metrics)+f" | {r['status']} |")
     lines+=['','Vm columns above retain the mechanical headline-bus rule; case14 has no eligible headline buses, so those values are undefined. The figure uses all-bus Vm CRPS/coverage for every grid, consistently, as an additional diagnostic. This does not change headline selection, training masks or scales.','',
             '| Grid | Size | All-bus Vm CRPS | All-bus coverage90 % |','|---|---:|---:|---:|']
     lines += [f"| {r['case']} | {r['size']} | {fmt(r['all_bus_vm_crps'])} | {fmt(r['all_bus_vm_coverage90_pct'])} |" for r in rows]
