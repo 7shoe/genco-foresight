@@ -31,6 +31,7 @@ def build(root):
             row = dict(mode=mode, logical_seed=seed, rng_seed=42 if mode == 'ON' and seed == 0 else seed,
                        selected_selection_es=status['best_selection'], best_epoch=status['best_epoch'],
                        last_epoch=epochs[-1]['epoch'], last_epoch_selection_es=epochs[-1]['selection_energy_score'],
+                       stop_reason=status.get('stop_reason'), cumulative_training_wall_seconds=status.get('cumulative_training_wall_seconds'),
                        test=None)
             if report.exists():
                 result = read(report)
@@ -68,6 +69,7 @@ def build(root):
         f'{mode} {statistics.mean(values):.9f} ± {statistics.stdev(values):.9f}' for mode, values in groups.items())+
         '. The OFF mean is below the ON maximum, but two individual OFF seeds exceed it; averaging does not hide those gaps.']
     lines += ['', '“Selected ES” is selection ES at best.pt, the checkpoint used for test evaluation. Last-epoch ES is shown separately. Historical logical seed0 used RNG42; the new fleet used literal RNG0. This is a historical three-seed comparison, not a paired experiment isolating determinism.', '',
+              'Historical ON seeds0/2 early-stopped at epoch17; ON seed1 reached its six-hour budget at epoch19. OFF seeds0/1/2 early-stopped at epochs25/19/21. Thus the common epoch19 endpoint for seed1 has different stopping reasons. The earlier stopping-epoch ±1 proposal is not part of this verdict.', '',
               f'All test headline voltage metrics below are recomputed from the stored frozen-scorer component summaries using the same mechanically selected bus IDs {buses}; historical headline bus lists are not mixed with the new list. Joint ES and free-generator masks/scales are unchanged. C/P/P0/S use the released reference forecasts.', '',
               '| Mode | Seed | C ES | P ES | P0 ES | S ES | A ES | D ES |', '|---|---|---:|---:|---:|---:|---:|---:|']
     for r in runs:

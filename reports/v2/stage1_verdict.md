@@ -19,6 +19,8 @@ Selected-checkpoint means ± sample SD: ON 0.285553075 ± 0.006916267; OFF 0.290
 
 “Selected ES” is selection ES at best.pt, the checkpoint used for test evaluation. Last-epoch ES is shown separately. Historical logical seed0 used RNG42; the new fleet used literal RNG0. This is a historical three-seed comparison, not a paired experiment isolating determinism.
 
+Historical ON seeds0/2 early-stopped at epoch17; ON seed1 reached its six-hour budget at epoch19. OFF seeds0/1/2 early-stopped at epochs25/19/21. Thus the common epoch19 endpoint for seed1 has different stopping reasons. The earlier stopping-epoch ±1 proposal is not part of this verdict.
+
 All test headline voltage metrics below are recomputed from the stored frozen-scorer component summaries using the same mechanically selected bus IDs [12]; historical headline bus lists are not mixed with the new list. Joint ES and free-generator masks/scales are unchanged. C/P/P0/S use the released reference forecasts.
 
 | Mode | Seed | C ES | P ES | P0 ES | S ES | A ES | D ES |
@@ -70,4 +72,4 @@ Confirmation job8962843 is contextual only. Six epoch comparisons were planned; 
 No historical manifest, checkpoint or result was rewritten. No new training or acceptance threshold was introduced. This report does not reverse prior operational authorization to run OFF; it records that the latest requested historical-range criterion is not met.
 
 Bulk evidence and all input SHA256 hashes: [recovery_20261025_v1/stage1_verdict.json](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/recovery_20261025_v1/stage1_verdict.json).
-Protocol: [recovery.protocol.json](recovery.protocol.json). Report data SHA256: `b0df8ec2ebbf6d47c2f7a591b3ae44f25d4ba40de52ea6ad99682a42cf7c15ab`.
+Protocol: [recovery.protocol.json](recovery.protocol.json). Report data SHA256: `387b8e73b5e44b9564c1ee708041771b81f8598182a7296aac6e5fec202344f7`.

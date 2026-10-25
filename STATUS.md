@@ -4,7 +4,7 @@ Original fleet job8964643 and its own continuations remain untouched. New snapsh
 
 | Item | Status |
 |---|---|
-| Nine completed-model evaluations, summaries and mixtures | Running: debug job8964735; automatic continuation active (PID730566, detached) |
+| Nine completed-model evaluations, summaries and mixtures | Complete: nine evaluations, all three mixtures and cross-grid summaries in debug job8964735 |
 | case118 evaluation | Running in8964735 after original training finished |
 | case500/case2000 full audit of existing labels and pilots | Submitted: debug job8964751, queued; detached controller PID733698 |
 | Stage1 verdict | Complete: selection gaps for OFF seeds0/1 and test gap for seed0; reports/v2/stage1_verdict.md |
