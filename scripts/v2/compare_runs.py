@@ -35,6 +35,12 @@ def close(a, b, threshold):
     return abs(a - b) <= threshold["atol"] + threshold["rtol"] * max(abs(a), abs(b))
 
 
+def in_epoch_envelope(row, comparison):
+    bounds = comparison["epoch_envelopes"][str(row["epoch"])]
+    value = row["selection_energy_score"]
+    return isinstance(value, (float, int)) and not isinstance(value, bool) and math.isfinite(value) and bounds["minimum"] <= value <= bounds["maximum"]
+
+
 def compare_runs(left, right, protocol):
     left, right = Path(left), Path(right)
     failures = []
@@ -50,12 +56,24 @@ def compare_runs(left, right, protocol):
     try:
         if protocol["schema_version"] != 1:
             raise ValueError("Unsupported protocol version")
-        thresholds = protocol["comparison"]["thresholds"]
-        for key in (*METRICS, "selection_energy_score"):
-            for part in ("atol", "rtol"):
-                value = thresholds[key][part]
-                if not math.isfinite(value) or value < 0:
-                    raise ValueError("Invalid numerical threshold")
+        comparison = protocol["comparison"]
+        numerical = comparison.get("numerical_acceptance", "step_equivalence")
+        if numerical not in ("step_equivalence", "epoch_envelope"):
+            raise ValueError("Unknown numerical acceptance rule")
+        thresholds = comparison.get("thresholds", {})
+        if numerical == "step_equivalence":
+            for key in (*METRICS, "selection_energy_score"):
+                for part in ("atol", "rtol"):
+                    value = thresholds[key][part]
+                    if not math.isfinite(value) or value < 0:
+                        raise ValueError("Invalid numerical threshold")
+        else:
+            bounds = comparison["epoch_envelopes"]
+            if set(bounds) != {str(i) for i in range(1, comparison["epochs"] + 1)}:
+                raise ValueError("Incomplete epoch envelope")
+            for row in bounds.values():
+                if not all(math.isfinite(row[k]) for k in ("minimum", "maximum")) or row["minimum"] > row["maximum"]:
+                    raise ValueError("Invalid epoch envelope")
         manifests = [artifact(root, "manifest.json") for root in (left, right)]
         require(manifests[0]["run_identity"] != manifests[1]["run_identity"], "independent_run_identities")
         normalized = [comparable_manifest(m) for m in manifests]
@@ -91,7 +109,8 @@ def compare_runs(left, right, protocol):
             for key in ROW_KEYS - TIMING - set(METRICS):
                 require(a[key] == b[key], f"step {a['steps']}: {key}")
             for key in METRICS:
-                require(close(a[key], b[key], thresholds[key]), f"step {a['steps']}: {key}")
+                if numerical == "step_equivalence":
+                    require(close(a[key], b[key], thresholds[key]), f"step {a['steps']}: {key}")
                 if math.isfinite(a[key]) and math.isfinite(b[key]):
                     maximum[key] = max(maximum[key], abs(a[key] - b[key]))
         epochs = [artifact(root, "epochs.json") for root in (left, right)]
@@ -99,7 +118,10 @@ def compare_runs(left, right, protocol):
         for a, b in zip(*epochs):
             require(a.keys() == b.keys(), "epoch schema")
             for key in a:
-                require(close(a[key], b[key], thresholds[key]) if key == "selection_energy_score" else a[key] == b[key], f"epoch {a['epoch']}: {key}")
+                if key == "selection_energy_score" and numerical == "epoch_envelope":
+                    require(in_epoch_envelope(a, comparison) and in_epoch_envelope(b, comparison), f"epoch {a['epoch']}: historical selection envelope")
+                else:
+                    require(close(a[key], b[key], thresholds[key]) if key == "selection_energy_score" else a[key] == b[key], f"epoch {a['epoch']}: {key}")
         statuses = [artifact(root, "status.json") for root in (left, right)]
         for root, status in zip((left, right), statuses):
             require(not (root / "failure.json").exists(), f"{root.name}: worker failure")
@@ -112,7 +134,7 @@ def compare_runs(left, right, protocol):
             require(statuses[0][key] == statuses[1][key], f"final {key}")
         if any(s["stop_reason"] == "early_stopping" for s in statuses):
             require(all(s["stop_reason"] == "early_stopping" for s in statuses)
-                    and statuses[0]["epochs_reached"] == statuses[1]["epochs_reached"], "stopping epochs")
+                    and abs(statuses[0]["epochs_reached"] - statuses[1]["epochs_reached"]) <= comparison.get("stopping_epoch_tolerance", 0), "stopping epochs")
         if protocol["comparison"].get("exact_adapter", False):
             require(statuses[0]["adapter_sha256"] == statuses[1]["adapter_sha256"], "final adapter")
     except (OSError, ValueError, KeyError, TypeError) as error:

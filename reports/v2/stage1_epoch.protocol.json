@@ -1,0 +1,238 @@
+{
+  "schema_version": 1,
+  "protocol_version": "stage1-epoch-v2",
+  "stage": 1,
+  "recorded_before_submission": true,
+  "prerequisite": {
+    "stage0_commit": "7c19dd0",
+    "main_merge": "a6ae620264ff4cdfda9e1b4f31eeca377cb6f938",
+    "gate": "reports/v2/stage0.json",
+    "gradient_diagnosis": {
+      "path": "reports/v2/stage1_diagnosis.json",
+      "sha256": "e5ffb264fb3e473270c04edb9b734ea2805fe88272cdb64dbc1b2ebeecc05861",
+      "commit": "b49a177"
+    }
+  },
+  "runs": [
+    "off_a",
+    "off_b",
+    "on_reference"
+  ],
+  "seeds": [
+    42,
+    42,
+    42
+  ],
+  "recipe": "configs/v4.yaml with configs/v2/stage1.yaml; only ON reference overrides deterministic_algorithms to true",
+  "origin_order": "All 4090 origins in each of epochs 0,1,2; CPU randperm seed 42+epoch; full 36-origin K64 selection each epoch",
+  "restart_points": [
+    {
+      "run": "off_b",
+      "steps": 4090,
+      "position": "after final epoch-0 optimizer update and before selection; terminate worker normally after atomic save and start a fresh interpreter for selection"
+    }
+  ],
+  "allocation_restarts": "Additional graceful time-guard restarts permitted for any chain, recorded and audited; never skip a pending validation",
+  "mechanism_test": {
+    "entry": "scripts.resume_test.trial",
+    "determinism": true,
+    "device": "xpu",
+    "steps": 200,
+    "sigkill_at_step": 100,
+    "require_exact": true
+  },
+  "controller_test": "Separate small loop fixture with four identical selection scores, patience 3, boundary restart; stopping must occur at epoch 4, best at epoch 1",
+  "comparison": {
+    "steps": 12270,
+    "origins": 12270,
+    "epochs": 3,
+    "cadence_steps": 1,
+    "exact_adapter": false,
+    "expected_manifest": {
+      "seed": 42,
+      "deterministic_algorithms": false,
+      "world_size": 1,
+      "origins_per_step": 1,
+      "global_K": 8,
+      "training_origins": 4090,
+      "selection_origins": 36,
+      "precision_policy": {
+        "all_modules": "fp32",
+        "loss_and_physics": "fp32"
+      }
+    },
+    "rule": "For every run at each complete epoch: historical minimum <= selection ES <= historical maximum, inclusive, with no added slack. All persisted step metrics finite; stepwise differences reported descriptively. Original order/noise/configuration/counter/RNG requirements remain exact.",
+    "justification": "User explicitly replaced stepwise numerical equivalence after all 30 group cosines exceeded 0.99 in a matched fp64 diagnosis. Bounds use only already-recorded matching case30 v4 seed42/1/2 per-epoch values; no results from these new chains have been observed.",
+    "pairs": [
+      [
+        "off_a",
+        "off_b"
+      ],
+      [
+        "off_a",
+        "on_reference"
+      ]
+    ],
+    "reference_allowed_differences": [
+      "deterministic_algorithms",
+      "settings.deterministic_algorithms",
+      "configuration.stage_b.deterministic_algorithms"
+    ],
+    "exact_fields": "Origin order, sample noise, counters, all configuration except declared run identity/mode differences; final RNG trees; restored model/optimizer/scheduler/RNG equal saved state for every restart",
+    "selection_cadence": "All three complete epochs",
+    "stopping_epoch_comparison": "Only when both compared chains actually early-stop; require epoch difference <=1. Three epochs cannot exercise patience-3, so this field is not claimed as tested on production chains. Separately retain the real controller boundary-resume test. Historical seed1 budget stop is censored, not an early stop.",
+    "numerical_acceptance": "epoch_envelope",
+    "epoch_envelopes": {
+      "1": {
+        "minimum": 0.5118635098139445,
+        "maximum": 0.6171770658757951,
+        "spread": 0.10531355606185067,
+        "values_by_seed": {
+          "seed42": 0.6171770658757951,
+          "seed1": 0.5296809681587749,
+          "seed2": 0.5118635098139445
+        }
+      },
+      "2": {
+        "minimum": 0.4213344115349982,
+        "maximum": 0.4580226242542267,
+        "spread": 0.03668821271922851,
+        "values_by_seed": {
+          "seed42": 0.4580226242542267,
+          "seed1": 0.4575765902797381,
+          "seed2": 0.4213344115349982
+        }
+      },
+      "3": {
+        "minimum": 0.3815448308984439,
+        "maximum": 0.4392866889635722,
+        "spread": 0.057741858065128326,
+        "values_by_seed": {
+          "seed42": 0.4392866889635722,
+          "seed1": 0.3894047596388393,
+          "seed2": 0.3815448308984439
+        }
+      }
+    },
+    "near_zero": "No relative divisions or epsilon; absolute historical ES bounds and finite-value checks.",
+    "stopping_epoch_tolerance": 1,
+    "monitoring": "Check newly persisted epoch selections every second and stop the family at the first envelope failure; full final evidence also checks all persisted metrics/order/configuration/counters and restored states."
+  },
+  "timing": {
+    "case30": {
+      "window_steps_inclusive": [
+        101,
+        600
+      ],
+      "modes": [
+        "off_a",
+        "off_b",
+        "on_reference"
+      ],
+      "report": "median and p90 synchronized production-step seconds; full worker costs, startup and non-step overhead; concurrent tile placement disclosed"
+    },
+    "case118": {
+      "seeds": [
+        42,
+        42
+      ],
+      "modes": [
+        false,
+        true
+      ],
+      "steps_each": 70,
+      "warmup_steps": 20,
+      "window_steps_inclusive": [
+        21,
+        70
+      ],
+      "recipe": "v4 parameters on case118 dataset/network/seed42 checkpoint, K8 B1 fp32; train-derived case118 masks/scales and real cached histories; serial isolated tile 0 runs",
+      "numerical_acceptance": "Finite metrics and unchanged frozen backbone only; this timing diagnostic is separate from case30 acceptance"
+    },
+    "speedup_threshold": null,
+    "interpretation": "Measure actual speedup and full cost; 1.5-1.6x is an expectation, not a gate"
+  },
+  "case118_preparation": {
+    "reason": "Only assets and format smoke evidence exist; an audited temporal training cache is required for production-step timing",
+    "scope": "Existing v4 demand/calendar generation and solver settings; 200-hour pilot then full 10 train and 2 model-selection episodes (6048 hours); no held-out labels or evaluation",
+    "source_partitions": "Same predeclared v4 calendar pools; coordinate scales fit on train only",
+    "layout": "After case30 acceptance passes: baseline solver/dual smoke and 200-hour pilot, then up to 12 independent CPU label workers; XPU embedding-cache preparation after labels/audit",
+    "audit": "Exact case hash and deterministic demands; independent solution checks; masks retain failed states; shard hashes; pilot prefix unchanged; valid fraction at least 0.99; all selected scales finite and positive",
+    "timing_runs_only_after_audit": true
+  },
+  "job": {
+    "queue": "debug",
+    "account": "EpiCalib",
+    "nodes": 1,
+    "walltime_seconds": 3600,
+    "case30_max_allocations": 2,
+    "case118_max_allocations": 2,
+    "max_allocations": 4,
+    "cumulative_allocation_cap_seconds": 14400,
+    "family_guard_seconds": 3300,
+    "checkpoint_interval_seconds": 120,
+    "case30_layout": "Fresh independent workers on isolated flat tiles 0/1/2; each asserts exactly one visible tile and selects device 0; reference may require a second allocation",
+    "budget_accounting": "PBS allocation reservations plus actual PBS wall time; every worker subprocess including restarts/startup/validation/checkpointing recorded; missing job boundary charged full 3600 seconds and stops verification",
+    "stop_conditions": [
+      "Any revised epoch-envelope, finite-metric or exact-state gate fails",
+      "Any worker error or NaN",
+      "Exact restoration/RNG/order/counter mismatch",
+      "Missing evidence",
+      "Case118 data audit fails",
+      "Allocation/resource cap exhausted"
+    ],
+    "retry_policy": "Only clean graceful checkpoint continuation; no crash retries; stop dependent work on a failed gate",
+    "cumulative_accounting_scope": "Fresh acceptance identity: at most 2 case30 and 2 case118 one-hour allocations (14400 reserved node-seconds). Prior diagnosis reserved1200/used75 seconds and old failed acceptance reserved3600/used423 seconds are reported separately, not erased."
+  },
+  "adoption": "Adopt determinism OFF only after this revised case30 acceptance, exact restore and required case118 timings pass; no production merge or Stage2 implementation before a passing Stage1 gate. The one diagnostic allocation was a separate completed job.",
+  "limitations": [
+    "One comparison seed is not a population-level convergence study",
+    "No claim that three epochs exercises patience-3 early stopping",
+    "No fleet or full replication training"
+  ],
+  "supersession": "User-authorized new acceptance following the CPU-fp64 diagnosis; original stage1-v1 failure and its run remain unchanged",
+  "historical_epoch_evidence": {
+    "seed42": {
+      "manifest.json": {
+        "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/adapter_v4/manifest.json",
+        "sha256": "943f81d38dd7db32d7de9dea8c8f13c716acea85afc27d55b781107203b69bb5"
+      },
+      "epochs.json": {
+        "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/adapter_v4/epochs.json",
+        "sha256": "1b6cc3c2c437d3be8606b2fedfcaf7854321f3d86c91e94b1ca29eaf302dc927"
+      },
+      "status.json": {
+        "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/adapter_v4/status.json",
+        "sha256": "0fede0cc2535a1a6be5740eb355a5cface1de08bbaf3d9fdaa2d8590d16c9426"
+      }
+    },
+    "seed1": {
+      "manifest.json": {
+        "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/replication/case30_ieee/v4/seed1/adapter/manifest.json",
+        "sha256": "16ddf4586c820a574f3566212df1347cd01656fbc10e005da94785719cf25f22"
+      },
+      "epochs.json": {
+        "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/replication/case30_ieee/v4/seed1/adapter/epochs.json",
+        "sha256": "646a375a7bbe2fcf81811f1208d5d22369240e3a741c1a31927a2964f5b2c936"
+      },
+      "status.json": {
+        "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/replication/case30_ieee/v4/seed1/adapter/status.json",
+        "sha256": "3985fde0937630ecadd217406a62c895969d20f15f89873a7c56fb3470d3fe04"
+      }
+    },
+    "seed2": {
+      "manifest.json": {
+        "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/replication/case30_ieee/v4/seed2/adapter/manifest.json",
+        "sha256": "e54642b8fb22f86114a411b36be7f71883f624e0ac91f7e103fe41416ee29033"
+      },
+      "epochs.json": {
+        "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/replication/case30_ieee/v4/seed2/adapter/epochs.json",
+        "sha256": "5d67534ff768ff84eda9782a2be8421729611ae5a61c297d97ad4ef5262e8925"
+      },
+      "status.json": {
+        "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/replication/case30_ieee/v4/seed2/adapter/status.json",
+        "sha256": "ecf10c03da26dc8a7389b98e45c7fabfa633bea771961fc4b818a9a15586c414"
+      }
+    }
+  }
+}

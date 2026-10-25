@@ -90,6 +90,27 @@ def test_epoch_coverage_and_selection_curve(tmp_path):
     assert not compare_runs(*roots, protocol)["passed"]
 
 
+def test_epoch_gate_preserves_noise_finiteness_and_declared_envelope(tmp_path):
+    roots, protocol = fixture(tmp_path)
+    protocol["comparison"].update(numerical_acceptance="epoch_envelope", epochs=1,
+        epoch_envelopes={"1": {"minimum": .2, "maximum": .4}})
+    protocol["comparison"].pop("thresholds")
+    for root, score in zip(roots, (.2, .4)):
+        put(root / "epochs.json", [{"epoch": 1, "steps": 2, "selection_energy_score": score}])
+        status = json.loads((root / "status.json").read_text())
+        status["epochs_reached"] = 1
+        put(root / "status.json", status)
+    change_row(roots[1], {"loss": 100., "gradient_norm": 1e6})
+    assert compare_runs(*roots, protocol)["passed"]
+    change_row(roots[1], {"noise_sha256": "different"})
+    assert not compare_runs(*roots, protocol)["passed"]
+    change_row(roots[1], {"noise_sha256": "noise1", "loss": float("nan")})
+    assert not compare_runs(*roots, protocol)["passed"]
+    change_row(roots[1], {"loss": 100.})
+    put(roots[1] / "epochs.json", [{"epoch": 1, "steps": 2, "selection_energy_score": .400000001}])
+    assert not compare_runs(*roots, protocol)["passed"]
+
+
 def test_absolute_floor_handles_near_zero():
     assert close(0., 1e-9, {"atol": 2e-9, "rtol": 1e-3})
     assert not close(0., 1e-9, {"atol": 0., "rtol": 1e-3})

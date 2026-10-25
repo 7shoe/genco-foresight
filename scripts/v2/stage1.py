@@ -9,7 +9,7 @@ import sys
 import time
 
 from common import ROOT, load_config, read_json, sha256, write_json
-from scripts.v2.compare_runs import compare_runs
+from scripts.v2.compare_runs import compare_runs, in_epoch_envelope
 from scripts.v2.verify_stage import V2_ROOT, copy_cache, freeze_preparation, invoke, verify_frozen
 
 
@@ -18,6 +18,17 @@ def prepare(protocol_path, root):
     if not prerequisite["passed"]:
         raise ValueError("Stage 0 has not passed")
     protocol=read_json(protocol_path)
+    if protocol["comparison"].get("numerical_acceptance")=="epoch_envelope":
+        diagnosis=protocol["prerequisite"]["gradient_diagnosis"]
+        if sha256(ROOT/diagnosis["path"])!=diagnosis["sha256"]:
+            raise ValueError("Gradient diagnosis gate changed")
+        result=read_json(ROOT/diagnosis["path"])
+        if not result["passed"] or not result["all_30_group_cosines_at_least_0_99"]:
+            raise ValueError("Gradient diagnosis does not authorize epoch-level acceptance")
+        for row in protocol["historical_epoch_evidence"].values():
+            for item in row.values():
+                if sha256(item["path"])!=item["sha256"]:
+                    raise ValueError("Historical epoch evidence changed")
     subprocess.run(["git","merge-base","--is-ancestor",protocol["prerequisite"]["main_merge"],"main"],check=True,cwd=ROOT)
     if (root/"prepared.json").exists():raise ValueError("Run identity already prepared")
     root.mkdir(parents=True,exist_ok=True)
@@ -28,7 +39,13 @@ def prepare(protocol_path, root):
     cfg=load_config(ROOT/"configs/v4.yaml",overrides=overrides)
     cfg["v2"]["protocol_sha256"]=sha256(root/"protocol.json")
     write_json(root/"configuration.json",cfg)
-    return freeze_preparation(root,protocol_path,protocol)
+    result=freeze_preparation(root,protocol_path,protocol)
+    if "historical_epoch_evidence" in protocol:
+        prepared=read_json(root/"prepared.json")
+        for row in protocol["historical_epoch_evidence"].values():
+            for item in row.values():prepared["protected_sha256"][item["path"]]=item["sha256"]
+        write_json(root/"prepared.json",prepared)
+    return result
 
 
 def gate(root,passed,**details):
@@ -138,6 +155,17 @@ def case30(root,deadline,record):
     running={};parked=set();attempts={name:0 for name in read_json(root/"protocol.json")["runs"]}
     try:
         while time.time()<deadline:
+            comparison=read_json(root/"protocol.json")["comparison"]
+            if comparison.get("numerical_acceptance")=="epoch_envelope":
+                for name in attempts:
+                    path=root/name/"epochs.json"
+                    if path.exists():
+                        for row in read_json(path):
+                            if not in_epoch_envelope(row,comparison):
+                                write_json(root/"epoch_failure.json",{"run":name,"observation":row,
+                                    "bounds":comparison["epoch_envelopes"][str(row["epoch"])],
+                                    "rule":"predeclared historical per-epoch min/max envelope"})
+                                raise RuntimeError(f"{name} epoch {row['epoch']} outside historical ES envelope")
             for tile,name in enumerate(attempts):
                 if name in running or name in parked:continue
                 path=root/name/"status.json"
