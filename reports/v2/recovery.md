@@ -10,6 +10,6 @@ Pilot job8964751 is queued in debug with a separate detached controller. The aud
 
 Each new family has a detached PPID1 controller and a twelve-allocation cap. The pilot carries prior data budget usage forward and retains its original cumulative data/training caps. Normal walltime exits resume; scientific failures stop the affected chain. Queue wait is separately observable in PBS. Neither continuation depends on this conversation. There are no package installations.
 
-The provisional Stage1 comparison records two OFF selected-checkpoint scores above the ON maximum. See [stage1_verdict.md](stage1_verdict.md); the final test table is pending evaluation. Historical logical seed0 uses RNG42; new fleet seed0 uses RNG0. The confirmation failure is contextual and does not decide this verdict.
+The completed Stage1 comparison records two OFF selected-checkpoint scores above the ON maximum and a test-ES gap for OFFseed0. See [stage1_verdict.md](stage1_verdict.md) for the full test table. Historical logical seed0 uses RNG42; new fleet seed0 uses RNG0. The confirmation failure is contextual and does not decide this verdict.
 
 Protocol: [recovery.protocol.json](recovery.protocol.json). Live status and bulk evidence: `/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/recovery_20261025_v1/STATUS.md`. No Stage2–4 gate is asserted, no main merge is claimed, and no tags or remote refs are changed.

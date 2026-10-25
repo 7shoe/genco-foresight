@@ -34,7 +34,8 @@ def build(root):
                        test=None)
             if report.exists():
                 result = read(report)
-                row['test'] = {m: headline(result['modes'][m], scales, indices) for m in MODES}
+                modes = result['modes'] or {m: read(report.parent / f'{m}.json') for m in MODES}
+                row['test'] = {m: headline(modes[m], scales, indices) for m in MODES}
             runs.append(row)
     upper = max(r['selected_selection_es'] for r in runs if r['mode']=='ON')
     lower = min(r['selected_selection_es'] for r in runs if r['mode']=='ON')
@@ -49,6 +50,11 @@ def build(root):
                   verdict='OFF within or below ON range' if passed else 'OFF exceeds historical ON range; gap recorded',
                   ON_selected_selection_range=[lower,upper], runs=runs, confirmation=conf,
                   comparison_voltage_bus_ids=buses, source_sha256=evidence)
+    if complete:
+        reference = [r['test']['A']['joint_es'] for r in runs if r['mode']=='ON']
+        result['ON_test_A_range'] = [min(reference), max(reference)]
+        result['OFF_test_A_gaps_above_ON_max'] = {str(r['logical_seed']): max(0., r['test']['A']['joint_es']-max(reference))
+                                                for r in runs if r['mode']=='OFF'}
     write_json(root/'stage1_verdict.json', result)
     lines=['# Stage 1 fleet verdict','',result['verdict']+'.', '',
            'The requested rule has no added slack: every OFF selected-checkpoint selection ES must be at or below the maximum historical ON value. Test results provide context; they do not change that rule.', '',
@@ -57,6 +63,10 @@ def build(root):
            '|---|---|---:|---:|---:|---:|---:|']
     for r in runs:
         lines.append(f"| {r['mode']} | {r['logical_seed']} ({r['rng_seed']}) | {r['selected_selection_es']:.9f} | {r['best_epoch']} | {r['last_epoch']} | {r['last_epoch_selection_es']:.9f} | {r['gap_above_ON_max']:.9f} |")
+    groups = {mode: [r['selected_selection_es'] for r in runs if r['mode']==mode] for mode in ('ON', 'OFF')}
+    lines += ['', 'Selected-checkpoint means ± sample SD: '+ '; '.join(
+        f'{mode} {statistics.mean(values):.9f} ± {statistics.stdev(values):.9f}' for mode, values in groups.items())+
+        '. The OFF mean is below the ON maximum, but two individual OFF seeds exceed it; averaging does not hide those gaps.']
     lines += ['', '“Selected ES” is selection ES at best.pt, the checkpoint used for test evaluation. Last-epoch ES is shown separately. Historical logical seed0 used RNG42; the new fleet used literal RNG0. This is a historical three-seed comparison, not a paired experiment isolating determinism.', '',
               f'All test headline voltage metrics below are recomputed from the stored frozen-scorer component summaries using the same mechanically selected bus IDs {buses}; historical headline bus lists are not mixed with the new list. Joint ES and free-generator masks/scales are unchanged. C/P/P0/S use the released reference forecasts.', '',
               '| Mode | Seed | C ES | P ES | P0 ES | S ES | A ES | D ES |', '|---|---|---:|---:|---:|---:|---:|---:|']
@@ -64,6 +74,8 @@ def build(root):
         values = [f"{r['test'][m]['joint_es']:.9f}" if r['test'] else 'pending' for m in MODES]
         lines.append(f"| {r['mode']} | {r['logical_seed']} | "+' | '.join(values)+' |')
     if complete:
+        lines += ['', f"Historical test A ES range: {result['ON_test_A_range']}. OFF gaps above its maximum by seed: " +
+                  ', '.join(f'{seed}: {gap:.9f}' for seed, gap in result['OFF_test_A_gaps_above_ON_max'].items())+'.']
         lines += ['', '| Forecast | Metric | ON mean ± sample SD | OFF mean ± sample SD |', '|---|---|---:|---:|']
         for m in MODES:
             for metric in HEADLINES:
