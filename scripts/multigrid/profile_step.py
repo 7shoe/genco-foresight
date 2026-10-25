@@ -235,6 +235,7 @@ def worker(args):
                         raise TimeoutError("Timed out waiting for other tiles")
                     time.sleep(.05)
                 if args.device == "xpu":
+                    record["setup_warmup_peak_bytes"] = torch.xpu.max_memory_allocated()
                     torch.xpu.reset_peak_memory_stats()
                 record["timed_start_epoch"] = time.time()
                 for step in range(args.steps):
@@ -262,7 +263,8 @@ def worker(args):
         record["host_peak_rss_bytes"] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024
         if torch is not None and args.device == "xpu" and torch.xpu.is_initialized():
             try:
-                record["peak_device_bytes"] = torch.xpu.max_memory_allocated()
+                record["timed_peak_device_bytes"] = torch.xpu.max_memory_allocated()
+                record["peak_device_bytes"] = max(record["timed_peak_device_bytes"], record.get("setup_warmup_peak_bytes", 0))
                 record["peak_reserved_bytes"] = torch.xpu.max_memory_reserved()
             except RuntimeError as error:
                 record["memory_query_error"] = str(error)
@@ -369,6 +371,7 @@ def report(args, summary):
             continue
         _, hours = estimate(r, validation.get(case))
         (under_hour if hours <= 1 else chained).append(case)
+        if hours > 6: unviable.append(case)
         mode = "many models per node" if hours <= 1 and r["K"] == 8 else "one tile per model" if hours <= 6 else "sample-parallel across tiles" if r["K"] < 8 else "DDP across tiles/nodes"
         tiles = " / ".join(str(math.ceil(hours / target)) for target in (1, 3, 6))
         lines.append(f"| {case} | Y / {r['K']} | {hours:.3f}{'†' if case not in validation else ''} | {tiles} | {mode} |")
@@ -398,7 +401,7 @@ def report(args, summary):
     lines.extend(["", f"![Step time by grid and K]({args.output}/step_time.png)", "",
                   "Single-tile 1 h estimate: " + (", ".join(under_hour) or "none established") + ".  ",
                   "Requires chained 1 h jobs under this recipe: " + (", ".join(chained) or "none established") + ".  ",
-                  "Single-tile viability unestablished: " + (", ".join(unviable) or "none among completed configurations") + "; synthetic timing does not establish convergence."])
+                  "Single-tile six-hour target exceeded or a valid step not established: " + (", ".join(unviable) or "none among completed configurations") + "; synthetic timing does not establish convergence."])
     target = ROOT / "reports/multigrid/profile.md"
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text("\n".join(lines) + "\n")
@@ -524,6 +527,8 @@ def main():
             if args.concurrent > 1:
                 groups.append(group(args, f"concurrent_{args.concurrent}", args.case, args.K,
                                     device=args.device, deterministic=args.deterministic, concurrent=args.concurrent))
+            groups.append(group(args, f"validation_{args.case}", args.case, args.K,
+                                device=args.device, deterministic=args.deterministic, validation=True))
             summary = dict(job_id=os.environ.get("PBS_JOBID"), status="complete", groups=groups)
             save(args.output / "summary.json", summary)
             report(args, summary)
