@@ -58,10 +58,19 @@ def compare_runs(left, right, protocol):
                     raise ValueError("Invalid numerical threshold")
         manifests = [artifact(root, "manifest.json") for root in (left, right)]
         require(manifests[0]["run_identity"] != manifests[1]["run_identity"], "independent_run_identities")
-        require(comparable_manifest(manifests[0]) == comparable_manifest(manifests[1]), "configuration/provenance")
-        for m in manifests:
+        normalized = [comparable_manifest(m) for m in manifests]
+        differences = protocol["comparison"].get("manifest_differences", {})
+        for path, expected in differences.items():
+            for index, manifest in enumerate(normalized):
+                parent = manifest
+                parts = path.split(".")
+                for part in parts[:-1]:
+                    parent = parent[part]
+                require(parent.pop(parts[-1]) == expected[index], f"declared difference: {path}")
+        require(normalized[0] == normalized[1], "configuration/provenance")
+        for index, m in enumerate(manifests):
             for key, value in protocol["comparison"]["expected_manifest"].items():
-                require(m.get(key) == value, f"manifest.{key}")
+                require(m.get(key) == (differences[key][index] if key in differences else value), f"manifest.{key}")
         curves = []
         for root in (left, right):
             path = root / "metrics.jsonl"
@@ -101,6 +110,9 @@ def compare_runs(left, right, protocol):
             require(status["checkpoint_sha256"] == digest(root / "latest.pt"), f"{root.name}: checkpoint hash")
         for key in ("base_sha256", "step_sequence_sha256", "step_in_epoch", "origins_consumed"):
             require(statuses[0][key] == statuses[1][key], f"final {key}")
+        if any(s["stop_reason"] == "early_stopping" for s in statuses):
+            require(all(s["stop_reason"] == "early_stopping" for s in statuses)
+                    and statuses[0]["epochs_reached"] == statuses[1]["epochs_reached"], "stopping epochs")
         if protocol["comparison"].get("exact_adapter", False):
             require(statuses[0]["adapter_sha256"] == statuses[1]["adapter_sha256"], "final adapter")
     except (OSError, ValueError, KeyError, TypeError) as error:

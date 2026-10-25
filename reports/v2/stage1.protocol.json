@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "protocol_version": "stage1-v1",
+  "stage": 1,
+  "recorded_before_submission": true,
+  "prerequisite": {"stage0_commit": "7c19dd0", "main_merge": "a6ae620264ff4cdfda9e1b4f31eeca377cb6f938", "gate": "reports/v2/stage0.json"},
+  "runs": ["off_a", "off_b", "on_reference"],
+  "seeds": [42, 42, 42],
+  "recipe": "configs/v4.yaml with configs/v2/stage1.yaml; only ON reference overrides deterministic_algorithms to true",
+  "origin_order": "All 4090 origins in each of epochs 0,1,2; CPU randperm seed 42+epoch; full 36-origin K64 selection each epoch",
+  "restart_points": [{"run": "off_b", "steps": 4090, "position": "after final epoch-0 optimizer update and before selection; terminate worker normally after atomic save and start a fresh interpreter for selection"}],
+  "allocation_restarts": "Additional graceful time-guard restarts permitted for any chain, recorded and audited; never skip a pending validation",
+  "mechanism_test": {"entry": "scripts.resume_test.trial", "determinism": true, "device": "xpu", "steps": 200, "sigkill_at_step": 100, "require_exact": true},
+  "controller_test": "Separate small loop fixture with four identical selection scores, patience 3, boundary restart; stopping must occur at epoch 4, best at epoch 1",
+  "comparison": {
+    "steps": 12270,
+    "origins": 12270,
+    "epochs": 3,
+    "cadence_steps": 1,
+    "exact_adapter": false,
+    "expected_manifest": {"seed": 42, "deterministic_algorithms": false, "world_size": 1, "origins_per_step": 1, "global_K": 8, "training_origins": 4090, "selection_origins": 36, "precision_policy": {"all_modules": "fp32", "loss_and_physics": "fp32"}},
+    "thresholds": {
+      "loss": {"atol": 0.0001, "rtol": 0.005},
+      "energy": {"atol": 0.0001, "rtol": 0.005},
+      "balance": {"atol": 0.00001, "rtol": 0.01},
+      "gradient_norm": {"atol": 0.0001, "rtol": 0.02},
+      "selection_energy_score": {"atol": 0.0001, "rtol": 0.005}
+    },
+    "rule": "Every persisted observation must satisfy abs(a-b) <= atol + rtol*max(abs(a),abs(b)); all finite; absolute term handles near-zero values without division",
+    "justification": "Engineering equivalence bounds: at most 0.5% relative change in total loss, ES and epoch selection ES; 1% in squared balance and 2% in pre-clip gradient norm, whose sensitivity to small parameter perturbations is greater. Small absolute floors prevent meaningless near-zero ratios. These are deliberately strict bounds for same-seed trajectories, not claimed confidence intervals or historical v4 seed variability.",
+    "pairs": [["off_a", "off_b"], ["off_a", "on_reference"]],
+    "reference_allowed_differences": ["deterministic_algorithms", "settings.deterministic_algorithms", "configuration.stage_b.deterministic_algorithms"],
+    "exact_fields": "Origin order, sample noise, counters, all configuration except declared run identity/mode differences; final RNG trees; restored model/optimizer/scheduler/RNG equal saved state for every restart",
+    "selection_cadence": "All three complete epochs",
+    "stopping_epoch_comparison": "Only if early stopping actually occurs; three epochs do not establish patience-3 behavior"
+  },
+  "timing": {
+    "case30": {"window_steps_inclusive": [101, 600], "modes": ["off_a", "off_b", "on_reference"], "report": "median and p90 synchronized production-step seconds; full worker costs, startup and non-step overhead; concurrent tile placement disclosed"},
+    "case118": {"seeds": [42, 42], "modes": [false, true], "steps_each": 70, "warmup_steps": 20, "window_steps_inclusive": [21, 70], "recipe": "v4 parameters on case118 dataset/network/seed42 checkpoint, K8 B1 fp32; train-derived case118 masks/scales and real cached histories; serial isolated tile 0 runs", "numerical_acceptance": "Finite metrics and unchanged frozen backbone only; this timing diagnostic is separate from case30 acceptance"},
+    "speedup_threshold": null,
+    "interpretation": "Measure actual speedup and full cost; 1.5-1.6x is an expectation, not a gate"
+  },
+  "case118_preparation": {
+    "reason": "Only assets and format smoke evidence exist; an audited temporal training cache is required for production-step timing",
+    "scope": "Existing v4 demand/calendar generation and solver settings; 200-hour pilot then full 10 train and 2 model-selection episodes (6048 hours); no held-out labels or evaluation",
+    "source_partitions": "Same predeclared v4 calendar pools; coordinate scales fit on train only",
+    "layout": "After case30 acceptance passes: baseline solver/dual smoke and 200-hour pilot, then up to 12 independent CPU label workers; XPU embedding-cache preparation after labels/audit",
+    "audit": "Exact case hash and deterministic demands; independent solution checks; masks retain failed states; shard hashes; pilot prefix unchanged; valid fraction at least 0.99; all selected scales finite and positive",
+    "timing_runs_only_after_audit": true
+  },
+  "job": {
+    "queue": "debug",
+    "account": "EpiCalib",
+    "nodes": 1,
+    "walltime_seconds": 3600,
+    "case30_max_allocations": 2,
+    "case118_max_allocations": 2,
+    "max_allocations": 4,
+    "cumulative_allocation_cap_seconds": 14400,
+    "family_guard_seconds": 3300,
+    "checkpoint_interval_seconds": 120,
+    "case30_layout": "Fresh independent workers on isolated flat tiles 0/1/2; each asserts exactly one visible tile and selects device 0; reference may require a second allocation",
+    "budget_accounting": "PBS allocation reservations plus actual PBS wall time; every worker subprocess including restarts/startup/validation/checkpointing recorded; missing job boundary charged full 3600 seconds and stops verification",
+    "stop_conditions": ["Any numerical gate fails", "Any worker error or NaN", "Exact restoration/RNG/order/counter mismatch", "Missing evidence", "Case118 data audit fails", "Allocation/resource cap exhausted"],
+    "retry_policy": "Only clean graceful checkpoint continuation; no crash retries; stop dependent work on a failed gate"
+  },
+  "adoption": "Determinism OFF only after every correctness/acceptance requirement and required timing evidence passes; retain historical ON configuration behavior and evaluation",
+  "limitations": ["One comparison seed is not a population-level convergence study", "No claim that three epochs exercises patience-3 early stopping", "No fleet or full replication training"]
+}

@@ -24,6 +24,7 @@ def fixture(tmp_path):
         (root / "latest.pt").write_bytes(b"checkpoint-fixture")
         put(root / "epochs.json", [])
         put(root / "status.json", {"base_unchanged": True, "steps_after": 2, "epochs_reached": 0,
+            "stop_reason": "verification_step_limit",
             "origins_consumed": 2, "step_in_epoch": 2, "base_sha256": "base", "adapter_sha256": "adapter",
             "step_sequence_sha256": "sequence2", "checkpoint_sha256": digest(root / "latest.pt")})
         rows = [dict(schema_version=1, steps=i, origins_consumed=i, epoch=0, step_in_epoch=i,
