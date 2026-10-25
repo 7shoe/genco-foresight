@@ -39,3 +39,17 @@ No scientific result is claimed until the per-grid gate is written. No merge to 
 ## Case118 result
 
 Subset parity (200) passed: CPU outputs Vm/Va/Pg/Qg are bit-identical, every maximum absolute difference0.0. Numerical work took88.49 seconds; full child-worker wall cost98.90 seconds, below1200 seconds. Gate SHA256: `edc236dd8aff866eef2d5fc16b681c9af27852c3f3e38cc9d0c9be8c53580181`. The three case118 slots were released in8963510 at09:24:16 UTC; data generation resumed and training continues automatically after the remaining Stage A gates and cache. The external dataset card records **subset parity (200)**.
+
+## Final subset results
+
+All200-snapshot CPU comparisons passed with identical dtype and output bytes. Full subprocess wall times, including import/preparation, remained below the1200-second cap.
+
+| Grid | Numerical/preparation seconds | Full worker seconds | Maximum absolute differences | Gate |
+|---|---:|---:|---|---|
+| case118_ieee | 88.49 | 98.90 | 0.0 for Vm/Va/Pg/Qg | pass |
+| case500_goc | 200.14 | 210.01 | 0.0 for Vm/Va/Pg/Qg | pass |
+| case2000_goc | 611.28 | 621.27 | 0.0 for Vm/Va/Pg/Qg | pass |
+
+Each active parity path now points to its accepted subset evidence; the old parity directories are archived as `stage_a/parity_before_subset200`. All three external dataset cards state **subset parity (200)** and link their IDs and gate results. Gate/card hashes are in subset200.json.
+
+Case118 data generation continues in8963510 after release; its training still waits for the complete temporal audit/cache. Both pilot solver failures remain preserved and blocking. Job8963648 was the successful additional debug allocation for subset verification, not authorization to bypass those failures. The detached resubmission driver remains active for eligible work, bounded by12 further allocations per family and the original cumulative budgets.
