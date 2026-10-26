@@ -37,5 +37,9 @@ README_legacy.md
 # ignore plans of any sort
 PLAN*.md
 
-# reports
+# reports/experiments
 reports/
+experiments/
+
+# legacy config
+/configs/v2/

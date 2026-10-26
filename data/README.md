@@ -1,22 +1,20 @@
-# Stage A data inventory
+# Data
 
-The following locations were inspected read-only on 23 October 2026. This
-initial inventory recorded filesystem/text-metadata checks. Stage A now reads
-the canonical cache and frozen split arrays and converts them to Graphkit.
+Below, the key datasets on which the temporal adapters were trained. Currently, based on Aurora's 
+Lustre Flare filesystem paths.
 
 | Asset | Confirmed location |
 |---|---|
-| OPFData root | `/lus/flare/projects/FRAME-IDP/siebenschuh/acopf_datasets/` |
+| OPFData root | `/lus/flare/projects/{project}/{user_name}/acopf_datasets/` |
 | case30 N1 cache | `processed/N1/pglib_opf_case30_ieee/` beneath that root |
 | case30 T1 cache | `processed/T1/pglib_opf_case30_ieee/` beneath that root |
 | N1 split files | `processed/N1/splits/pglib_opf_case30_ieee/splits.npz` and `training_subsets.npz` |
 | Raw source root | `raw/OPFData/` beneath that root |
-| Existing reader | `/home/siebenschuh/Projects/lumina-sdk/distillation/baselines/n1/curated_data.py` |
-| Collection documentation | `/home/siebenschuh/Projects/lumina-sdk/distillation/baselines/artifacts/n1_datasets_20261022/README.md` |
+| Existing reader | `~/distillation/baselines/n1/curated_data.py` |
+| Collection documentation | `~/distillation/baselines/artifacts/n1_datasets_20261022/README.md` |
 
 Both case30 manifests declare format `lumina-t1-data-v1`, 300,000 samples,
-15,000 samples per group, and numeric `example_ID` ordering. Their tensor schema
-has been checked against 32 independent official-export snapshots. Equal IDs across T1 and N1 are not
+15,000 samples per group, and numeric `example_ID` ordering. Equal IDs across T1 and N1 are not
 paired physical scenarios. The collection documentation reports 240K/30K/30K
 N1 splits; actual membership is checked for complete, disjoint coverage. CPU
 parity passed on all 1,496 snapshots in the official/local test intersection.
@@ -25,8 +23,6 @@ parity passed on all 1,496 snapshots in the official/local test intersection.
 schema/units without SDK imports. It uses upstream graph construction, masking,
 normalization and inference. Adapted source is attributed in
 `../THIRD_PARTY_NOTICES.md`.
-The same module provides an official-parquet reader for downloaded partitions;
-`load_snapshot` selects it when the canonical Lustre cache is unavailable.
 
 Use existing OPFData and split files read-only. Keep acquisition/preparation
 source in `download/`, conversion/window source in `loader/`, and temporal
@@ -46,7 +42,7 @@ the final allocation, revised reporting contract and complete version history.
 
 The source is a complete 8,760-hour ERCO/D series for 2025 from EIA's public
 API. Hourly MWh divided by one hour gives mean MW. Raw responses, URL, retrieval
-time and hashes are retained. UTC indexing avoids daylight-saving duplicates.
+time and hashes are retained. UTC indexing fr daylight-saving duplicates.
 Packaged Datakit filenames were not assumed to establish 2025 provenance.
 
 Datakit supplies `Network`, `makeYbus`, and the aggregate-profile scaler. Our
@@ -76,8 +72,8 @@ Its inspected reference module defines PYPOWER and SciPy backends. Its
 `core/problem.py` changes Torch's default dtype at import, which any later reuse
 must handle explicitly.
 
-The Ipopt implementation has now been identified separately in
-`/home/siebenschuh/Projects/lumina-sdk/distillation/RAMBO/julia/model.jl`,
+The Ipopt implementation has now been identified separately in the sister repository: 
+lumina-bench (Aurora branch):, see `~/lumina-sdk/distillation/RAMBO/julia/model.jl`,
 accessed through a persistent Julia subprocess. Its minimal licensed OPF path
 and Project/Manifest are retained in this repository. Cold/warm and graph
 round-trip solves pass independent checks, and the active-dual sign/unit
