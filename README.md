@@ -14,6 +14,11 @@
 
 <br clear="all">
 
+The v0.2.0 tag collects all weekend experiments' code and the [run index](RUNS.md).
+The [final consolidation gate](reports/v2/final_consolidation.md) passed the full
+test suite and the existing case30 regression. Failed and budget-capped experiments
+retain their recorded outcomes; this tag does not assert that every training gate passed.
+
 ## Motivation 
 
 ## Method

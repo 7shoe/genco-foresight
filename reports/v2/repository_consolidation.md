@@ -1,5 +1,7 @@
 # Single repository consolidation
 
+This records the earlier filesystem-only cleanup. The later [final main consolidation](final_consolidation.md) merges release-window, resolves the preserved edits, verifies main, and archives/deletes merged branches under the user's subsequent authorization.
+
 Completed on October 26, 2026 UTC. `/home/siebenschuh/Projects/genco-foresight` is the only remaining checkout, on `main`. The `-main`, `-fleet`, `-pilots` and `-release` directories were linked Git worktrees sharing this repository, and have been removed. No compute jobs were submitted.
 
 Before removal, all five worktrees were archived with per-file hashes and verified by reading the archives back. A Git bundle preserves every branch/tag, and each worktree's index and staged/unstaged patches were saved. The fleet/pilot uncommitted files were additionally proved byte-identical to files retained in the original checkout. Their duplicate copies could therefore be removed without losing edits. Original modified/untracked files and staged file contents remain byte-identical.

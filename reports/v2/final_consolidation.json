@@ -1,0 +1,70 @@
+{
+  "passed": true,
+  "scope": "Consolidation regression and indexing; historical training failures remain failed",
+  "merge_commit": "00e7bb7972453c867d9b68c18a4196d23db0219d",
+  "tested_commit": "8987ed24356f2f5d66cf60e561951459e346f90b",
+  "job": {
+    "job_id": "8966156.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov",
+    "job_state": "F",
+    "Exit_status": 0,
+    "stime": "Mon Oct 26 03:29:27 2026",
+    "obittime": "Mon Oct 26 03:32:02 2026",
+    "resources_used": {
+      "cpupercent": 31,
+      "cput": "00:00:50",
+      "mem": "2517272kb",
+      "ncpus": 208,
+      "ngpus": 0,
+      "vmem": "25132kb",
+      "walltime": "00:01:50"
+    }
+  },
+  "full_suite": {
+    "passed": 140,
+    "subtests_passed": 3,
+    "failed": 0,
+    "skipped": 0
+  },
+  "regression": {
+    "audit_hours": 50,
+    "forward_origins": 2,
+    "subset_tests_passed": 87
+  },
+  "evidence_root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/final_consolidation_20261026_v1",
+  "protocol_sha256": "04df32de0fc9f52782e7cd7db32b992009420890507f4bfbc045b6025f81a792",
+  "gate_sha256": "a72c77caa770e131e9713d1d6ee262988eb6b2f6c8cfdf1f4251c78dc66139da",
+  "run_index_sha256": "96b0361f95a67d260e33bb821dbddc16bdbb43423280b8fd2a26a3343e5fecaa",
+  "inventory_builder_sha256": "a16626e0047d6273e73cce650a7d91fca862740f136221f7d5e9533bfe5d2842",
+  "coverage": {
+    "run_count": 215,
+    "source_records": 52,
+    "categories": {
+      "A0": 6,
+      "ensemble": 37,
+      "failed": 25,
+      "fleet": 37,
+      "pilot": 18,
+      "post-freeze": 9,
+      "released": 11,
+      "replication": 9,
+      "verification": 59,
+      "\u03bb": 4
+    },
+    "all_freeze_directories_indexed": true,
+    "training_manifests_indexed": true,
+    "failed_final_children": 9,
+    "missing_source": [],
+    "missing_config": [],
+    "sources_without_producing_commit": 37
+  },
+  "pre_cleanup_bundle": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/repository_backups/final_main_20261026T032238Z/before.bundle",
+  "final_bundle": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/repository_backups/final_main_20261026T032238Z/v0.2.0-all-branches.bundle",
+  "branch_cleanup": [
+    "multigrid",
+    "multigrid-fleet",
+    "multigrid-pilots",
+    "replication",
+    "release-window"
+  ],
+  "release_tag_message": "all weekend experiments' code and results index"
+}
