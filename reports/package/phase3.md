@@ -1,5 +1,30 @@
 # Phase 3: pff CLI — incomplete, compute budget closed
 
+**Restart amendment, 2026-10-26:** the user subsequently authorized one debug
+allocation to resume the intact step-4,090 checkpoint using `9482677`, finish two
+epochs, and run the requested evaluation/report/regression/reproducibility checks.
+The [amendment](phase3.resume.protocol.json) declares this incident recovery to be
+the planned boundary restart. Its tolerances are unchanged. The original closure
+and failed-job evidence below remain historical records; the new gate is pending.
+
+Ordinary CLI resume rejects the different package hash. A run-specific external
+driver admits only the recorded `9fa77c7` → `9482677` source pair and exact resume
+command. The changed package files are campaign, assessment, reporting and
+verification; every other package file, including model/loss/physics/state code,
+must be byte-identical. The driver retains the original campaign and checkpoint
+manifests, records both execution and creation identities in a new invocation,
+and leaves the strict training-state restore checks unchanged. This exception is
+part of the declared verification harness, not a new public CLI flag or a change
+to `9482677`. Initial checkpoint, counters and journals are copied to `pre_resume`
+before the chain advances. The cache-variable fix and its regression test are
+included in the full suite run before resuming. No from-scratch training or
+automatic continuation is scheduled.
+
+New evidence root:
+[phase3_resume_20261026_v1](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1).
+Cap: one node, one tile, 3,600 seconds; 3,300-second guard; no follow-up submission.
+The original gate below is not retroactively marked passed.
+
 **Phase 3 did not pass.** PBS job **8966340 exited 1** after saving the
 step-4,090 checkpoint, when the CLI attempted to write chain status. There are
 zero completed epochs and no selection-ES verdict. The user's hard compute stop
