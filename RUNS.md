@@ -672,3 +672,16 @@ regression score values match the recorded references exactly, but the CLI
 command failed before finalizing its headline report. The
 [latest gate](reports/package/phase3.resume2.json) therefore remains failed.
 No further job, merge or development tag was performed.
+
+### Phase 3 CPU closeout
+
+`package/phase3_closeout_cpu_20261026_v1` contains the corrected CLI score-only
+comparison and unit-test evidence, produced on the login node without a PBS job
+or model evaluation. Fix commits: `bcaef8a` and `351ca4b`. All six saved A/D score
+comparisons passed at unchanged atol 1e-7, rtol 0; maximum difference is 0 across
+18,330 values. The three targeted tests passed. Preparation headlines are
+optional and missing metadata is recorded as a note. The
+[final closeout gate](reports/package/phase3.closeout.json) accepts all five
+Phase 3 steps and carries accepted Phase 2 evidence forward without new reruns.
+Original job exits, the failed attempt-2 CLI record and all historical manifests
+remain intact. Bulk evidence and its hashes are linked by the closeout gate.

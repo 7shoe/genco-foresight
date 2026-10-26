@@ -1,6 +1,6 @@
 # Report index
 
-- [Phase 3 pff CLI](package/phase3.md): 8966442 resumed successfully and passed evaluation/reproducibility plus the diagnostic suite; regression scores match exactly, but its CLI command failed on missing historical headline metadata; no merge or development tag.
+- [Phase 3 pff CLI](package/phase3.md): passed; successful compute restart/evaluation/reproducibility and a corrected CPU-only score comparison with exact numerical agreement; `v0.3.0-dev` closeout.
 - [Phase 2 Python package](package/phase2.md): pure implementation relocation, compatibility shims, install matrix and passing compute gates; `v0.2.1-dev`.
 
 - [Final main consolidation and release verification](v2/final_consolidation.md): history merge, passing compute regression/full suite, complete run index and branch archival.

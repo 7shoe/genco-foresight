@@ -171,6 +171,13 @@ pff verify --check regression --protocol regression.json --out "$PFF_ROOT/runs/c
 pff verify --check reproducibility --protocol reproducibility.json --out "$PFF_ROOT/runs/cli/verify_reproducibility"
 ```
 
+To compare saved regression scores without evaluating a model, use
+`pff verify --check regression --compare-only --protocol regression.json --runs EVALUATION_OUTPUT --out NEW_OUTPUT`.
+The input may be an evaluation directory containing `runs/`, or one saved run's
+score directory. Its checkpoint, settings and per-origin completion hashes must
+match. The declared 1e-7 tolerance remains fixed. Missing headline preparation
+metadata produces a note and skips headline assembly; the verdict compares scores.
+
 Selection ES must be at most the maximum of the three recorded fleet seeds plus
 0.005 at each epoch. All persisted metrics must be finite; model/optimizer/RNG,
 counters and the committed metrics prefix must restore exactly. Loss curves are

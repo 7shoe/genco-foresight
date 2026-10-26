@@ -1,4 +1,47 @@
-# Phase 3: pff CLI — regression command incomplete
+# Phase 3: pff CLI — passed
+
+## Final closeout: login-node comparison only
+
+**Phase 3 passed.** All five Gate 2 steps are accepted from job 8966442 and its
+existing outputs: resume, evaluate, report, regression and reproducibility.
+Regression passed numerically on its first compute attempt: zero difference
+over 18,330 values at the unchanged absolute tolerance 1e-7 (relative tolerance 0).
+The original CLI exit was a metadata-dependency bug after the score files were
+written; the historical PBS exit 1 and 14m52s wall time remain recorded below.
+
+Commit `bcaef8a` makes headline assembly optional when preparation metadata is
+missing, records a note and provides `--compare-only`. Commit `351ca4b` completes
+the fix for legacy runs whose checkpoint remains directly in the run directory.
+The corrected CLI was re-verified on the existing attempt-2 score files and
+passed all six origin/mode comparisons, again with maximum difference 0 across
+18,330 values. It records `model_evaluated=false`; no model, solver or training
+execution occurred, and no PBS job was submitted. Three targeted CPU tests pass,
+including missing metadata, an out-of-tolerance score and a changed artifact.
+
+The original job's suite passed 162 tests plus 3 subtests. Its exact full-state
+boundary restore, finite training metrics, per-epoch selection ES gate, three-origin
+six-mode evaluation and summary remain accepted. The new
+[final gate](phase3.closeout.json) records the closeout and links hashed evidence;
+earlier failed-job and gate records are retained without being rewritten.
+
+Phase 2 reruns are not required under the user's explicit closeout instruction.
+Its accepted evidence is carried forward. The model, wrapper, training loop,
+state/RNG, inputs, metrics, physics, network loader and coordinate modules checked
+in `core_identity.json` are byte-identical to `v0.2.1-dev`; the CLI/reporting code
+is a later addition.
+
+Re-verification command (the original regression protocol is unchanged):
+
+```bash
+pff verify --check regression --compare-only \
+  --protocol "$PFF_ROOT/runs/package/phase3_resume_20261026_v1/attempt2/regression.json" \
+  --runs "$PFF_ROOT/runs/package/phase3_resume_20261026_v1/attempt2/verify_regression/evaluation" \
+  --out "$PFF_ROOT/runs/package/phase3_closeout_cpu_20261026_v1/regression_v2"
+```
+
+The following sections preserve the original allocation outcomes and the sequence
+that led to this closeout. Their failed CLI exits remain historical facts; the
+final acceptance comes from the corrected comparison and its gate record.
 
 **Resubmission 8966442:** subsequently authorized from `1f1aadf`, using the same
 Phase 3 amendment and thresholds. Per the user, execution order is resume,
@@ -6,9 +49,9 @@ evaluate, report, regression/reproducibility, then the suite. The suite is a
 diagnostic and cannot change the Gate 2 verdict. This attempt completed; its
 [result record](phase3.resume2.json) is separate from the earlier failures.
 
-## Latest outcome: 8966442
+## Compute outcome before the metadata fix: 8966442
 
-**Gate 2 remains failed because the regression CLI exited 2.** Resume, evaluation,
+**At job completion, Gate 2 was failed because the regression CLI exited 2.** Resume, evaluation,
 summary and reproducibility succeeded. The final diagnostic suite passed
 **162 tests plus 3 subtests**, with no failures, errors or skips. PBS recorded
 **892 seconds (14m52s)** and exit 1; worker time was 889.579 seconds.
@@ -286,8 +329,9 @@ budget before any fourth submission. No further submissions are authorized.
 Work remains committed on `cli`. `main` remains at
 `31445dc60b3b2ac41ce237f94d9bf0bc53adb4d1` (`v0.2.1-dev`). Existing tags are
 unchanged. No `v0.3.0-dev` tag, merge, push, publishing, or Phase 4 work was done.
-The CLI is not release-accepted: 8966442 subsequently verified evaluation,
+Before the final CPU closeout, the CLI was not release-accepted: 8966442 verified evaluation,
 reproducibility, exact restart and the corrected suite, but the regression CLI
 still fails on missing historical headline metadata. Its persisted numerical
 scores match exactly, as recorded above. CUDA and fresh large-grid generation
-were not exercised by this acceptance run.
+were not exercised by this acceptance run. The final closeout above accepts
+Phase 3 following the metadata fix and comparison on persisted outputs.

@@ -1,0 +1,103 @@
+{
+  "schema": "power-fm-foresight.cli-closeout.v1",
+  "passed": true,
+  "fix_commit": "351ca4bef925c598bbbdee987eabddbf50f1ca08",
+  "metadata_fix_commit": "bcaef8a",
+  "compute_job": "8966442",
+  "historical_pbs_exit_status": 1,
+  "historical_pbs_wall_seconds": 892,
+  "gate_steps": {
+    "resume": true,
+    "evaluate": true,
+    "report": true,
+    "regression": true,
+    "reproducibility": true
+  },
+  "regression": {
+    "absolute_tolerance": 1e-07,
+    "relative_tolerance": 0,
+    "unchanged_tolerance": true,
+    "numeric_values": 18330,
+    "max_absolute_difference": 0.0,
+    "comparisons": 6,
+    "model_evaluated": false,
+    "mode": "compare-only",
+    "numerical_result_already_present_in_job_8966442": true,
+    "original_cli_failure": "Optional headline metadata dependency; original job outcome retained"
+  },
+  "unit_tests": {
+    "passed": 3,
+    "scope": "Missing metadata and compare-only verdict/tamper checks; no model evaluation"
+  },
+  "prior_suite": {
+    "passed_tests": 162,
+    "passed_subtests": 3,
+    "job_id": "8966442"
+  },
+  "phase2": {
+    "carried_forward": true,
+    "reruns_required": false,
+    "authorization": "Explicit user closeout instruction",
+    "core_identity": {
+      "temporal.py": {
+        "phase2_sha256": "fd4cb68be4b6c463dd1d67f2ee1a4d1207554afb7f091701fe79587ccb89d1eb",
+        "current_sha256": "fd4cb68be4b6c463dd1d67f2ee1a4d1207554afb7f091701fe79587ccb89d1eb",
+        "identical": true
+      },
+      "genco.py": {
+        "phase2_sha256": "bf42d398ac89237d2e1958709ed73f3f2de1dc80be3d8ed1952e99eeca986620",
+        "current_sha256": "bf42d398ac89237d2e1958709ed73f3f2de1dc80be3d8ed1952e99eeca986620",
+        "identical": true
+      },
+      "_training/loop.py": {
+        "phase2_sha256": "d5ddec5917bf22de5d287f3e370cabe62e72166ab79b909ddae1a9a5e38e00fd",
+        "current_sha256": "d5ddec5917bf22de5d287f3e370cabe62e72166ab79b909ddae1a9a5e38e00fd",
+        "identical": true
+      },
+      "_training/state.py": {
+        "phase2_sha256": "c713c55b6c209e3652b6af9d6daea573de0f8008a82358ae856f00e92c6b996c",
+        "current_sha256": "c713c55b6c209e3652b6af9d6daea573de0f8008a82358ae856f00e92c6b996c",
+        "identical": true
+      },
+      "_training/inputs.py": {
+        "phase2_sha256": "4eb4dd2b236a62e3517eaf3df7e3f0a599355887d6ea7098067b813daf4262c3",
+        "current_sha256": "4eb4dd2b236a62e3517eaf3df7e3f0a599355887d6ea7098067b813daf4262c3",
+        "identical": true
+      },
+      "_training/metrics.py": {
+        "phase2_sha256": "cdcf689203369e4c87125ab460d1b73fa28025e254a88209504735715c55bbf0",
+        "current_sha256": "cdcf689203369e4c87125ab460d1b73fa28025e254a88209504735715c55bbf0",
+        "identical": true
+      },
+      "_training/physics.py": {
+        "phase2_sha256": "4b3dd610cb642f85010f0f1b5ec741894b6c3b80472746994d152ccd41becbe1",
+        "current_sha256": "4b3dd610cb642f85010f0f1b5ec741894b6c3b80472746994d152ccd41becbe1",
+        "identical": true
+      },
+      "_data/network.py": {
+        "phase2_sha256": "e94fb28a855825972b2885e4a73d2a4fac7758fb4ae14be3bb4e67c524089447",
+        "current_sha256": "e94fb28a855825972b2885e4a73d2a4fac7758fb4ae14be3bb4e67c524089447",
+        "identical": true
+      },
+      "_data/coordinates.py": {
+        "phase2_sha256": "fca07ca53431206369e9b99334d2ae389244c438735948816eb99778825e5825",
+        "current_sha256": "fca07ca53431206369e9b99334d2ae389244c438735948816eb99778825e5825",
+        "identical": true
+      }
+    },
+    "scope_note": "Core files listed here are byte-identical; CLI and reporting code changed."
+  },
+  "new_pbs_jobs": 0,
+  "new_model_evaluations": 0,
+  "source_root": "/home/siebenschuh/Projects/genco-foresight",
+  "evidence_root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_closeout_cpu_20261026_v1",
+  "evidence_sha256": {
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_closeout_cpu_20261026_v1/regression_v2/gate.json": "ec41fad1f219567ae30dbeac7c71b892b7af95433cbe01f0629f4bacb60f7266",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_closeout_cpu_20261026_v1/regression_v2/command.manifest.json": "a4a01aa93b1ababd22e0580dee73c5eb2ffc3a873b664b5933511a77806b47ee",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_closeout_cpu_20261026_v1/regression_v2/inputs.json": "e85d0931a334c87810313972a5703e81082d0e4a17d274b9cc4c915da323bb10",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_closeout_cpu_20261026_v1/regression_v2.log": "82087f579dbc53ffd0ee0e07e2fd8197179fce5c1a9e1ccb5269151c185296dc",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_closeout_cpu_20261026_v1/unit_flat_layout.xml": "a53d0c49e523174840b19b642e6a7b904bd7eb8d2f66f0a695a4c78a1cf41279",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_closeout_cpu_20261026_v1/unit_flat_layout.log": "8a46914f38d4a4da1d25055e81292a8c9ecff4fc2251095276f089b8f851e07c",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_closeout_cpu_20261026_v1/core_identity.json": "0e9e49d8fb29935fdf066b3372cf54c20b7119d107530d88a85097d6714caa0c"
+  }
+}
