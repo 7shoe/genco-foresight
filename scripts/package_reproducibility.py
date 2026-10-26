@@ -15,7 +15,7 @@ from training.state import tensor_digest
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--output", type=Path, required=True)
-    a = p.parse_args(); cfg = load_config(ROOT / "config.yaml")
+    a = p.parse_args(); cfg = load_config(ROOT / "configs/v3.yaml")
     dest = a.output.resolve()
     if not str(dest).startswith("/lus/flare/"):
         raise ValueError("Package bulk artifacts on /lus/flare, not in the checkout")
@@ -131,7 +131,7 @@ def main():
         "ridge": read_json(runs / "stage_b/forecaster/manifest.json"),
         "calibration_protocol": read_json(runs / "stage_c/protocol.json"),
         "post_sha256": post_before,
-        "sources": {name: sha256(ROOT / name) for name in ("config.yaml", "configs/v4.yaml", "submission/post.md")}}
+        "sources": {name: sha256(ROOT / name) for name in ("configs/v3.yaml", "configs/v4.yaml", "submission/post.md")}}
     write_json(dest / evidence / "post_contract.json", contract)
     write_json(dest / "environment.json", {"packages": {d.metadata["Name"]: d.version for d in distributions() if d.metadata["Name"]},
         "note": "Recorded environment only. No packages were installed or changed by packaging."})

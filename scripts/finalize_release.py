@@ -25,7 +25,7 @@ def main():
     a = p.parse_args()
     dest = a.bundle.resolve()
     assert str(dest).startswith("/lus/flare/"), "Bulk artifacts must stay on Lustre"
-    cfg = load_config(ROOT / "config.yaml")
+    cfg = load_config(ROOT / "configs/v3.yaml")
     runs = Path(cfg["paths"]["runs_root"])
     frozen = check_frozen(runs)
     previous = read_json(dest / "bundle.json")

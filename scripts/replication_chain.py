@@ -20,7 +20,7 @@ FAMILY = ROOT / 'configs/replication/family.json'
 
 
 def settings():
-    f = read_json(FAMILY)
+    f = load_config(FAMILY)
     return f, Path(f['root'])
 
 
@@ -60,7 +60,7 @@ def decision(message, rule, chain=None):
 def prepare():
     f, root=settings(); count=guard_release(); root.mkdir(parents=True,exist_ok=True)
     assets=root/'case30_ieee/assets'; assets.mkdir(parents=True,exist_ok=True)
-    old=Path(load_config(ROOT/'config.yaml')['paths']['assets_root'])
+    old=Path(load_config(ROOT/'configs/v3.yaml')['paths']['assets_root'])
     cp=assets/'genco-opfdata'; cp.mkdir(exist_ok=True)
     for name in ('case30_ieee','splits'):
         if not (cp/name).exists(): (cp/name).symlink_to(old/'genco-opfdata'/name,target_is_directory=True)
@@ -68,12 +68,12 @@ def prepare():
     if not (assets/'profiles').exists(): (assets/'profiles').symlink_to(old/'profiles',target_is_directory=True)
     for c in f['chains']:
         out, train, config=paths(c); train.mkdir(parents=True,exist_ok=True)
-        original=load_config(ROOT/('config.yaml' if c['version']=='v3' else 'configs/v4.yaml'))
-        cfg=load_config(ROOT/('config.yaml' if c['version']=='v3' else 'configs/v4.yaml'))
-        cfg['seed']=c['seed']
-        cfg['paths'].update(runs_root=str(out),training_run=str(train),assets_root=str(assets),evidence_root=str(out/'evidence'))
+        original=load_config(ROOT/('configs/v3.yaml' if c['version']=='v3' else 'configs/v4.yaml'))
+        cfg=load_config(ROOT/('configs/v3.yaml' if c['version']=='v3' else 'configs/v4.yaml'),
+            overrides={'seed':c['seed'], 'paths':dict(runs_root=str(out),training_run=str(train),
+                assets_root=str(assets),evidence_root=str(out/'evidence'))})
         text=yaml.safe_dump(cfg,sort_keys=False)
-        if config.exists(): assert config.read_text()==text
+        if config.exists(): assert load_config(config)==cfg, f'Replication settings changed: {config}'
         else: config.write_text(text)
         cache=train/'cache'; cache.mkdir(exist_ok=True)
         source=Path(original['paths']['training_run'])/'cache/manifest.json'
@@ -85,7 +85,7 @@ def prepare():
         write_json(out/'provenance.json',{'training_seed':c['seed'],'logical_seed':c['seed'],'seed0_rng':42,
             'frozen_data':cfg['paths']['temporal_root'],'data_manifest_sha256':readiness['manifest_sha256'],
             'stage_a_audit':cfg['paths']['stage_a_run'],'cache_manifest_sha256':sha256(source),
-            'cache_reused_read_only':True,'config_sha256':sha256(config),'original_config_sha256':sha256(ROOT/('config.yaml' if c['version']=='v3' else 'configs/v4.yaml')),
+            'cache_reused_read_only':True,'config_sha256':sha256(config),'original_config_sha256':sha256(ROOT/('configs/v3.yaml' if c['version']=='v3' else 'configs/v4.yaml')),
             'non_path_changes':{'seed':[42,c['seed']]},'queue_override':'debug-scaling; no optimization-setting changes'})
     for grid in f['blocked_grids']:
         write_json(root/grid/'status.json',{'status':'blocked','parity':'not run; no numerical parity failure claimed',

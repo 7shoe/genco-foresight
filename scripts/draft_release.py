@@ -15,7 +15,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--post", action="store_true", help="Render the post once, after validation and cards are ready")
     a = p.parse_args()
-    cfg = load_config(ROOT / "config.yaml")
+    cfg = load_config(ROOT / "configs/v3.yaml")
     runs = Path(cfg["paths"]["runs_root"])
     out = runs / "stage_d/final_release"
     bundle = Path(cfg["paths"]["data_root"]).parent / "reproducibility/v0.1.0-rc"

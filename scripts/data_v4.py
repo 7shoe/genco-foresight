@@ -11,7 +11,7 @@ from common import ROOT, config_path, load_config, read_json, sha256, write_json
 
 
 def verify_variant(cfg):
-    v3 = load_config(ROOT / "config.yaml")
+    v3 = load_config(ROOT / "configs/v3.yaml")
     assert cfg["dataset"]["id"] == "temporal_case30_v4"
     assert v3["dataset"]["id"] == "temporal_case30_v3"
     assert cfg["task"] == v3["task"] and cfg["solver"] == v3["solver"]
@@ -36,7 +36,7 @@ def main():
     run = Path(cfg["paths"]["stage_a_run"])
     run.mkdir(parents=True, exist_ok=True)
     control = {str(p): sha256(p) for p in (
-        ROOT / "config.yaml", Path(v3["paths"]["temporal_root"]) / "manifest.json",
+        ROOT / "configs/v3.yaml", Path(v3["paths"]["temporal_root"]) / "manifest.json",
         Path(v3["paths"]["training_run"]) / "chain.json", Path(v3["paths"]["training_run"]) / "best.pt",
         Path(v3["paths"]["runs_root"]) / "stage_b/protocol.json")}
     frozen = run / "config_frozen.yaml"

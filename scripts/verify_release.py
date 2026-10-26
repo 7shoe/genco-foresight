@@ -14,7 +14,7 @@ def main():
     p.add_argument("--bundle", type=Path)
     p.add_argument("--payload", action="store_true")
     a = p.parse_args()
-    runs = Path(load_config(ROOT / "config.yaml")["paths"]["runs_root"])
+    runs = Path(load_config(ROOT / "configs/v3.yaml")["paths"]["runs_root"])
     final = runs / "stage_d/final_release"
     context = read_json(final / "context.json")
     for name, digest in context["protected_source_sha256"].items():

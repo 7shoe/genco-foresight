@@ -30,7 +30,7 @@ VM = np.array([1, 9, 11, 13, 15, 21, 22]) - 1
 
 
 def released(version):
-    cfg = load_config(ROOT / ('config.yaml' if version == 'v3' else 'configs/v4.yaml'))
+    cfg = load_config(ROOT / ('configs/v3.yaml' if version == 'v3' else 'configs/v4.yaml'))
     b = Path(cfg['paths']['runs_root']) / 'stage_b'
     return cfg, b, read_json(b / 'protocol.json')
 

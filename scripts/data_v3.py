@@ -19,9 +19,9 @@ def prepare():
     root, descriptor, _, _, _ = prepare_benchmark(cfg)
     run.mkdir(parents=True, exist_ok=True)
     frozen = run/"config_frozen.yaml"
-    if frozen.exists() and sha256(frozen) != sha256(ROOT/"config.yaml"):
+    if frozen.exists() and sha256(frozen) != sha256(ROOT/"configs/v3.yaml"):
         raise ValueError("Final v3 configuration is immutable")
-    if not frozen.exists(): shutil.copy2(ROOT/"config.yaml", frozen)
+    if not frozen.exists(): shutil.copy2(ROOT/"configs/v3.yaml", frozen)
     reference = Path(cfg["paths"]["runs_root"])/"stage_a"
     for name in ("parity", "xpu_report.json"):
         if not (run/name).exists(): (run/name).symlink_to(reference/name, target_is_directory=(reference/name).is_dir())

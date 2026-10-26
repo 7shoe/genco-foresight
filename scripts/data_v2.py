@@ -42,10 +42,10 @@ def prepare():
     assert cfg["solver"] == old["solver"] and cfg["task"] == old["task"]
     root, descriptor, _, _, _ = prepare_benchmark(cfg)
     frozen = run/"config_frozen.yaml"
-    if frozen.exists() and sha256(frozen) != sha256(ROOT/"config.yaml"):
+    if frozen.exists() and sha256(frozen) != sha256(ROOT/"configs/v3.yaml"):
         raise ValueError("V2 configuration changed after the assignment was frozen")
     if not frozen.exists():
-        shutil.copy2(ROOT/"config.yaml", frozen)
+        shutil.copy2(ROOT/"configs/v3.yaml", frozen)
     reference = Path(cfg["paths"]["runs_root"])/"stage_a"
     inherited = {}
     for name in ("parity", "xpu_report.json"):
