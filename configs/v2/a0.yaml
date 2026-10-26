@@ -1,0 +1,9 @@
+# Merge through load_config(overrides=...) into a selected v4 grid recipe.
+stage_b:
+  deterministic_algorithms: false
+  training_budget_seconds: 11880
+  adapter:
+    model_policy: demand_only_a0
+    innovations: final Vm (p.u.), Va (rad), Pg (checkpoint p.u.); hard original bounds
+  loss:
+    power_balance_weight: 1.0

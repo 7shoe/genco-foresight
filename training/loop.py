@@ -40,6 +40,7 @@ def make_manifest(cfg):
         "training_origins":cfg["task"]["split_episodes"]["train"]*409,
         "selection_origins":cfg["task"]["split_episodes"]["model_selection"]*18,
         "deterministic_algorithms":deterministic_setting(cfg),
+        "model_policy":cfg["stage_b"].get("adapter",{}).get("model_policy","conditioned"),
         "world_size":1,"origins_per_step":1,"precision_policy":{"all_modules":"fp32","loss_and_physics":"fp32"},
         "global_K":cfg["stage_b"]["training_samples"],
         "sample_partition":{"scheme":"serial_contiguous","sizes":[cfg["stage_b"]["training_samples"]]},
@@ -66,7 +67,7 @@ def initialize(cfg,device):
     load_temporal_manifest(cfg["paths"]["temporal_root"],net)
     base=Genco(checkpoint_assets(cfg),cfg["checkpoint"],device,grid=net)
     scales=read_json(ROOT/cfg["stage_b"]["coordinate_scales"])
-    model=TemporalAdapter(base,net,scales).to(device).train()
+    model=TemporalAdapter(base,net,scales,model_policy=cfg["stage_b"].get("adapter",{}).get("model_policy","conditioned")).to(device).train()
     opt_cfg=cfg["stage_b"]["optimizer"]
     optimizer=torch.optim.AdamW([p for p in model.parameters() if p.requires_grad],
         lr=opt_cfg["lr"],weight_decay=opt_cfg["weight_decay"],foreach=False)

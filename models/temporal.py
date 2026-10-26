@@ -15,8 +15,11 @@ from data.grids import check_case
 
 class TemporalAdapter(nn.Module):
     """Use grid history to condition GENCO and sample future trajectories."""
-    def __init__(self, base, network, scales):
+    def __init__(self, base, network, scales, model_policy="conditioned"):
         super().__init__()
+        if model_policy not in ("conditioned", "demand_only_a0"):
+            raise ValueError(f"Unknown adapter model policy: {model_policy}")
+        self.model_policy = model_policy
         check_case(network.case, base.case, "adapter backbone")
 
         # freeze backbone weights
@@ -37,6 +40,9 @@ class TemporalAdapter(nn.Module):
         # Map history summaries into the checkpoint's input embeddings.
         self.bus_conditioning = nn.Linear(32, self.hidden_width)
         self.gen_conditioning = nn.Linear(32, self.hidden_width)
+        if self.model_policy == "demand_only_a0":
+            self.bus_conditioning.requires_grad_(False)
+            self.gen_conditioning.requires_grad_(False)
         self.future_projection = nn.Linear(6, 32)
 
         # bus outputs contain a demand shift
@@ -176,14 +182,18 @@ class TemporalAdapter(nn.Module):
         batch["bus"].x = bus_x
 
         # repeat conditioning across samples
-        bc = self.bus_conditioning(bus_memory).unsqueeze(0).expand(k,-1,-1,-1).reshape(-1,self.hidden_width)
-        gc = self.gen_conditioning(gen_memory).unsqueeze(0).expand(k,-1,-1,-1).reshape(-1,self.hidden_width)
+        if self.model_policy == "conditioned":
+            bc = self.bus_conditioning(bus_memory).unsqueeze(0).expand(k,-1,-1,-1).reshape(-1,self.hidden_width)
+            gc = self.gen_conditioning(gen_memory).unsqueeze(0).expand(k,-1,-1,-1).reshape(-1,self.hidden_width)
         bus_innovation = torch.stack([bus_z[...,1],bus_z[...,2]*self.free_va],dim=-1).reshape(-1,2)
         gen_innovation = (gen_z*self.free_pg[None,None,:,None]).reshape(-1,1)
 
         # run frozen GENCO with differentiable additions
-        with self.conditioning(bc,gc,bus_innovation,gen_innovation):
-            output = self.backbone(batch)
+        if self.model_policy == "demand_only_a0":
+            output = self.demand_only_output(batch, bus_innovation, gen_innovation)
+        else:
+            with self.conditioning(bc,gc,bus_innovation,gen_innovation):
+                output = self.backbone(batch)
 
         # eval branch flows, nodal injections, and balance against sampled demand
         edge = batch["bus","connects","bus"]
@@ -223,3 +233,21 @@ class TemporalAdapter(nn.Module):
                 "power_balance" : torch.stack([rp,rq], dim=-1).square().mean(),
                 "demand_seen_by_physics_mw" : bus_x[:,0].reshape(k,horizon,self.grid.n_bus)*self.base_mva
                 }
+
+    def demand_only_output(self, batch, bus_innovation, gen_innovation):
+        """Detach GENCO; perturb final states and rebuild differentiable physics."""
+        from gridfm_graphkit.datasets.globals import MIN_VM_H, MAX_VM_H, MIN_PG, MAX_PG
+        from torch_scatter import scatter_add
+        with torch.no_grad():
+            raw = self.unconditioned(batch)
+        voltage = raw["bus"][:,:2]+bus_innovation
+        vm = voltage[:,0].clamp(batch["bus"].x[:,MIN_VM_H],batch["bus"].x[:,MAX_VM_H])
+        voltage = torch.stack([vm,voltage[:,1]],dim=-1)
+        pg = (raw["gen"]+gen_innovation).clamp(batch["gen"].x[:,MIN_PG,None],batch["gen"].x[:,MAX_PG,None])
+        edge = batch["bus","connects","bus"]
+        p,q = self.backbone.branch_flow_layer(voltage,edge.edge_index,edge.edge_attr)
+        pi,qi = self.backbone.node_injection_layer(p,q,edge.edge_index,len(voltage))
+        generator_bus = batch["gen","connected_to","bus"].edge_index[1]
+        aggregated = scatter_add(pg.squeeze(-1),generator_bus,dim=0,dim_size=len(voltage))
+        bus = self.backbone.physics_decoder(pi,qi,voltage,batch["bus"].x,aggregated,batch.mask_dict)
+        return {"bus":bus,"gen":pg}

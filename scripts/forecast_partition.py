@@ -52,7 +52,7 @@ def components(cfg, device):
     load_temporal_manifest(cfg["paths"]["temporal_root"], net)
     base = Genco(Path(cfg["paths"]["assets_root"]) / "genco-opfdata", cfg["checkpoint"], device, grid=net)
     scales = read_json(cfg["stage_b"]["coordinate_scales"])
-    model = TemporalAdapter(base, net, scales).to(device).eval()
+    model = TemporalAdapter(base, net, scales, model_policy=cfg["stage_b"].get("adapter",{}).get("model_policy","conditioned")).to(device).eval()
     train = Path(cfg["paths"]["training_run"])
     best = torch.load(train / "best.pt", weights_only=True, map_location="cpu")
     original = train / "manifest.training.json"
