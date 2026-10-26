@@ -125,6 +125,18 @@ def consolidate(root,config):
     (repo/'reports/INDEX.md').write_text('# Report index\n\n- [Release window](v2/window.md)\n- [Main consolidation](v2/consolidation.md)\n- [Stage 1 verdict](v2/stage1_verdict.md)\n- [Recovery](v2/recovery.md)\n- [Pilot repair](v2/pilot_repair.md)\n- [V2 implementation inventory (historical)](V2_IMPL.md)\n- [Synthetic profiling](multigrid/profile.md)\n\n'+f'Final evaluation tables, curves and run evidence: {root}.\n')
     (repo/'STATUS.md').write_text('# Status\n\nFrozen at2026-10-25 19:00CT. Automatic submission is stopped.\n\n'+f'Per-item submitted/running/completed/not-started states and post-freeze outcomes: {root}/STATUS.md. Run inventory: {root.parent}/FREEZE.md.\n\nAll required code correctness gates passed. Scientific results and unavailable/incomplete cells are reported without changing acceptance thresholds.\n')
     files=['reports/v2/window.json','reports/v2/window.md','RUNS.md','reports/INDEX.md','STATUS.md']
+    if config.get('postfreeze_root'):
+        supplement=Path(config['postfreeze_root'])
+        gate=read(supplement/'gate.json')
+        if not gate.get('passed'):raise RuntimeError('Post-freeze continuation correctness gate failed')
+        write(repo/'reports/v2/postfreeze.json',dict(gate=gate,root=str(supplement),
+             results_sha256=sha(supplement/'results.json'),protocol_sha256=sha(supplement/'protocol.json')))
+        (repo/'reports/v2/postfreeze.md').write_text((supplement/'RESULTS.md').read_text()+
+             f'\n[Full evidence]({supplement}/results.json), [protocol]({supplement}/protocol.json).\n')
+        with (repo/'reports/INDEX.md').open('a') as stream:stream.write('\n- [Final post-freeze continuation](v2/postfreeze.md)\n')
+        with (repo/'RUNS.md').open('a') as stream:stream.write(f'\n## Authorized final post-freeze continuation\n\n{supplement}/RESULTS.md\n')
+        with (repo/'STATUS.md').open('a') as stream:stream.write(f'\nThe separately authorized final training and evaluation allocations have ended. No further submissions: {supplement}/RESULTS.md.\n')
+        files+=['reports/v2/postfreeze.md','reports/v2/postfreeze.json']
     for phase in ('protocol.json','phase_b.protocol.json','phase_c.protocol.json','phase_d.protocol.json'):
         name='reports/v2/window_'+phase;shutil.copyfile(root/phase,repo/name);files.append(name)
     subprocess.run(['git','add','-f','--',*files],cwd=repo,check=True)
