@@ -1,6 +1,7 @@
 """Resolve command configuration and run independent local training chains."""
 from concurrent.futures import ProcessPoolExecutor
 from copy import deepcopy
+import shutil
 from datetime import datetime, timezone
 import hashlib
 import itertools
@@ -10,9 +11,9 @@ import multiprocessing
 import os
 from pathlib import Path
 import re
-import shutil
 import time
 
+# helps base path management
 from omegaconf import OmegaConf
 
 from . import __version__

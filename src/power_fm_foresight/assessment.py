@@ -1,10 +1,10 @@
-"""Resumable local evaluation and joint mixtures using the frozen scorer."""
+"""Resumable local eval & joint mixtures using the frozen scorer"""
+
 from copy import deepcopy
 import hashlib
 import json
 import fcntl
 from pathlib import Path
-
 import numpy as np
 import torch
 
@@ -13,9 +13,9 @@ from .campaign import default_output, record_manifest, resolve_runs, run_config,
 from .data import graph_for_demand, load_network
 from .scoring import UNITS, variogram_pairs, score, merged
 from .training import components, adapter_samples, cache_partition, frozen, target_values, mixture_samples
-from ._training.forecaster import RidgeForecaster, atomic_npz, episode_arrays, prepare as prepare_ridge
 from ._training.headlines import subset_summary
 from ._training.audits import same_input_p
+from ._training.forecaster import RidgeForecaster, atomic_npz, episode_arrays, prepare as prepare_ridge
 from ._artifacts import completion_valid, finish_origin
 
 
