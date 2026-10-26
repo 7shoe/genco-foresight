@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from scripts.subset_parity import selected_ids, serial_environment
+from experiments.subset_parity import selected_ids, serial_environment
 
 
 def test_fixed_subset_is_unique_repeatable_and_inside_intersection():

@@ -5,12 +5,12 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-from common import ROOT, load_config, write_json
-from data.grids import grid_config
-from data.loader.dataset import OfficialSnapshotDataset, load_snapshot, load_temporal_manifest
-from data.loader.network import graph_for_demand, load_network
-from models.genco import Genco
-from models.temporal import TemporalAdapter
+from power_fm_foresight._config import ROOT, load_config, write_json
+from power_fm_foresight.grids import grid_config
+from power_fm_foresight._data.dataset import OfficialSnapshotDataset, load_snapshot, load_temporal_manifest
+from power_fm_foresight._data.network import graph_for_demand, load_network
+from power_fm_foresight.genco import Genco
+from power_fm_foresight.temporal import TemporalAdapter
 
 
 @pytest.fixture(scope="module")
@@ -113,8 +113,8 @@ def test_released_temporal_manifests_remain_valid(version):
 
 @pytest.mark.parametrize("entrypoint", ["training", "evaluation"])
 def test_run_setup_rejects_wrong_temporal_data_before_model(tmp_path, monkeypatch, entrypoint):
-    from training import loop
-    from scripts import forecast_partition
+    from power_fm_foresight._training import loop
+    from power_fm_foresight._training import forecast as forecast_partition
     module, call = (loop, loop.initialize) if entrypoint == "training" else (forecast_partition, forecast_partition.components)
     cfg = grid_config("case30_ieee")
     cfg["paths"]["temporal_root"] = str(tmp_path)

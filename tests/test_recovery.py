@@ -4,9 +4,9 @@ from copy import deepcopy
 import numpy as np
 import pytest
 
-from common import read_json, sha256, write_json
-from data.loader.network import load_network
-from solver.checks import check_solution, physical_quantities
+from power_fm_foresight._config import read_json, sha256, write_json
+from power_fm_foresight._data.network import load_network
+from power_fm_foresight._solver.checks import check_solution, physical_quantities
 
 
 @pytest.mark.parametrize('missing', [None, np.nan])
@@ -30,7 +30,7 @@ def test_offline_generators_are_masked_before_arithmetic(missing):
 
 
 def test_evaluation_admits_only_finished_private_copies(tmp_path, monkeypatch):
-    from scripts.recovery import run
+    from experiments.recovery import run
     original = tmp_path / 'original'
     source = original / 'case30_ieee/seed0/adapter'; source.mkdir(parents=True)
     out = tmp_path / 'recovery'; (out / 'case30_ieee/seed0').mkdir(parents=True)
@@ -51,7 +51,7 @@ def test_evaluation_admits_only_finished_private_copies(tmp_path, monkeypatch):
 
 
 def test_unindexed_xpu_uses_launcher_local_zero(monkeypatch):
-    from scripts import forecast_partition as fp
+    from power_fm_foresight._training import forecast as fp
     monkeypatch.setenv('ZE_FLAT_DEVICE_HIERARCHY', 'FLAT')
     monkeypatch.setenv('ZE_AFFINITY_MASK', '11')
     monkeypatch.setattr(fp.torch.xpu, 'device_count', lambda: 1)
@@ -66,6 +66,6 @@ def test_unindexed_xpu_uses_launcher_local_zero(monkeypatch):
 
 
 def test_existing_label_recovery_cannot_generate():
-    from data.synthetic.generate import label
+    from experiments.data_generation import label
     with pytest.raises(RuntimeError, match='regeneration is forbidden'):
         label(dict(pilot=dict(reuse_labels={'source_root': 'read-only'})))

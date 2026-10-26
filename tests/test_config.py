@@ -3,7 +3,7 @@ import yaml
 from omegaconf import OmegaConf
 from omegaconf.errors import InterpolationKeyError, MissingMandatoryValue
 
-from common import ROOT, load_config
+from power_fm_foresight._config import ROOT, load_config
 
 
 PROJECT_CONFIGS = [

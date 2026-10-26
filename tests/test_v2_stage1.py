@@ -5,9 +5,9 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from common import read_json, sha256, write_json
-from training import loop
-from training.state import checkpoint, restore, seed_all, tensor_digest
+from power_fm_foresight._config import read_json, sha256, write_json
+from power_fm_foresight._training import loop
+from power_fm_foresight._training.state import checkpoint, restore, seed_all, tensor_digest
 
 
 def test_historical_default_and_explicit_flag():
@@ -70,7 +70,7 @@ def test_patience_three_and_boundary_resume_use_real_controller(tmp_path, monkey
     assert uninterrupted["stop_reason"] == resumed["stop_reason"] == "early_stopping"
     assert uninterrupted["epochs_reached"] == resumed["epochs_reached"] == 4
     assert uninterrupted["best_epoch"] == resumed["best_epoch"] == 1
-    from scripts.resume_test import compare
+    from experiments.resume_test import compare
     states = [torch.load(path / "latest.pt", map_location="cpu", weights_only=True) for path in (a, b)]
     for key in ("model", "optimizer", "scheduler", "rng"):
         assert compare(states[0][key], states[1][key])[0]
@@ -99,7 +99,7 @@ def test_case118_timing_continues_partial_worker(tmp_path, monkeypatch):
     import io
     import json
     import time
-    from scripts.v2 import prepare_case118, stage1
+    from experiments.v2 import prepare_case118, stage1
     folder=tmp_path/"case118"
     for name in ("setup.json","cache_ready.json"):write_json(folder/name,{"passed":True})
     write_json(folder/"data/manifest.json",{"episodes":[]})

@@ -1,0 +1,9 @@
+name: power-fm-foresight-cuda
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - setuptools
+  - wheel
+  # Install the CUDA torch/PyG/scatter stack using README.md#install-matrix next.

@@ -2,7 +2,7 @@
 from copy import deepcopy
 import unittest
 
-from scripts.v2.final_continuation import validate_config
+from experiments.v2.final_continuation import validate_config
 
 
 class ContinuationConfigTest(unittest.TestCase):

@@ -4,8 +4,8 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from common import read_json, write_json
-from scripts.pilots.hour_shards import assignments, read_hour, seal
+from power_fm_foresight._config import read_json, write_json
+from experiments.pilots.hour_shards import assignments, read_hour, seal
 
 
 def test_hour_workers_cover_pilot_and_full_data_once():
@@ -30,7 +30,7 @@ def test_hour_resume_rejects_tampering_and_wrong_identity(tmp_path):
 
 
 def test_offline_warm_starts_do_not_mutate_saved_labels():
-    from solver.adapter import IpoptSolver
+    from power_fm_foresight._solver.adapter import IpoptSolver
     solver = IpoptSolver.__new__(IpoptSolver)
     solver.grid = SimpleNamespace(n_bus=2, online_gen=np.array([True, False]))
     solver.casefile = 'fixture.m'; solver.settings = {'budget': {'seconds': 600, 'wall_seconds': 600, 'max_iter': 3000}}
@@ -46,8 +46,8 @@ def test_offline_warm_starts_do_not_mutate_saved_labels():
 
 
 def test_audit_reference_is_independent_of_model_coordinate_reference():
-    from data.loader.network import load_network
-    from solver.checks import check_solution
+    from power_fm_foresight._data.network import load_network
+    from power_fm_foresight._solver.checks import check_solution
     grid = load_network()
     state = dict(vm=np.ones(grid.n_bus), va_rad=np.full(grid.n_bus, .1),
                  pg_mw=np.zeros(grid.n_gen), qg_mvar=np.zeros(grid.n_gen))

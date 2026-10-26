@@ -4,13 +4,13 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from common import ROOT, load_config
-from data.coordinates import bus_qg, fit_scales, record_values
-from data.grids import grid_config, registry
-from data.loader.network import graph_tables, load_network
+from power_fm_foresight._config import ROOT, load_config
+from power_fm_foresight._data.coordinates import bus_qg, fit_scales, record_values
+from power_fm_foresight.grids import grid_config, registry
+from power_fm_foresight._data.network import graph_tables, load_network
 from monitor import event_values
-from solver.checks import admittance_vectors, physical_quantities
-from training.forecaster import episode_arrays
+from power_fm_foresight._solver.checks import admittance_vectors, physical_quantities
+from power_fm_foresight._training.forecaster import episode_arrays
 
 
 @pytest.mark.parametrize("case", registry()["grids"])

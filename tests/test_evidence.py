@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from common import write_json
+from power_fm_foresight._config import write_json
 
 
 def test_json_validation_preserves_previous_artifact_on_malformed_serialization(tmp_path, monkeypatch):

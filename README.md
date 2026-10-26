@@ -124,3 +124,98 @@ Run `python -m scripts.multigrid_smoke` for CPU loading and formatting checks, t
 `python -m scripts.multigrid_report` to refresh [the support report](reports/multigrid/support.md).
 These checks launch no solver, training, or PBS job. Bulk artifacts stay on `/lus/flare`;
 the existing Torch/Transformers environment is retained.
+
+## Python package
+
+The distribution is `power-fm-foresight` (version 0.2.0); import it as
+`power_fm_foresight`. This phase provides Python modules, with no new CLI.
+`genco`, `temporal`, `grids`, `data`, `solver`, `scoring`, and `training` expose
+existing implementations. Private submodules retain the original module boundaries.
+Experiment drivers, PBS scripts, gates and controllers live in `experiments/`
+and are excluded from the wheel. Historical module paths remain deprecated aliases.
+Install the package before using those paths from a checkout.
+
+### Install matrix
+
+Provision the torch stack first. Torch, PyG, scatter and Graphkit are deliberately
+absent from `install_requires`; `[cuda]` and `[xpu]` are empty selection markers.
+The commands below are pinned installation recipes. The packaging gate runs on
+Aurora; CUDA and CPU wheel compatibility is documented, not hardware-validated here.
+See the [PyTorch version matrix](https://pytorch.org/get-started/previous-versions/)
+and [PyG wheel matrix](https://pytorch-geometric.readthedocs.io/en/stable/notes/installation.html).
+
+| Target | Python | Torch stack | Installation policy |
+| --- | --- | --- | --- |
+| CUDA 12.8 | 3.12 | Torch 2.10.0, PyG 2.8.0, scatter 2.1.2 | Fresh environment, commands below |
+| CPU | 3.12 | Torch 2.10.0, PyG 2.8.0, scatter 2.1.2 | CPU wheels, commands below |
+| Aurora XPU | vendor 3.12.12 | Torch 2.13.0a0+gitcf30153, PyG 2.8.0.post1, scatter 2.1.2 | Preserve frameworks/2026.1.0 and base constraints |
+
+CUDA, optionally after `conda env create -f environment-cuda.yml` and
+`conda activate power-fm-foresight-cuda`:
+
+```bash
+python -m pip install torch==2.10.0 torchvision==0.25.0 torchaudio==2.10.0 --index-url https://download.pytorch.org/whl/cu128
+python -m pip install torch-geometric==2.8.0
+python -m pip install --no-deps torch-scatter==2.1.2 -f https://data.pyg.org/whl/torch-2.10.0+cu128.html
+```
+
+CPU in a fresh Python 3.12 environment:
+
+```bash
+python -m pip install torch==2.10.0 torchvision==0.25.0 torchaudio==2.10.0 --index-url https://download.pytorch.org/whl/cpu
+python -m pip install torch-geometric==2.8.0
+python -m pip install --no-deps torch-scatter==2.1.2 -f https://data.pyg.org/whl/torch-2.10.0+cpu.html
+```
+
+For either fresh environment, install the existing GENCO runtime prerequisites
+and Graphkit without allowing it to replace the chosen torch stack:
+
+```bash
+python -m pip install lightning==2.6.6 opt-einsum==3.4.0 seaborn==0.13.2 plotly==7.1.0
+python -m pip install --no-deps "gridfm-graphkit @ git+https://github.com/gridfm/gridfm-graphkit.git@f104900245cba26d1380037eea562cf633a97484"
+python -m pip install -e .
+```
+
+Aurora uses the existing frameworks modules and environment. Do not install a
+PyPI torch wheel or upgrade vendor torch, Transformers or their dependencies.
+The installed PyG is a vendor build, not a request to fetch that version from PyPI.
+For a new Aurora environment, follow [the recorded installation](install_on_aurora.md)
+and preserve its `base-constraints.txt`/`PIP_CONSTRAINT` policy:
+
+```bash
+# Only if absent, use the recorded vendor PyG source/build, not a CUDA wheel.
+# Scatter is built against the active vendor torch:
+MAX_JOBS=2 python -m pip install --no-deps --no-build-isolation --no-binary=torch-scatter torch-scatter==2.1.2
+# Graphkit needs newer isolated build tools; the runtime environment stays constrained.
+env -u PIP_CONSTRAINT python -m pip install --no-deps "gridfm-graphkit @ git+https://github.com/gridfm/gridfm-graphkit.git@f104900245cba26d1380037eea562cf633a97484"
+python -m pip install --no-deps --no-build-isolation -e .
+```
+
+The Aurora module setup is recorded in `experiments/package/verify.pbs`.
+These commands are instructions for provisioning, not permission to replace
+packages in a working vendor environment. Existing runtime dependencies,
+including OmegaConf, Datakit, matpowercaseframes and requests, are declared in
+`pyproject.toml`. Graphkit's optional CLI/evaluator extras remain separate.
+Ipopt uses the packaged pinned Julia project and an explicitly configured Julia
+executable/depot; installing the wheel does not install Julia or download assets.
+
+Packaged recipes use `PFF_ROOT` as the bulk storage root and `PFF_JULIA` and
+`PFF_JULIA_DEPOT` for the solver. Explicit legacy configs retain their original
+`${base}` interpolation and paths. With a wheel, the default remains the v3 recipe;
+choose the packaged v4 recipe explicitly:
+
+```python
+from importlib.resources import files
+from power_fm_foresight.data import load_config
+from power_fm_foresight.grids import grid_config, registry
+
+recipe = files("power_fm_foresight").joinpath("resources/v4.yaml")
+config = load_config(recipe)
+case = registry()["case_ids"][30]
+config = grid_config(case, config)
+```
+
+Set `PFF_ROOT`, `PFF_JULIA` and `PFF_JULIA_DEPOT` before resolving a packaged
+recipe, or supply explicit path overrides. Package import itself does not need
+these variables. New manifests hash the relocated source; historical manifests
+are never rewritten and incompatible training resumes remain rejected.

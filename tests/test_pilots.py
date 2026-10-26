@@ -3,13 +3,13 @@ from types import SimpleNamespace
 
 import pytest
 
-from common import read_json, write_json
-from scripts.pilots import run
-from scripts.pilots.data import assigned_episodes
+from power_fm_foresight._config import read_json, write_json
+from experiments.pilots import run
+from experiments.pilots.data import assigned_episodes
 
 
 def test_two_pilots_are_separate_from_fleet():
-    from scripts.fleet.run import chains as fleet_chains
+    from experiments.fleet.run import chains as fleet_chains
     pilots = run.chains()
     assert [(c['case'], c['seed'], c['tile'], c['K'], c['label']) for c in pilots] == [
         ('case500_goc', 0, 0, 8, 'K=8 pilot'), ('case2000_goc', 0, 2, 2, 'K=2 pilot')]
@@ -34,7 +34,7 @@ def test_data_gate_budget_and_pilot_stop(tmp_path):
 
 
 def test_next_allocation_submitted_without_consulting_fleet(tmp_path, monkeypatch):
-    import scripts.training_chain as pbs
+    import experiments.training_chain as pbs
     monkeypatch.setattr(run, 'verify_pin', lambda root: None)
     monkeypatch.setattr(run, 'reconcile', lambda root, job: None)
     monkeypatch.setattr(pbs, 'job_state', lambda job: ('F', 0))
@@ -65,17 +65,18 @@ def test_missing_boundary_charged_and_parked(tmp_path):
 def test_interrupted_shard_resumes_exact_prefix(tmp_path, monkeypatch):
     import numpy as np
     import pandas as pd
-    from scripts.pilots import data
-    import data.synthetic.generate as generation
-    import solver.adapter as adapter
-    import solver.checks as checks
+    from experiments.pilots import data
+    import experiments.data_generation as generation
+    from power_fm_foresight._data import generate as demand_law
+    import power_fm_foresight._solver.adapter as adapter
+    import power_fm_foresight._solver.checks as checks
     ep = {'episode_id': 'train_00', 'source_start_hour': 0, 'seed': 42}
     manifest = {'benchmark_id': 'fixture', 'episodes': [ep]}
     net = SimpleNamespace(bus=np.array([[0., 0., 1., 2.]]), baseMVA=100.)
     frame = pd.DataFrame({'time_utc': [str(i) for i in range(504)]})
     values = np.arange(504, dtype=float)[:, None]
     monkeypatch.setattr(generation, 'prepare_benchmark', lambda cfg: (tmp_path, manifest, net, frame, values))
-    monkeypatch.setattr(generation, 'demands', lambda *args: (values, 2*values))
+    monkeypatch.setattr(demand_law, 'demands', lambda *args: (values, 2*values))
     monkeypatch.setattr(checks, 'check_solution', lambda *args: {'valid': True})
     calls = []
     class Solver:
