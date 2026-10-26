@@ -165,12 +165,12 @@
     {
       "old": "scripts/fleet/evaluate.py",
       "name": "score",
-      "new": "src/power_fm_foresight/_training/evaluation.py"
+      "new": "src/power_fm_foresight/scoring.py"
     },
     {
       "old": "scripts/replication_evaluate.py",
       "name": "merged",
-      "new": "src/power_fm_foresight/_training/evaluation.py"
+      "new": "src/power_fm_foresight/scoring.py"
     }
   ],
   "shims": {

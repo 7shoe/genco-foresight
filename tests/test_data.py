@@ -4,7 +4,7 @@ import numpy as np
 
 from power_fm_foresight._config import write_json
 from power_fm_foresight._data.dataset import TemporalDataset, daily_origins, load_static_splits
-from experiments.data_generation import demands, episode_plan
+from power_fm_foresight.data import demands, episode_plan
 
 
 def test_episode_and_source_partitions_do_not_overlap():

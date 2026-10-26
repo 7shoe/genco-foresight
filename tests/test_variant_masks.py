@@ -1,7 +1,7 @@
 import numpy as np
 
 from experiments.variant_events import counts
-from experiments.evaluate_stage_b import target_values
+from power_fm_foresight.training import target_values
 from power_fm_foresight._data.network import load_network
 from monitor import event_targets, daily_union
 

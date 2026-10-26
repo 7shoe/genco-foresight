@@ -47,14 +47,14 @@ def test_wrong_checkpoint_yaml_fails_before_loading_weights(tmp_path, monkeypatc
     path = tmp_path / settings["directory"] / settings["configuration"]
     path.parent.mkdir(parents=True)
     path.write_text(yaml.safe_dump(config))
-    monkeypatch.setattr("models.genco.torch.load", lambda *a, **k: pytest.fail("Weights loaded before validation"))
+    monkeypatch.setattr("power_fm_foresight.genco.torch.load", lambda *a, **k: pytest.fail("Weights loaded before validation"))
     with pytest.raises(ValueError, match="Case mismatch: checkpoint YAML"):
         Genco(tmp_path, settings)
 
 
 def test_checkpoint_yaml_must_match_supplied_network(grid, monkeypatch):
     cfg = grid_config("case14_ieee")
-    monkeypatch.setattr("models.genco.torch.load", lambda *a, **k: pytest.fail("Weights loaded before validation"))
+    monkeypatch.setattr("power_fm_foresight.genco.torch.load", lambda *a, **k: pytest.fail("Weights loaded before validation"))
     with pytest.raises(ValueError, match="Case mismatch: checkpoint YAML"):
         Genco(Path(cfg["paths"]["assets_root"]) / "genco-opfdata", cfg["checkpoint"], grid=grid)
 

@@ -56,8 +56,8 @@ symlinks to the relocated scripts.
 | `scripts/forecast_partition.py:components` | `src/power_fm_foresight/_training/forecast.py` |
 | `scripts/forecast_partition.py:adapter_samples` | `src/power_fm_foresight/_training/forecast.py` |
 | `scripts/forecast_partition.py:cache_partition` | `src/power_fm_foresight/_training/forecast.py` |
-| `scripts/fleet/evaluate.py:score` | `src/power_fm_foresight/_training/evaluation.py` |
-| `scripts/replication_evaluate.py:merged` | `src/power_fm_foresight/_training/evaluation.py` |
+| `scripts/fleet/evaluate.py:score` | `src/power_fm_foresight/scoring.py` |
+| `scripts/replication_evaluate.py:merged` | `src/power_fm_foresight/scoring.py` |
 
 ### Packaging adjustments
 
