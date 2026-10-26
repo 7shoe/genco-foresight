@@ -276,6 +276,7 @@ def test_compare_only_regression_without_preparation_metadata(tmp_path,monkeypat
     monkeypatch.setattr(assessment,'evaluate_runs',lambda *a:pytest.fail('compare-only evaluated a model'))
     monkeypatch.setattr(training,'components',lambda *a,**kw:pytest.fail('compare-only loaded a model'))
     run=tmp_path/'run';run.mkdir();(run/'best.pt').write_bytes(b'not a model checkpoint')
+    write_json(run/'chain.json',dict(legacy=True))
     config=tmp_path/'config.json';write_json(config,dict(paths=dict(stage_a_run=str(tmp_path/'missing'))))
     reference=tmp_path/'reference';saved=tmp_path/'evaluation';origin='test_00_0072'
     write_json(reference/'origins'/origin/'A_scores.json',dict(score=.5,kind='A'))

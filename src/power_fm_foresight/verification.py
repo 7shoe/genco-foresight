@@ -43,7 +43,7 @@ def compare_regression(options,p,hashes):
         folders.extend(candidate.parent for candidate in candidates if candidate.is_file())
     if not folders or len(set(folders))!=len(folders):raise ValueError('No unique saved evaluation outputs found')
     expected=Path(p['run']).resolve()
-    checkpoint=expected/('adapter/best.pt' if (expected/'chain.json').exists() else 'best.pt')
+    checkpoint=expected/'best.pt' if (expected/'best.pt').is_file() else expected/'adapter/best.pt'
     hashes[str(checkpoint)]=sha256(checkpoint)
     reference=Path(p['saved_evaluation'])
     cfg=load_config(p['configuration']);notes=[]
