@@ -31,6 +31,12 @@ def headline(row,scales,indices):
         pg_free_mae=pg['mae'],p_imbalance=row['physical_balance']['p_mean_abs_mw'])
 
 
+def headline_indices(cfg,net):
+    path=Path(cfg['paths']['stage_a_run'])/'stage_a_followup/headline_components.json'
+    if not path.exists():return None,f'Headline assembly skipped: missing preparation metadata {path}'
+    return [net.bus_ids.tolist().index(i) for i in read_json(path)['voltage_bus_ids']],None
+
+
 def run_identity(path,cfg):
     chain=read_json(path/'chain.json') if (path/'chain.json').exists() else {}
     adapter=Path(cfg['paths']['training_run']);status=read_json(adapter/'status.json')
@@ -179,16 +185,17 @@ def evaluate_one(path,out,options):
     finally:
         if solver:solver.close()
     if not all(completion_valid(out/'origins'/o['id'],digest) for o in origins):return dict(complete=False,output=str(out))
-    headlines=read_json(Path(cfg['paths']['stage_a_run'])/'stage_a_followup/headline_components.json')
-    indices=[net.bus_ids.tolist().index(i) for i in headlines['voltage_bus_ids']]
+    indices,note=headline_indices(cfg,net)
     report=dict(identity=identity,comparison=comparison,output=str(out),complete=True,headlines={},modes={},unavailable={},
         same_input_audit={o['id']:read_json(out/'origins'/o['id']/'P_audit.json') for o in origins},config=cfg,scales=cfg['stage_b']['coordinate_scales'])
+    if note:report['notes']=[note]
     for mode in options['modes']:
         paths=[out/'origins'/o['id']/f'{mode}_scores.json' for o in origins]
         if not all(p.exists() for p in paths):
             report['headlines'][mode]=None;report['unavailable'][mode]='Unavailable baseline coordinates or unresolved training history';continue
         row=merged([read_json(p) for p in paths]);write_json(out/f'{mode}.json',row)
-        report['headlines'][mode]=headline(row,scales,indices);report['modes'][mode]=str(out/f'{mode}.json')
+        report['headlines'][mode]=headline(row,scales,indices) if indices is not None else None
+        report['modes'][mode]=str(out/f'{mode}.json')
     if sha256(checkpoint)!=protocol['checkpoint_sha256']:raise ValueError('Checkpoint changed during evaluation; use an immutable checkpoint and a new output')
     if not all(sha256(p)==h for p,h in protocol.get('baseline_input_sha256',{}).items()):raise ValueError('Frozen baseline changed during evaluation')
     write_json(out/'report.json',report)
@@ -213,8 +220,9 @@ def evaluate_mixtures(reports,sizes,out,modes,eval_seed):
                 result.append(dict(group=key,size=size,available=False,reason='Insufficient finished compatible seeds'));continue
             selected=members[:size];dest=out/'mixtures'/key[:12]/f'k{size}';cfg=selected[0]['config']
             net=load_network(config=cfg);scales=read_json(selected[0]['scales']);pairs=variogram_pairs(scales,net)
-            ids=read_json(Path(cfg['paths']['stage_a_run'])/'stage_a_followup/headline_components.json')['voltage_bus_ids'];indices=[net.bus_ids.tolist().index(i) for i in ids]
+            indices,note=headline_indices(cfg,net)
             record=dict(group=key,size=size,available=True,seeds=[r['identity']['seed'] for r in selected],weights=[1/size]*size,headlines={},identity=selected[0]['identity'],comparison=selected[0]['comparison'])
+            if note:record['notes']=[note]
             record_manifest(dest,'evaluate mixture',record,device='cpu',seeds=record['seeds'],paths=dict(members=[r['output'] for r in selected]))
             for mode in modes:
                 if mode not in ('A','D'):
@@ -231,7 +239,7 @@ def evaluate_mixtures(reports,sizes,out,modes,eval_seed):
                     values=mixture_samples(blocks);targets=npz(Path(selected[0]['output'])/'origins'/origin/'targets.npz')
                     row,_=score(values,targets,scales,pairs,mode,origin,index,eval_seed=eval_seed);rows.append(row)
                     write_json(dest/'origins'/origin/f'{mode}_scores.json',row)
-                record['headlines'][mode]=headline(merged(rows),scales,indices) if available else None
+                record['headlines'][mode]=headline(merged(rows),scales,indices) if available and indices is not None else None
             write_json(dest/'report.json',record);result.append(record)
     return result
 

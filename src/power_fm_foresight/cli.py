@@ -77,6 +77,7 @@ def parser():
             sub.add_argument('--check', choices=('reproducibility', 'regression'), required=True)
             sub.add_argument('--protocol', type=Path, required=True)
             sub.add_argument('--runs', type=Path, nargs='+')
+            sub.add_argument('--compare-only', action='store_true')
             sub.add_argument('--out', type=Path)
     return p
 

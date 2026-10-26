@@ -34,6 +34,45 @@ def metrics(path):
     return [json.loads(line) for line in (Path(path)/'metrics.jsonl').read_text().splitlines()]
 
 
+def compare_regression(options,p,hashes):
+    paths=[Path(path).resolve() for path in options.get('runs',[])]
+    if not paths:raise ValueError('--compare-only requires --runs pointing to saved evaluation outputs')
+    folders=[]
+    for path in paths:
+        candidates=sorted((path/'runs').glob('*/protocol.json')) if (path/'runs').is_dir() else [path/'protocol.json']
+        folders.extend(candidate.parent for candidate in candidates if candidate.is_file())
+    if not folders or len(set(folders))!=len(folders):raise ValueError('No unique saved evaluation outputs found')
+    expected=Path(p['run']).resolve()
+    checkpoint=expected/('adapter/best.pt' if (expected/'chain.json').exists() else 'best.pt')
+    hashes[str(checkpoint)]=sha256(checkpoint)
+    reference=Path(p['saved_evaluation'])
+    cfg=load_config(p['configuration']);notes=[]
+    metadata=Path(cfg['paths']['stage_a_run'])/'stage_a_followup/headline_components.json'
+    if not metadata.exists():notes.append(f'Headline assembly skipped: missing preparation metadata {metadata}')
+    checks=[]
+    for folder in folders:
+        recorded=read_json(folder/'protocol.json');hashes[str(folder/'protocol.json')]=sha256(folder/'protocol.json')
+        comparison=recorded['comparison']
+        if (Path(recorded['identity']['run']).resolve()!=expected or recorded['checkpoint_sha256']!=hashes[str(checkpoint)] or
+            recorded['checkpoint']!='best' or comparison['origins']!=p['origins'] or
+            comparison['forecast_samples']!=p['samples'] or comparison['eval_seed']!=p['eval_seed'] or
+            comparison['partition']!='test' or not set(p['modes'])<=set(recorded['modes'])):
+            raise ValueError('Saved evaluation differs from the regression protocol')
+        for origin in p['origins']:
+            current=folder/'origins'/origin;done=read_json(current/'done.json')
+            hashes[str(current/'done.json')]=sha256(current/'done.json')
+            if done['protocol_sha256']!=hashes[str(folder/'protocol.json')]:raise ValueError('Saved origin protocol differs')
+            for name in ['targets.npz',*(f'{mode}_scores.json' for mode in p['modes'])]:
+                actual=current/name;old=reference/'origins'/origin/name
+                hashes[str(actual)]=sha256(actual);hashes[str(old)]=sha256(old)
+                if done['artifacts'].get(name)!=hashes[str(actual)]:raise ValueError(f'Saved artifact changed: {actual}')
+                if name=='targets.npz':continue
+                checks.append(dict(output=str(folder),origin=origin,mode=name.removesuffix('_scores.json'),
+                    **differences(read_json(actual),read_json(old),atol=p['absolute_tolerance'],rtol=p['relative_tolerance'])))
+    return dict(passed=all(c['passed'] for c in checks),checks=checks,compare_only=True,
+                model_evaluated=False,notes=notes)
+
+
 def check_reproducibility(candidate,p,references):
     candidate=Path(candidate);adapter=candidate/'adapter' if (candidate/'chain.json').exists() else candidate
     cfg=run_config(candidate)
@@ -72,9 +111,15 @@ def check_reproducibility(candidate,p,references):
 
 def verify(options):
     p=protocol(options['protocol'],options['check']);out=Path(options.get('out') or default_output('verify'))
-    record_manifest(out,'verify',p,device=p.get('device',p.get('training',{}).get('device')),seeds=[p.get('eval_seed',0)],paths=dict(protocol=options['protocol'],output=out))
+    compare_only=options.get('compare_only',False)
+    if compare_only and p['check']!='regression':raise ValueError('--compare-only is available for regression only')
+    configuration=dict(protocol=p,compare_only=True,runs=options.get('runs',[])) if compare_only else p
+    record_manifest(out,'verify',configuration,device='cpu' if compare_only else p.get('device',p.get('training',{}).get('device')),seeds=[p.get('eval_seed',0)],paths=dict(protocol=options['protocol'],output=out))
     hashes={str(Path(options['protocol']).resolve()):sha256(options['protocol'])}
-    if p['check']=='regression':
+    if compare_only:
+        gate=compare_regression(options,p,hashes)
+        write_json(out/'inputs.json',hashes)
+    elif p['check']=='regression':
         from .assessment import evaluate_runs
         from .campaign import run_config
         cfg=load_config(p['configuration']);cfg['evaluation']=dict(baseline_root=p['saved_evaluation'],origins=p['origins'])

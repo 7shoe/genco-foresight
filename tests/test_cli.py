@@ -262,6 +262,45 @@ def test_fixed_verification_policy(tmp_path):
     assert protocol(p,'regression')['absolute_tolerance']==1e-7
 
 
+def test_missing_headline_metadata_is_optional(tmp_path):
+    from power_fm_foresight.assessment import headline_indices
+    indices,note=headline_indices(dict(paths=dict(stage_a_run=str(tmp_path/'missing'))),SimpleNamespace())
+    assert indices is None and 'Headline assembly skipped' in note
+
+
+@pytest.mark.parametrize('delta,passed',[(0.,True),(2e-7,False)])
+def test_compare_only_regression_without_preparation_metadata(tmp_path,monkeypatch,delta,passed):
+    from power_fm_foresight import assessment, training, verification
+    from power_fm_foresight._config import sha256
+    from power_fm_foresight.cli import main
+    monkeypatch.setattr(assessment,'evaluate_runs',lambda *a:pytest.fail('compare-only evaluated a model'))
+    monkeypatch.setattr(training,'components',lambda *a,**kw:pytest.fail('compare-only loaded a model'))
+    run=tmp_path/'run';run.mkdir();(run/'best.pt').write_bytes(b'not a model checkpoint')
+    config=tmp_path/'config.json';write_json(config,dict(paths=dict(stage_a_run=str(tmp_path/'missing'))))
+    reference=tmp_path/'reference';saved=tmp_path/'evaluation';origin='test_00_0072'
+    write_json(reference/'origins'/origin/'A_scores.json',dict(score=.5,kind='A'))
+    (reference/'origins'/origin/'targets.npz').write_bytes(b'not an array')
+    write_json(saved/'protocol.json',dict(identity=dict(run=str(run)),checkpoint='best',checkpoint_sha256=sha256(run/'best.pt'),
+        comparison=dict(origins=[origin],forecast_samples=64,eval_seed=42,partition='test'),modes=['A']))
+    current=saved/'origins'/origin
+    write_json(current/'A_scores.json',dict(score=.5+delta,kind='A'))
+    (current/'targets.npz').write_bytes(b'not an array')
+    write_json(current/'done.json',dict(protocol_sha256=sha256(saved/'protocol.json'),
+        artifacts={name:sha256(current/name) for name in ('A_scores.json','targets.npz')}))
+    protocol=tmp_path/'regression.json'
+    write_json(protocol,dict(schema='pff-verification.v1',check='regression',absolute_tolerance=1e-7,relative_tolerance=0,
+        run=str(run),configuration=str(config),saved_evaluation=str(reference),origins=[origin],modes=['A'],samples=64,eval_seed=42))
+    out=tmp_path/'result'
+    assert main(['verify','--check','regression','--protocol',str(protocol),'--compare-only','--runs',str(saved),'--out',str(out)])==(0 if passed else 1)
+    gate=read_json(out/'gate.json')
+    assert gate['passed'] is passed and gate['model_evaluated'] is False
+    assert 'Headline assembly skipped' in gate['notes'][0]
+    assert read_json(out/'command.manifest.json')['device']=='cpu'
+    write_json(current/'A_scores.json',dict(score=.5,kind='altered'))
+    with pytest.raises(ValueError,match='artifact changed'):
+        verification.verify(dict(check='regression',protocol=str(protocol),compare_only=True,runs=[str(saved)],out=str(tmp_path/'tampered')))
+
+
 def test_train_requires_explicit_seed_or_config_seed(tmp_path):
     args=dict(command='train',case=[30],dataset=str(tmp_path))
     with pytest.raises(ValueError,match='seed'):expand_plan(command_options(args))
