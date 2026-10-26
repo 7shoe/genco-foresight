@@ -25,5 +25,5 @@ export TMPDIR="${GENCO_V2_ROOT:?}/tmp"
 mkdir -p "$TMPDIR"
 v2_python=/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/bin/python
 mpiexec --pmi=pmix --envall -n 1 --ppn 1 --cpu-bind none \
-    "$v2_python" -u "$GENCO_V2_ROOT/source/experiments/package/phase3_worker.py" \
+    "$v2_python" -u "${GENCO_V2_SOURCE:-$GENCO_V2_ROOT/source}/experiments/package/phase3_worker.py" \
     --root "$GENCO_V2_ROOT" --phase "${PFF_GATE_PHASE:?}"

@@ -42,9 +42,10 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',type=Path,required=True)
     parser.add_argument('--phase',choices=('prepare','train','results','boundary'),required=True)
-    args=parser.parse_args();root=args.root;source=root/'source'
+    args=parser.parse_args();root=args.root;source=Path(os.environ.get('GENCO_V2_SOURCE',root/'source'))
     assert os.environ.get('PBS_JOBID'), 'Verification requires a compute allocation'
-    pin=json.loads((root/'source_pin.json').read_text())
+    pin_path=Path(os.environ.get('GENCO_V2_PIN',root/'source_pin.json'))
+    pin=json.loads(pin_path.read_text())
     assert all(sha(source/p)==h for p,h in pin['files'].items())
     assert all(sha(root/p)==h for p,h in pin['inputs'].items())
     if args.phase=='boundary':
@@ -77,6 +78,7 @@ def main():
             ('prepare',[pff,'prepare','--config',str(root/'config.json'),'--case','30','--dataset',str(root/'datasets'),
                         '--reuse',str(root.parents[2]/'data/temporal_case30_v4'),'--device','cpu','--parity-samples','200'],1800)],
         'train':[
+            ('suite',[py,'-m','pytest','-q','-ra','-p','no:cacheprovider','tests','--basetemp',str(root/'tmp/final_suite'),'--junitxml',str(root/'final_suite.xml')],900),
             ('boundary',[py,str(source/'experiments/package/phase3_worker.py'),'--root',str(root),'--phase','boundary'],3300),
             ('resume',[pff,'train','--resume',str(root/'campaign')],3300),
             ('reproducibility',[pff,'verify','--check','reproducibility','--protocol',str(root/'reproducibility.json'),
@@ -127,7 +129,7 @@ def main():
         for path in ('verify_regression/gate.json','regression/gate.json','phase2/scorer_loader/gate.json'):
             assert json.loads((root/path).read_text())['passed']
     write(root/'jobs'/f'{job}.json',dict(phase=args.phase,passed=passed,incomplete=incomplete,results=results,
-        job_id=job,source_commit=pin['source_commit'],source_pin_sha256=sha(root/'source_pin.json'),
+        job_id=job,source_commit=pin['source_commit'],source_pin_sha256=sha(pin_path),
         protocol_sha256=sha(root/'protocol.json'),worker_seconds=time.time()-began,reserved_node_seconds=3600,
         evidence_sha256={str(p.relative_to(root)):sha(p) for p in logs.iterdir() if p.is_file()}))
     sys.exit(0 if passed or incomplete else 1)

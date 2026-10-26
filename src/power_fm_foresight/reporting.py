@@ -18,7 +18,9 @@ def persisted(path):
     for child in (path/'evaluation',path/'stage_b'):
         if (child/'report.json').exists():return dict(runs=[read_json(child/'report.json')],mixtures=[])
     if (path/'evaluations.json').exists():
-        return persisted(Path(read_json(path/'evaluations.json')['latest']))
+        result=persisted(Path(read_json(path/'evaluations.json')['latest']))
+        selected=[r for r in result['runs'] if Path(r['identity']['run']).resolve()==path.resolve()]
+        return dict(runs=selected,mixtures=[])
     if (path/'campaign.json').exists():
         groups=[persisted(p) for p in resolve_runs([path])]
         return dict(runs=[x for g in groups for x in g['runs']],mixtures=[x for g in groups for x in g.get('mixtures',[])])
@@ -39,9 +41,12 @@ def status_rows(paths):
 
 
 def summary_rows(results,kind):
-    rows=[];groups={}
+    rows=[];groups={};seen=set();seen_mixtures=set()
     for result in results:
         for run in result['runs']:
+            fingerprint=json.dumps(run,sort_keys=True)
+            if fingerprint in seen:continue
+            seen.add(fingerprint)
             identity=run.get('identity',{})
             if not run.get('complete',True):continue
             for mode,metrics in run.get('headlines',{}).items():
@@ -50,6 +55,9 @@ def summary_rows(results,kind):
                 key=tuple(identity.get(k) for k in ('case','variant','balance_weight','samples','lr','pilot','budget_capped'))+(mode,json.dumps(run.get('comparison',{}),sort_keys=True))
                 groups.setdefault(key,[]).append(row)
         for mixture in result.get('mixtures',[]):
+            fingerprint=json.dumps(mixture,sort_keys=True)
+            if fingerprint in seen_mixtures:continue
+            seen_mixtures.add(fingerprint)
             if not mixture.get('available',False):
                 rows.append(dict(row_type='mixture',size=mixture['size'],available=False,reason=mixture['reason']));continue
             for mode,metrics in mixture['headlines'].items():

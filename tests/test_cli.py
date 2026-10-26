@@ -111,6 +111,30 @@ def test_individual_chain_resume_keeps_tile(tmp_path,monkeypatch):
     assert seen==[3]
 
 
+def test_train_wrapper_reads_authoritative_checkpoint_progress(tmp_path,monkeypatch):
+    import torch
+    from power_fm_foresight import campaign, data, training
+    c=prepare_campaign(options(tmp_path))
+    chain=c['plan'][0];cfg=deepcopy(c['options']['configuration'])
+    card=dict(config=cfg)
+    monkeypatch.setattr(campaign,'dataset_card',lambda *a:card)
+    monkeypatch.setattr(campaign,'select_device',lambda *a:'cpu')
+    monkeypatch.setattr(data,'build_cache',lambda *a:None)
+    progress=dict(steps=4090,epoch=0,step_in_epoch=4090,finished=False,
+                  stop_reason='verification_step_limit',best_epoch=None)
+    def run(cfg,device,stop_after_steps):
+        root=Path(cfg['paths']['training_run'])
+        root.mkdir(parents=True,exist_ok=True)
+        torch.save(dict(progress=progress),root/'latest.pt')
+        (root/'metrics.jsonl').write_text('{"steps":4000,"loss":1.0}\n')
+        return dict(status='continue',steps_after=4090,epochs_reached=0)
+    monkeypatch.setattr(training,'run',run)
+    assert campaign.train_chain(c,chain,0,4090)==progress
+    root=Path(c['root'])/chain['id']
+    assert read_json(root/'boundary_checkpoint.json')['steps']==4090
+    assert read_json(root/'chain.status.json')['steps']==4090
+
+
 def test_duration_and_invalid_combinations(tmp_path):
     assert duration('6h')==21600 and duration('30m')==1800 and duration(60)==60
     for value in ('-1h','1d',0,float('nan')):
@@ -145,6 +169,21 @@ def test_ensemble_group_order_and_compatibility():
     rows[0]['identity']['samples']=2
     assert len(ensemble_groups(rows))==2
     with pytest.raises(ValueError,match='duplicate'):ensemble_groups([rows[1],rows[1]])
+
+
+def test_campaign_report_counts_each_seed_once(tmp_path):
+    from power_fm_foresight.reporting import persisted, summary_rows
+    c=prepare_campaign(options(tmp_path));runs=[]
+    for chain in c['plan'][:3]:
+        path=Path(c['root'])/chain['id']
+        write_json(path/'evaluations.json',dict(latest=str(tmp_path/'evaluation')))
+        runs.append(dict(complete=True,identity=dict(run=str(path),case='case14_ieee',seed=chain['seed']),
+                         headlines=dict(A=dict(joint_es=.2,vm_crps=.1,vm_coverage90_pct=90.,pg_free_mae=1.,p_imbalance=2.))))
+    write_json(tmp_path/'evaluation/evaluation.json',dict(runs=runs,mixtures=[]))
+    individual=[persisted(Path(c['root'])/chain['id']) for chain in c['plan'][:3]]
+    assert [len(r['runs']) for r in individual]==[1,1,1]
+    rows=summary_rows(individual+individual,'summary')
+    assert len(rows)==4 and rows[-1]['n']==3
 
 
 def test_fixed_verification_policy(tmp_path):
