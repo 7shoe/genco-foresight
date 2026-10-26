@@ -1,7 +1,7 @@
 {
   "schema": "pff-verification.v1",
   "check": "regression",
-  "configuration": "${oc.env:PFF_ROOT}/runs/package/phase3_20261026_v1/config.json",
+  "configuration": "${oc.env:PFF_ROOT}/runs/package/phase3_20261026_v2/config.json",
   "run": "${oc.env:PFF_ROOT}/runs/adapter_v4",
   "saved_evaluation": "${oc.env:PFF_ROOT}/runs/v4/stage_b",
   "origins": ["test_00_0072", "test_00_0096", "test_00_0120"],

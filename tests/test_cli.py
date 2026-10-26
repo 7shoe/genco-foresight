@@ -100,6 +100,20 @@ def test_numerical_comparison_rejects_nonfinite_values():
         assert not differences(dict(score=value),dict(score=1.))['passed']
 
 
+def test_reused_data_keeps_recorded_coordinate_order(tmp_path):
+    from power_fm_foresight.preparation import reuse_scales
+    source=tmp_path/'released.json';dataset=tmp_path/'data';destination=tmp_path/'new/scales.json'
+    value=dict(benchmark_id='data',fit_partition='train',training_shards_sha256={'episodes/train_00.json':'abc'},
+               coordinate_order=['vm:1','va_rad:2'],scale_vector_one_hour=[.01,.02])
+    write_json(source,value)
+    write_json(dataset/'manifest.json',dict(benchmark_id='data',episodes=[dict(episode_id='train_00',split='train')],
+               shards=[dict(file='episodes/train_00.json',sha256='abc')]))
+    reuse_scales(source,dataset,destination)
+    assert source.read_bytes()==destination.read_bytes()
+    value['training_shards_sha256']['episodes/train_00.json']='different';write_json(source,value)
+    with pytest.raises(ValueError,match='training shards'):reuse_scales(source,dataset,destination)
+
+
 def test_individual_chain_resume_keeps_tile(tmp_path,monkeypatch):
     from power_fm_foresight import campaign
     c=prepare_campaign(options(tmp_path))

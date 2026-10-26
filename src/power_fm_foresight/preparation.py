@@ -73,6 +73,20 @@ def isolate_assets(source,dest,case):
     if (source/'networks').exists() and not (dest/'networks').exists():(dest/'networks').symlink_to((source/'networks').resolve(),target_is_directory=True)
 
 
+def reuse_scales(source, dataset, destination):
+    """Keep a recorded coordinate order after verifying its training-shard provenance."""
+    value=read_json(source);manifest=read_json(Path(dataset)/'manifest.json')
+    training={f"episodes/{e['episode_id']}.json" for e in manifest['episodes'] if e['split']=='train'}
+    hashes={r['file']:r['sha256'] for r in manifest['shards'] if r['file'] in training}
+    if (value['benchmark_id']!=manifest['benchmark_id'] or value['fit_partition']!='train' or
+            value['training_shards_sha256']!=hashes or len(hashes)!=len(training)):
+        raise ValueError('Recorded coordinate scales do not belong to these training shards')
+    destination=Path(destination);destination.parent.mkdir(parents=True,exist_ok=True)
+    if destination.exists() and sha256(destination)!=sha256(source):raise ValueError('Recorded coordinate scales changed')
+    shutil.copyfile(source,destination)
+    return dict(source=str(source),sha256=sha256(source),policy='Reuse exact recorded train-derived scales and coordinate order')
+
+
 def subset_parity(cfg, out, count, conversion_source):
     import torch
     from ._data import parity, subset
@@ -141,6 +155,11 @@ def prepare_datasets(options):
             if data.exists() and data.resolve()!=reuse.resolve():raise ValueError('Reuse source differs from existing dataset')
             if not data.exists():data.symlink_to(reuse,target_is_directory=True)
         cfg['paths']['temporal_root']=str(data)
+        scale_provenance=None
+        recorded=Path(source_cfg['stage_b']['coordinate_scales'])
+        if options.get('reuse') and recorded.exists() and source_cfg['task']['canonical_case']==cfg['task']['canonical_case']:
+            cfg['stage_b']['coordinate_scales']=str(out/'audit/reused_coordinate_scales.json')
+            scale_provenance=reuse_scales(recorded,data,cfg['stage_b']['coordinate_scales'])
         record_manifest(out,'prepare',cfg,device='cpu',seeds=[cfg['seed']],paths=dict(output=out,data=data))
         if not options.get('reuse') and not options['audit_only']:
             from ._data.labeling import generate
@@ -163,8 +182,11 @@ def prepare_datasets(options):
                 reusable_cache=str(cache)
         paths=audited['input_sha256'];paths[str(out/'audit/readiness.json')]=sha256(out/'audit/readiness.json')
         paths[cfg['stage_b']['coordinate_scales']]=sha256(cfg['stage_b']['coordinate_scales'])
+        if reusable_cache:paths[reusable_cache]=sha256(reusable_cache)
+        if scale_provenance:paths[scale_provenance['source']]=scale_provenance['sha256']
         card=dict(schema='pff-dataset.v1',passed=True,case=case,recipe='v4',config=cfg,
             parity=proof,label=proof['label'],input_sha256=paths,training_cache=reusable_cache,
+            coordinate_scale_provenance=scale_provenance,
             audit=str(out/'audit/stage_a.json'),headlines=str(out/'audit/stage_a_followup/headline_components.json'))
         write_json(out/'dataset.json',card)
         (out/'DATASET_CARD.md').write_text(f'# {case} v4\n\nStage A audit passed; {audited["hours"]} hours, {audited["unresolved"]} unresolved labels remain masked.\n\n{proof["label"]}: bit-identical CPU predictions; IDs and hashes in parity/protocol.json.\n\nHeadline components use risk-calibration support only.\n')

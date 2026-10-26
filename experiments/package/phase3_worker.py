@@ -41,7 +41,7 @@ def boundary(root):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',type=Path,required=True)
-    parser.add_argument('--phase',choices=('prepare','train','results','boundary'),required=True)
+    parser.add_argument('--phase',choices=('prepare','train','prepare_train','results','boundary'),required=True)
     args=parser.parse_args();root=args.root;source=Path(os.environ.get('GENCO_V2_SOURCE',root/'source'))
     assert os.environ.get('PBS_JOBID'), 'Verification requires a compute allocation'
     pin_path=Path(os.environ.get('GENCO_V2_PIN',root/'source_pin.json'))
@@ -69,7 +69,7 @@ def main():
     logs=root/'logs'/job;logs.mkdir(parents=True,exist_ok=True)
     chain=root/'campaign/case30_ieee/seed0/conditioned_lambda1_K8'
     old=root.parents[1]/'v2/final_consolidation_20261026_v1/regression'
-    commands={
+    layouts={
         'prepare':[
             ('installation',[sys.executable,str(source/'experiments/package/install_gate.py'),'--root',str(root),'--source',str(source)],300),
             ('pff_entrypoint',[pff,'--help'],30),
@@ -94,12 +94,13 @@ def main():
                            '--out',str(root/'regression'),'--reference',str(old)],1200),
             ('scorer_loader',[py,str(source/'experiments/package/scorer_gate.py'),'--root',str(root/'phase2'),
                              '--source',str(source)],900)],
-    }[args.phase]
+    }
+    commands=layouts['prepare']+layouts['train'][1:] if args.phase=='prepare_train' else layouts[args.phase]
     incomplete=False
     for name,cmd,cap in commands:
-        if args.phase=='train' and name=='resume' and not (chain/'boundary_checkpoint.json').exists():
+        if name=='resume' and not (chain/'boundary_checkpoint.json').exists():
             incomplete=True;break
-        if args.phase=='train' and name=='reproducibility':
+        if name=='reproducibility':
             if not json.loads((chain/'chain.status.json').read_text())['finished']:
                 incomplete=True;break
         remaining=protocol['job']['guard_seconds']-(time.time()-began)
@@ -118,12 +119,12 @@ def main():
         write(root/'progress.json',dict(phase=args.phase,job_id=job,results=results))
         if code:break
     passed=not incomplete and len(results)==len(commands) and all(r['returncode']==0 for r in results)
-    if passed and args.phase=='prepare':
+    if passed and args.phase in ('prepare','prepare_train'):
         suites=list(ET.parse(root/'suite.xml').getroot().iter('testsuite'))
         assert sum(int(s.attrib['tests']) for s in suites)>=158
         assert all(int(s.attrib.get(k,0))==0 for s in suites for k in ('failures','errors','skipped'))
         assert json.loads((root/'datasets/case30_ieee/dataset.json').read_text())['passed']
-    if passed and args.phase=='train':
+    if passed and args.phase in ('train','prepare_train'):
         assert json.loads((root/'verify_reproducibility/gate.json').read_text())['passed']
     if passed and args.phase=='results':
         for path in ('verify_regression/gate.json','regression/gate.json','phase2/scorer_loader/gate.json'):

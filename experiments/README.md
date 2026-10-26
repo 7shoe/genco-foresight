@@ -37,6 +37,8 @@ Reused labels are read-only. Each grid gets a full Stage A label audit, masked e
 support, mechanically selected headline components, and a dataset card recording
 `subset parity (200)`. Parity records the seeded IDs before comparing exact CPU
 outputs. No fallback to an easier parity threshold is allowed.
+When the config supplies recorded scales for the reused case, preparation checks
+their training-shard hashes and preserves their exact bytes and coordinate order.
 
 For a later independent audit, choose a new destination and reuse the old labels:
 

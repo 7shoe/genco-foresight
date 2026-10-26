@@ -1,8 +1,8 @@
 {
   "schema": "pff-verification.v1",
   "check": "reproducibility",
-  "configuration": "${oc.env:PFF_ROOT}/runs/package/phase3_20261026_v1/config.json",
-  "dataset": "${oc.env:PFF_ROOT}/runs/package/phase3_20261026_v1/datasets",
+  "configuration": "${oc.env:PFF_ROOT}/runs/package/phase3_20261026_v2/config.json",
+  "dataset": "${oc.env:PFF_ROOT}/runs/package/phase3_20261026_v2/datasets",
   "reference_runs": [
     "${oc.env:PFF_ROOT}/runs/v2/fleet_20261025_off_v1/case30_ieee/seed0/adapter",
     "${oc.env:PFF_ROOT}/runs/v2/fleet_20261025_off_v1/case30_ieee/seed1/adapter",
