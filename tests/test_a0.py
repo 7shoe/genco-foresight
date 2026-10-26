@@ -3,8 +3,8 @@ from copy import deepcopy
 import numpy as np
 import torch
 from test_adapter import tiny
-from scoring import fair_energy_score
-from solver.checks import physical_quantities
+from power_fm_foresight.scoring import fair_energy_score
+from power_fm_foresight._solver.checks import physical_quantities
 
 
 def a0(tiny):

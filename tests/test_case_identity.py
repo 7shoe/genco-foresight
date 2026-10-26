@@ -5,12 +5,12 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-from common import ROOT, load_config, write_json
-from data.grids import grid_config
-from data.loader.dataset import OfficialSnapshotDataset, load_snapshot, load_temporal_manifest
-from data.loader.network import graph_for_demand, load_network
-from models.genco import Genco
-from models.temporal import TemporalAdapter
+from power_fm_foresight._config import ROOT, load_config, write_json
+from power_fm_foresight.grids import grid_config
+from power_fm_foresight._data.dataset import OfficialSnapshotDataset, load_snapshot, load_temporal_manifest
+from power_fm_foresight._data.network import graph_for_demand, load_network
+from power_fm_foresight.genco import Genco
+from power_fm_foresight.temporal import TemporalAdapter
 
 
 @pytest.fixture(scope="module")
@@ -47,14 +47,14 @@ def test_wrong_checkpoint_yaml_fails_before_loading_weights(tmp_path, monkeypatc
     path = tmp_path / settings["directory"] / settings["configuration"]
     path.parent.mkdir(parents=True)
     path.write_text(yaml.safe_dump(config))
-    monkeypatch.setattr("models.genco.torch.load", lambda *a, **k: pytest.fail("Weights loaded before validation"))
+    monkeypatch.setattr("power_fm_foresight.genco.torch.load", lambda *a, **k: pytest.fail("Weights loaded before validation"))
     with pytest.raises(ValueError, match="Case mismatch: checkpoint YAML"):
         Genco(tmp_path, settings)
 
 
 def test_checkpoint_yaml_must_match_supplied_network(grid, monkeypatch):
     cfg = grid_config("case14_ieee")
-    monkeypatch.setattr("models.genco.torch.load", lambda *a, **k: pytest.fail("Weights loaded before validation"))
+    monkeypatch.setattr("power_fm_foresight.genco.torch.load", lambda *a, **k: pytest.fail("Weights loaded before validation"))
     with pytest.raises(ValueError, match="Case mismatch: checkpoint YAML"):
         Genco(Path(cfg["paths"]["assets_root"]) / "genco-opfdata", cfg["checkpoint"], grid=grid)
 
@@ -113,8 +113,8 @@ def test_released_temporal_manifests_remain_valid(version):
 
 @pytest.mark.parametrize("entrypoint", ["training", "evaluation"])
 def test_run_setup_rejects_wrong_temporal_data_before_model(tmp_path, monkeypatch, entrypoint):
-    from training import loop
-    from scripts import forecast_partition
+    from power_fm_foresight._training import loop
+    from power_fm_foresight._training import forecast as forecast_partition
     module, call = (loop, loop.initialize) if entrypoint == "training" else (forecast_partition, forecast_partition.components)
     cfg = grid_config("case30_ieee")
     cfg["paths"]["temporal_root"] = str(tmp_path)

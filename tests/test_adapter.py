@@ -4,14 +4,14 @@ import numpy as np
 import pytest
 import torch
 
-from common import ROOT, load_config, read_json
-from data.download.prepare import checkpoint_assets
-from data.loader.network import graph_for_demand,load_network
-from models.genco import Genco
-from models.temporal import TemporalAdapter
-from scoring import fair_energy_score
-from scripts.stage_b_prevalence import prevalence_shift
-from solver.checks import physical_quantities
+from power_fm_foresight._config import ROOT, load_config, read_json
+from power_fm_foresight._data.assets import checkpoint_assets
+from power_fm_foresight._data.network import graph_for_demand,load_network
+from power_fm_foresight.genco import Genco
+from power_fm_foresight.temporal import TemporalAdapter
+from power_fm_foresight.scoring import fair_energy_score
+from experiments.stage_b_prevalence import prevalence_shift
+from power_fm_foresight._solver.checks import physical_quantities
 
 
 @pytest.fixture(scope="module")

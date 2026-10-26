@@ -1,7 +1,7 @@
 import numpy as np
 
-from data.loader.network import load_network
-from solver.checks import admittance_vectors, check_solution, physical_quantities
+from power_fm_foresight._data.network import load_network
+from power_fm_foresight._solver.checks import admittance_vectors, check_solution, physical_quantities
 
 
 def test_independent_ac_equations_agree_with_datakit_admittance():

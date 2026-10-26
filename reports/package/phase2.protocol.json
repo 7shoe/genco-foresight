@@ -1,0 +1,38 @@
+{
+  "schema": "power-fm-foresight.package-protocol.v1",
+  "identity": "phase2_20261026_v1",
+  "base": "v0.2.0",
+  "scope": "File moves, import rewrites, portable package resources and metadata only; no CLI or numerical changes",
+  "runtime_dependencies": "Declare existing runtime dependencies; exclude torch, PyG and scatter",
+  "gates": {
+    "suite": {"minimum_tests": 140, "subtests": 3, "failures": 0, "skips": 0},
+    "regression": {
+      "configuration": "configs/v4.yaml", "case": "case30_ieee", "deterministic_algorithms": true,
+      "audit": {"episode": "train_00", "hours": [0, 49], "absolute_tolerance": 1e-12, "relative_tolerance": 1e-10},
+      "forward": {"origins": ["test_00_0072", "test_00_0096"], "seed": 10042, "seed_increment": 1,
+        "samples": 64, "modes": ["A", "D"], "absolute_tolerance": 1e-5, "relative_tolerance": 1e-5},
+      "reference": "runs/v2/final_consolidation_20261026_v1/regression"
+    },
+    "scorer_loader": {
+      "checkpoints": ["runs/adapter_v4/best.pt", "runs/v2/fleet_20261025_off_v1/case30_ieee/seed0/adapter/best.pt"],
+      "saved_evaluations": ["runs/v4/stage_b", "runs/v2/recovery_20261025_v1/evaluation/case30_ieee/seed0/stage_b"],
+      "origins": ["test_00_0072", "test_00_0096", "test_00_0120"],
+      "modes": ["A", "D"], "samples": 64, "forecast_seed": 10042, "seed_increment": 1,
+      "deterministic_algorithms": true, "device": "xpu:0",
+      "absolute_tolerance": 1e-7, "relative_tolerance": 0,
+      "near_zero_policy": "Absolute tolerance only, including near zero; saved nulls and categorical fields exact",
+      "justification": "User-required packaging equivalence; same device, inputs, checkpoint, scorer and RNG order",
+      "metrics": "All persisted score JSON fields, including physical balance; each origin compared independently"
+    },
+    "installation": {"editable_with_existing_torch_stack": true, "isolated_without_torch": "ImportError with README install matrix pointer", "wheel_contents": "Package and resources only"},
+    "static": {"absolute_lustre_paths_in_src": 0, "experiment_imports_in_package": 0, "scientific_function_AST": "Unchanged apart from import and resource/provenance paths"}
+  },
+  "job": {
+    "queue": "debug", "nodes": 1, "tiles": 1, "wall_seconds_per_allocation": 3600,
+    "maximum_allocations": 2, "cumulative_node_seconds_cap": 7200,
+    "stages": {"installation_seconds": 300, "suite_seconds": 900, "regression_seconds": 1200, "scorer_loader_seconds": 900},
+    "guard_seconds": 3300,
+    "stop_conditions": ["Any scientific equivalence failure stops the gate", "No merge or tag before all gates pass", "No training, automatic resubmission or changes to released artifacts"],
+    "retry_policy": "Only packaging/test infrastructure corrections or an interrupted gate, within the cumulative cap; never change numerical thresholds"
+  }
+}

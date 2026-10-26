@@ -624,3 +624,12 @@ Pre-v2/v3 source and configuration backups are retained in `data_v2_provenance` 
 - [Original freeze inventory](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/release_20261025_1420/freeze_inventory.json), unchanged.
 - [Final continuation failure](reports/v2/postfreeze.md); merging/indexing its code does not turn its failed gate into a pass.
 - [Final main regression protocol](reports/v2/final_consolidation.protocol.json).
+
+## Package verification (no training)
+
+The Phase 2 protocol is [recorded here](reports/package/phase2.protocol.json); results and hashes are in [the gate](reports/package/phase2.json).
+
+| Directory under GENCO/runs | Source commit | Snapshot pin SHA256 | Config | Status | Job |
+| --- | --- | --- | --- | --- | --- |
+| `package/phase2_20261026_v1` | `e3ab3757c8ac4b6cfc56909928a2a2317291594e` | `c764edc06f0c278b8664d0603bcf41feab1f040c14839c524d8cd0b195876c76` | case30 v4 + recorded fleet seed0; [protocol](reports/package/phase2.protocol.json) | verification passed | 8966222 |
+| `package/phase2_20261026_v1_final` | `5b0093d5285bf9f4fc5e7e5717e87b01469ae525` | `16de483ccd95ba760937406ca1593be76aa834bc234fef1ea0404f8daf5e69f2` | case30 v4 + recorded fleet seed0; [protocol](reports/package/phase2.protocol.json) | verification passed | 8966236 |

@@ -1,6 +1,6 @@
 import numpy as np
 
-from scoring import ensemble_energy, marginal_scores
+from power_fm_foresight.scoring import ensemble_energy, marginal_scores
 
 
 def test_replicated_point_mass_preserves_scores_but_not_finite_m_rank_pit():

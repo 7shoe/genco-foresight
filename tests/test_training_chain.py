@@ -3,8 +3,8 @@ import subprocess
 
 import pytest
 
-from common import read_json, write_json
-from scripts import training_chain
+from power_fm_foresight._config import read_json, write_json
+from experiments import training_chain
 
 
 def setup_chain(tmp_path, monkeypatch, reserve):

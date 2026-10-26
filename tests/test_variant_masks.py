@@ -1,8 +1,8 @@
 import numpy as np
 
-from scripts.variant_events import counts
-from scripts.evaluate_stage_b import target_values
-from data.loader.network import load_network
+from experiments.variant_events import counts
+from power_fm_foresight.training import target_values
+from power_fm_foresight._data.network import load_network
 from monitor import event_targets, daily_union
 
 

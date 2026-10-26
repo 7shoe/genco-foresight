@@ -4,9 +4,9 @@ import random
 import numpy as np
 import torch
 
-from training.inputs import causal_window
-from training.state import atomic_torch_save,restore_rng,rng_state,seed_all
-from training.loop import walltime_seconds
+from power_fm_foresight._training.inputs import causal_window
+from power_fm_foresight._training.state import atomic_torch_save,restore_rng,rng_state,seed_all
+from power_fm_foresight._training.loop import walltime_seconds
 
 
 def test_memory_mapped_history_has_no_future_solved_input(tmp_path):

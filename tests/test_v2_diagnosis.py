@@ -2,8 +2,8 @@
 import torch
 from torch import nn
 
-from scripts.v2.diagnose_stage1 import HEADS, decision, double_heads, energy64, gradient_metrics
-from scoring import fair_energy_score
+from experiments.v2.diagnose_stage1 import HEADS, decision, double_heads, energy64, gradient_metrics
+from power_fm_foresight.scoring import fair_energy_score
 
 
 def test_cosine_does_not_hide_magnitude_or_zero_reference():

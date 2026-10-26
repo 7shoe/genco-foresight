@@ -2,8 +2,8 @@
 import numpy as np
 import pandas as pd
 
-from scoring import ensemble_energy, joint_coordinates
-from scripts.diagnose_stage_b import group_diagnostics, reference_series, balance, average_balances
+from power_fm_foresight.scoring import ensemble_energy, joint_coordinates
+from experiments.diagnose_stage_b import group_diagnostics, reference_series, balance, average_balances
 
 
 def test_additive_energy_allocation_matches_frozen_joint_with_mask():

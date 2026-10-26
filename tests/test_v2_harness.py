@@ -3,8 +3,8 @@ import json
 
 import pytest
 
-from scripts.v2.compare_runs import compare_runs, digest, close
-from training.metrics import TrainingMetrics
+from experiments.v2.compare_runs import compare_runs, digest, close
+from power_fm_foresight._training.metrics import TrainingMetrics
 
 
 def put(path, value):

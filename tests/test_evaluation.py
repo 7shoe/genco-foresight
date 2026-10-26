@@ -1,8 +1,8 @@
 import numpy as np
 import torch
 
-from scoring import UNITS,ensemble_energy,evaluate,fair_energy_score,marginal_scores,merge_origin_scores,variogram_pairs,variogram_score
-from training.forecaster import design,fit_ridge,predict_ridge,prefix_fit_from_moments
+from power_fm_foresight.scoring import UNITS,ensemble_energy,evaluate,fair_energy_score,marginal_scores,merge_origin_scores,variogram_pairs,variogram_score
+from power_fm_foresight._training.forecaster import design,fit_ridge,predict_ridge,prefix_fit_from_moments
 
 
 def test_fair_crps_and_energy_hand_calculation_and_point_mass():

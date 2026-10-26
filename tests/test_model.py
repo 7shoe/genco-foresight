@@ -3,11 +3,11 @@ from pathlib import Path
 import pytest
 import torch
 
-from common import load_config
-from data.download.prepare import checkpoint_assets
-from data.loader.network import graph_for_demand, load_network
-from data.loader.dataset import OfficialSnapshotDataset, SnapshotDataset, snapshot_graph
-from models.genco import Genco
+from power_fm_foresight._config import load_config
+from power_fm_foresight._data.assets import checkpoint_assets
+from power_fm_foresight._data.network import graph_for_demand, load_network
+from power_fm_foresight._data.dataset import OfficialSnapshotDataset, SnapshotDataset, snapshot_graph
+from power_fm_foresight.genco import Genco
 
 
 @pytest.fixture(scope="module")

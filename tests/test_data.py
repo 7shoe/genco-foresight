@@ -2,9 +2,9 @@ import copy
 
 import numpy as np
 
-from common import write_json
-from data.loader.dataset import TemporalDataset, daily_origins, load_static_splits
-from data.synthetic.generate import demands, episode_plan
+from power_fm_foresight._config import write_json
+from power_fm_foresight._data.dataset import TemporalDataset, daily_origins, load_static_splits
+from power_fm_foresight.data import demands, episode_plan
 
 
 def test_episode_and_source_partitions_do_not_overlap():
@@ -74,7 +74,7 @@ def test_training_uses_all_complete_hourly_windows_and_evaluation_stays_midnight
 
 def test_calendar_pools_are_disjoint_and_reuse_only_within_partition():
     import pytest
-    from common import load_config
+    from power_fm_foresight._config import load_config
     cfg = load_config()
     declared = cfg["dataset"]["source_blocks_one_based"]
     episodes, pools = episode_plan(cfg["seed"], declared, cfg["task"]["split_episodes"])
@@ -95,8 +95,8 @@ def test_calendar_pools_are_disjoint_and_reuse_only_within_partition():
 
 
 def test_v3_windows_and_reporting_policy(tmp_path):
-    from common import load_config
-    from scripts.stage_b_prevalence import reporting_policy
+    from power_fm_foresight._config import load_config
+    from experiments.stage_b_prevalence import reporting_policy
     cfg = load_config()
     episodes, _ = episode_plan(cfg["seed"], cfg["dataset"]["source_blocks_one_based"], cfg["task"]["split_episodes"])
     write_json(tmp_path/"manifest.json", {"episodes": episodes})
@@ -113,7 +113,7 @@ def test_v3_windows_and_reporting_policy(tmp_path):
 
 
 def test_v2_gate_checks_each_resolution_and_rejects_undefined_ratios():
-    from scripts.data_v2 import prevalence_gate
+    from experiments.data_v2 import prevalence_gate
     events = [f"voltage_bus_{i}" for i in (1, 9, 11, 13, 15, 21, 22)] + ["thermal_line_1"]
     rows = [{"event": e, "resolution": r, "partition": p,
              "positive": 4 if p == "risk_calibration" else 12,

@@ -1,7 +1,7 @@
 import os
 
-from common import ROOT, config_path, load_config
-from scripts.data_v4 import verify_variant
+from power_fm_foresight._config import ROOT, config_path, load_config
+from experiments.data_v4 import verify_variant
 
 
 def test_variant_config_is_explicit_and_preserves_v3(monkeypatch):

@@ -2,9 +2,9 @@
 from pathlib import Path
 import pytest
 
-from common import write_json, sha256
-from scripts.fleet.run import chains, task, chain_root
-from scripts.fleet.data import headlines
+from power_fm_foresight._config import write_json, sha256
+from experiments.fleet.run import chains, task, chain_root
+from experiments.fleet.data import headlines
 
 
 def test_twelve_distinct_slots_and_real_seeds():
@@ -53,7 +53,7 @@ def test_mechanical_headlines_do_not_fall_back_or_read_test_scores():
 
 
 def test_pin_rejects_source_and_configuration_changes(tmp_path, monkeypatch):
-    import scripts.fleet.run as fleet
+    import experiments.fleet.run as fleet
     snapshot = tmp_path / 'source'; snapshot.mkdir()
     source = snapshot / 'worker.py'; source.write_text('frozen')
     config = tmp_path / 'config.yaml'; config.write_text('seed: 0')
