@@ -1,7 +1,11 @@
 # Status
 
-Phase A running in job8965054: 20 ensemble chains, unchanged fleet trainer. Phase B passed. Phase C implementation/verification in progress. Pilot snapshots scheduled17:45CT; Phase C evaluation18:15CT; submission freeze19:00CT.
+All submitted jobs have ended. PBS was empty at the repository consolidation check on October 26, 2026 UTC. No further submissions are scheduled.
 
-Live task states and job-boundary accounting: /lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/release_20261025_1420/STATUS.md.
+The sole checkout is `/home/siebenschuh/Projects/genco-foresight`, on `main`. The four auxiliary worktrees were removed after verified backups and duplicate-edit checks. All branches, original user edits, and both tags are preserved. [Consolidation record](reports/v2/repository_consolidation.md).
 
-Existing four-grid three-seed evaluations and mixtures are complete; pilots continue separately in debug.
+The original 12 fleet runs and their evaluations are finished. Of 20 ensemble extensions, 11 early-stopped and nine reached their budget cap. All five A0/λ experiments were evaluated; A0 case118 was budget-capped. Both large-grid pilots ended at four epochs without convergence; their test results use the earlier snapshots.
+
+The final training continuation (8965746) failed before any extra optimizer step. Its independent evaluation (8965775) succeeded, including the case14 eight-seed mixture. The failed gate is unchanged. `release-window` retains the unmerged experiment/continuation work; no v0.2.0 tag has been created.
+
+[Run locations and results](RUNS.md) · [Report index](reports/INDEX.md) · [Final continuation report](reports/v2/postfreeze.md). Older controller/status files can retain their last observed running state; use the terminal job records and final handover linked here.

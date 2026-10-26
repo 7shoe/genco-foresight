@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "identity": "postfreeze_20261025_final",
+  "recorded_utc": "2026-10-26T00:36:44.642238+00:00",
+  "authorization": "User: one final training submission, then one separate evaluation-only job. No additional training, no job resubmission.",
+  "category": "post-freeze supplement",
+  "frozen_parent": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/release_20261025_1420",
+  "freeze_preserved": "2026-10-26T00:00:00Z",
+  "jobs": {
+    "training": {
+      "queue": "debug-scaling",
+      "nodes": 2,
+      "wall_seconds": 3600,
+      "worker_guard_seconds": 3300,
+      "maximum_successful_submissions": 1,
+      "layout": "One launcher rank per node; five independent tile-isolated workers on node0 and four on node1. ZE_FLAT_DEVICE_HIERARCHY=FLAT, each worker sees xpu:0."
+    },
+    "evaluation": {
+      "queue": "debug-scaling",
+      "nodes": 2,
+      "wall_seconds": 3600,
+      "worker_guard_seconds": 3300,
+      "maximum_successful_submissions": 1,
+      "starts_after": "training job terminal and per-chain exact continuation gates checked",
+      "layout": "After final training: node0 evaluates case14 first, then case30/case57; node1 evaluates case118. Four origin shards per checkpoint; memory-heavy mixture shards run sequentially per node."
+    }
+  },
+  "cumulative_reserved_node_hours_cap": 4,
+  "training": {
+    "chains": [
+      {
+        "case": "case30_ieee",
+        "seed": 4
+      },
+      {
+        "case": "case30_ieee",
+        "seed": 7
+      },
+      {
+        "case": "case57_ieee",
+        "seed": 3
+      },
+      {
+        "case": "case57_ieee",
+        "seed": 7
+      },
+      {
+        "case": "case118_ieee",
+        "seed": 3
+      },
+      {
+        "case": "case118_ieee",
+        "seed": 4
+      },
+      {
+        "case": "case118_ieee",
+        "seed": 5
+      },
+      {
+        "case": "case118_ieee",
+        "seed": 6
+      },
+      {
+        "case": "case118_ieee",
+        "seed": 7
+      }
+    ],
+    "recipe": "Unchanged v4 data law0.80-1.00, lambda1, K8, B1, fp32, OFF, AdamW, frozen differentiable GENCO",
+    "patience": 3,
+    "previous_worker_budget_seconds": 16200,
+    "new_cumulative_worker_budget_seconds": 19800,
+    "extra_worker_seconds_maximum": 3300,
+    "source": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/fleet_20261025_off_v1/source",
+    "noise": "Continue every saved Python/NumPy/CPU/XPU RNG state; no reseeding or reset of order, optimizer, counters or patience"
+  },
+  "lineage": {
+    "policy": "New child run identity and manifest. Read-only parent checkpoints and manifests. Explicit authorized budget extension; only metadata changes in a new child checkpoint.",
+    "allowed_config_changes": [
+      "paths.training_run",
+      "paths.runs_root",
+      "stage_b.training_budget_seconds",
+      "v2.run_identity",
+      "v2.protocol_sha256",
+      "v2.continuation"
+    ],
+    "unchanged_state": [
+      "model",
+      "optimizer",
+      "scheduler",
+      "rng",
+      "progress"
+    ],
+    "checks": "Validate exact parent manifest against unchanged parent config/source; hash all non-manifest state before and after new checkpoint serialization; unchanged initialization then standard exact restoration audit before first optimizer update."
+  },
+  "gate": {
+    "thresholds": {
+      "state_and_rng": "exact typed SHA256 equality",
+      "configuration": "exact except declared metadata/budget fields",
+      "finite_metrics": true,
+      "backbone_unchanged": true
+    },
+    "numerical_tolerance": {
+      "atol": 0,
+      "rtol": 0
+    },
+    "justification": "No numerical implementation changes; continuation transfers identical serialized state. Final ES is descriptive; no model adoption threshold is added.",
+    "stop_conditions": [
+      "any source/config/input hash mismatch",
+      "any fork/restore audit failure",
+      "nonfinite loss or gradients",
+      "worker deadline",
+      "patience3",
+      "allocation walltime"
+    ],
+    "failure_policy": "No training retry. Failed chain is excluded from dependent evaluation/mixtures and reported; independent valid chains can still be evaluated."
+  },
+  "evaluation": {
+    "priority": [
+      "case14 seed5 and full eight-seed mixture",
+      "final selected checkpoints case30/case57/case118",
+      "fixed-prefix eight- and five-seed mixtures"
+    ],
+    "cases": [
+      "case14_ieee",
+      "case30_ieee",
+      "case57_ieee",
+      "case118_ieee"
+    ],
+    "training_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "origins": 72,
+    "forecast_samples_per_seed": 64,
+    "noise_seed": 42,
+    "noise_convention": "10042+global origin index, existing frozen scorer and evaluation kernels ON",
+    "modes": [
+      "C",
+      "P",
+      "P0",
+      "S",
+      "A",
+      "D"
+    ],
+    "new_forecasts": [
+      "A",
+      "D"
+    ],
+    "baseline_policy": "Reuse C/P/P0/S and same-input P/Ipopt audits from frozen grid-specific evaluations",
+    "mixture_sizes": [
+      1,
+      2,
+      3,
+      5,
+      8
+    ],
+    "membership": "Fixed prefixes0..m-1; all seeds equally weighted; every cross-seed pair rescored jointly; no score-based inclusion. Existing1/2/3 curves referenced. Five/eight use final authorized budget-capped checkpoints even without early stopping and are labeled accordingly.",
+    "incomplete": "Report missing cells; no new job beyond the one evaluation allocation",
+    "statistical_policy": "Descriptive single-seed and empirical mixture results; shared fixed evaluation noise disclosed; no new inference/adoption gate",
+    "max_successful_submissions": 1
+  },
+  "finalization": "Defer existing final merge/tag until both authorized jobs terminate; preserve original19:00 freeze artifacts and original repository staged/dirty edits."
+}

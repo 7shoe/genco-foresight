@@ -1,0 +1,32 @@
+{
+  "removed_worktrees": [
+    "/home/siebenschuh/Projects/genco-foresight-main",
+    "/home/siebenschuh/Projects/genco-foresight-fleet",
+    "/home/siebenschuh/Projects/genco-foresight-pilots",
+    "/home/siebenschuh/Projects/genco-foresight-release"
+  ],
+  "remaining_repository": "/home/siebenschuh/Projects/genco-foresight",
+  "branch": "main",
+  "head": "930fbe0807b79145d23cb6775c624951c940e575",
+  "original_modified_and_untracked_files_byte_identical": true,
+  "original_staged_contents_byte_identical": true,
+  "tags_unchanged": true,
+  "branches_preserved": [
+    "main 930fbe0807b79145d23cb6775c624951c940e575",
+    "multigrid 598542f074d145d5c149cb1619402df77e22d67d",
+    "multigrid-fleet 8954dd159ac7663b7cdcc153a1951b6450901192",
+    "multigrid-pilots a905fe6495908d9b30e5cf4e45f6fa119e97b04c",
+    "release-window a1b8901535646e68c1850d849da5b8fedba66a2e",
+    "replication 8a27467135822494b1267bc32fa7463207dbf794"
+  ],
+  "backup": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/repository_backups/consolidation_20261026T030048Z",
+  "note": "V2_IMPL staging disappeared because its exact contents already exist in main; the other two staged edits remain staged. Dirty secondary worktrees were removed only after proving all their modifications/untracked files exist byte-identically in the remaining checkout and verifying their full archives.",
+  "preservation_manifest_sha256": "e3e68c169275e5189f58982fed883a0aec1790069569ef6e2a88f090974b6b37",
+  "release_window_policy": "Branch retained at a1b8901; not merged into main. Failed continuation gate unchanged. No v0.2.0 tag created.",
+  "reports_copied_from_release_window": [
+    "reports/v2/postfreeze.md",
+    "reports/v2/postfreeze.json",
+    "reports/v2/postfreeze.protocol.json"
+  ],
+  "jobs_submitted": 0
+}
