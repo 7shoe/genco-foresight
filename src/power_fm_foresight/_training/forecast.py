@@ -13,7 +13,7 @@ from power_fm_foresight._training.forecaster import episode_arrays
 from power_fm_foresight._training.state import atomic_torch_save, tensor_digest
 from .physics import physics
 
-def components(cfg, device):
+def components(cfg, device, *, checkpoint="best"):
     torch.set_num_threads(1)
     torch.use_deterministic_algorithms(True)
     if device.startswith("xpu"):
@@ -29,12 +29,14 @@ def components(cfg, device):
     scales = read_json(cfg["stage_b"]["coordinate_scales"])
     model = TemporalAdapter(base, net, scales, model_policy=cfg["stage_b"].get("adapter",{}).get("model_policy","conditioned")).to(device).eval()
     train = Path(cfg["paths"]["training_run"])
-    best = torch.load(train / "best.pt", weights_only=True, map_location="cpu")
+    if checkpoint not in ("best", "latest"):raise ValueError("checkpoint must be best or latest")
+    best = torch.load(train / f"{checkpoint}.pt", weights_only=True, map_location="cpu")
     original = train / "manifest.training.json"
     assert best["manifest"] == read_json(original if original.exists() else train / "manifest.json")
     missing, extra = model.load_state_dict(best["model"], strict=False)
     assert not extra and all(k.startswith("backbone.") for k in missing)
-    assert best["progress"]["best_epoch"] == read_json(train / "status.json")["best_epoch"]
+    if checkpoint == "best":
+        assert best["progress"]["best_epoch"] == read_json(train / "status.json")["best_epoch"]
     assert tensor_digest(base.model.state_dict()) == read_json(train / "status.json")["base_sha256"]
     graph = graph_for_demand(net, net["bus"][:, 2], net["bus"][:, 3])
     templates = {n: base.batch([graph] * n) for n in (24, 192)}
@@ -42,7 +44,7 @@ def components(cfg, device):
 
 
 
-def adapter_samples(base, model, net, cached, origin, templates, seed, device):
+def adapter_samples(base, model, net, cached, origin, templates, seed, device, *, samples=64):
     """Same sampled computation and RNG order as frozen Stage B; measured end-to-end."""
     if device.startswith("xpu"):
         torch.xpu.synchronize()
@@ -53,11 +55,12 @@ def adapter_samples(base, model, net, cached, origin, templates, seed, device):
     generator = torch.Generator().manual_seed(seed)
     chunks = []
     with torch.no_grad():
-        for _ in range(8):
-            noise = {"factor": torch.randn(8, 8, generator=generator),
-                     "bus": torch.randn(8, 24, net.n_bus, 3, generator=generator),
-                     "gen": torch.randn(8, 24, net.n_online_gen, 1, generator=generator)}
-            r = model(history, calendar, templates[192], {k: v.to(device) for k, v in noise.items()})
+        for offset in range(0, samples, 8):
+            count = min(8, samples-offset)
+            noise = {"factor": torch.randn(count, 8, generator=generator),
+                     "bus": torch.randn(count, 24, net.n_bus, 3, generator=generator),
+                     "gen": torch.randn(count, 24, net.n_online_gen, 1, generator=generator)}
+            r = model(history, calendar, templates[count*24], {k: v.to(device) for k, v in noise.items()})
             torch.testing.assert_close(r["values"]["pd_mw"], r["demand_seen_by_physics_mw"], atol=1e-5, rtol=1e-6)
             chunks.append({k: v.cpu().numpy() for k, v in r["values"].items()})
     values = physics({k: np.concatenate([r[k] for r in chunks]) for k in chunks[0]}, net)

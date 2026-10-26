@@ -180,10 +180,10 @@ def merge_origin_scores(reports):
     return result
 
 
-def score(values, target, scales, pairs, mode, identity, index):
+def score(values, target, scales, pairs, mode, identity, index, *, eval_seed=42):
     row, arrays = evaluate(values, target, {k: np.isfinite(target[k]) for k in UNITS},
         dict(scales=scales, variogram_pairs=pairs, mode=mode, origin_id=identity,
-             seed=10042+index+(10000 if mode in ('C', 'P0') else 0)))
+             seed=10000+eval_seed+index+(10000 if mode in ('C', 'P0') else 0)))
     row['physical_balance'] = dict(p_mean_abs_mw=float(np.abs(values['residual_p_mw']).mean()),
                                   q_mean_abs_mvar=float(np.abs(values['residual_q_mvar']).mean()))
     return row, arrays

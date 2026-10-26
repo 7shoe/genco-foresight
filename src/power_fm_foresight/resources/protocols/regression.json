@@ -1,0 +1,18 @@
+{
+  "schema": "pff-verification.v1",
+  "check": "regression",
+  "configuration": "${oc.env:PFF_ROOT}/runs/package/phase3_20261026_v2/config.json",
+  "run": "${oc.env:PFF_ROOT}/runs/adapter_v4",
+  "saved_evaluation": "${oc.env:PFF_ROOT}/runs/v4/stage_b",
+  "origins": ["test_00_0072", "test_00_0096", "test_00_0120"],
+  "modes": ["A", "D"],
+  "samples": 64,
+  "eval_seed": 42,
+  "device": "xpu:0",
+  "absolute_tolerance": 1e-7,
+  "relative_tolerance": 0,
+  "near_zero_policy": "Absolute tolerance for every persisted numerical score, including near zero; categorical fields exact",
+  "justification": "Unchanged frozen scorer and recorded checkpoint; packaging/CLI equivalence",
+  "input_policy": "Record checkpoint, targets and saved score hashes before computation; read-only inputs",
+  "resource_cap": {"seconds": 1200, "tiles": 1}
+}

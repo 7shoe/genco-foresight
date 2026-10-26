@@ -1,5 +1,6 @@
 # Report index
 
+- [Phase 3 pff CLI](package/phase3.md): passed; successful compute restart/evaluation/reproducibility and a corrected CPU-only score comparison with exact numerical agreement; `v0.3.0-dev` closeout.
 - [Phase 2 Python package](package/phase2.md): pure implementation relocation, compatibility shims, install matrix and passing compute gates; `v0.2.1-dev`.
 
 - [Final main consolidation and release verification](v2/final_consolidation.md): history merge, passing compute regression/full suite, complete run index and branch archival.
@@ -12,6 +13,6 @@
 - [Pilot repair](v2/pilot_repair.md): reference-angle and solver diagnosis.
 - [V2 implementation inventory](V2_IMPL.md): historical source/configuration inventory.
 - [Synthetic profile measurements](multigrid/profile.md): timings and memory, distinct from production measurements.
-- [CLI proposal](../CLI_PROPOSAL.md): proposed power-fm-foresight package interface; not implemented.
+- [CLI proposal](../CLI_PROPOSAL.md): historical interface proposal; current implementation and incomplete acceptance are recorded in the Phase 3 report.
 
 Bulk evidence stays on Lustre. Historical protocols, gates and frozen artifacts retain their original outcomes and hashes. Later repository cleanup does not turn a failed gate into a pass.

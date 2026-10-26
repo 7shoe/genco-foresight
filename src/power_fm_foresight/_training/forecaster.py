@@ -205,7 +205,7 @@ class RidgeForecaster:
         self.active=self.fit.pop("active")
         with np.load(root/"residual_blocks.npz") as f:self.blocks=f["residuals"]
 
-    def forecast(self, data, origin, seed):
+    def forecast(self, data, origin, seed, *, samples=64):
         """Return a 24-hour point forecast, 64 demand samples, and clipping diagnostics."""
         raw=predict_ridge(self.fit,design(data,[origin],self.active))[0].T
 
@@ -213,7 +213,7 @@ class RidgeForecaster:
         mean=np.zeros((24,self.blocks.shape[-1]));mean[:,self.active]=np.maximum(raw,0.)
 
         # sample whole residual blocks with replacement to retain joint error patterns
-        ids=np.random.default_rng(seed).integers(0,len(self.blocks),size=64)
+        ids=np.random.default_rng(seed).integers(0,len(self.blocks),size=samples)
         raw_samples=mean[None]+self.blocks[ids]
 
         # output dict

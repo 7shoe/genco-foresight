@@ -127,8 +127,8 @@ the existing Torch/Transformers environment is retained.
 
 ## Python package
 
-The distribution is `power-fm-foresight` (version 0.2.0); import it as
-`power_fm_foresight`. This phase provides Python modules, with no new CLI.
+The distribution is `power-fm-foresight` (development version 0.3.0.dev0); import it as
+`power_fm_foresight`. The Python API is also exposed by the five `pff` verbs below.
 `genco`, `temporal`, `grids`, `data`, `solver`, `scoring`, and `training` expose
 existing implementations. Private submodules retain the original module boundaries.
 Experiment drivers, PBS scripts, gates and controllers live in `experiments/`
@@ -219,3 +219,17 @@ Set `PFF_ROOT`, `PFF_JULIA` and `PFF_JULIA_DEPOT` before resolving a packaged
 recipe, or supply explicit path overrides. Package import itself does not need
 these variables. New manifests hash the relocated source; historical manifests
 are never rewritten and incompatible training resumes remain rejected.
+
+## pff CLI (0.3.0.dev0)
+
+`pff` and `power-fm-foresight` invoke the same five argparse commands:
+`prepare`, `train`, `evaluate`, `report`, and `verify`. Run `pff VERB --help` for the
+supported flags. Configuration precedence is command flags, then `--config` YAML,
+then the recipe. Each command records its effective configuration, package/source
+identity, device, seeds and paths. The package has no PBS submission backend.
+
+[Weekend reproduction commands](experiments/README.md) cover the fleet, deeper
+ensembles, A0, lambda sweep and pilots, plus the external Aurora wrapper. Reports
+use persisted results only. CLI verification is documented in
+[the Phase 3 report](reports/package/phase3.md). This development phase does not
+publish a wheel to TestPyPI or PyPI.

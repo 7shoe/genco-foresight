@@ -1,0 +1,207 @@
+{
+  "schema": "power-fm-foresight.cli-restart-result.v1",
+  "status": "Gate 2 failed: legacy regression reporting metadata missing",
+  "passed": false,
+  "job_id": "8966442.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov",
+  "source_commit": "1f1aadf5fc717396747cd13e52d76455bd00c838",
+  "harness_commit": "7d2a41991538a96560c33359e7109b1c82afa7a2",
+  "protocol_sha256": "b268ee9a71558d5fa5cd61ed28db84230b7674fefb8ac734b50bd8482a0328db",
+  "protocol_unchanged": true,
+  "source_pin_sha256": "a62b8127d9dd22aae55c54e01dd82acf55519ee16de9c1f6116cf20b10fcbdf4",
+  "evidence_root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2",
+  "pbs_exit_status": 1,
+  "pbs_wall_seconds": 892,
+  "worker_seconds": 889.5788023471832,
+  "results": [
+    {
+      "check": "resume",
+      "returncode": 0,
+      "seconds": 747.7550094127655
+    },
+    {
+      "check": "evaluate",
+      "returncode": 0,
+      "seconds": 55.81950855255127
+    },
+    {
+      "check": "report",
+      "returncode": 0,
+      "seconds": 6.590874195098877
+    },
+    {
+      "check": "regression",
+      "returncode": 2,
+      "seconds": 30.668309926986694
+    },
+    {
+      "check": "reproducibility",
+      "returncode": 0,
+      "seconds": 6.840424299240112
+    },
+    {
+      "check": "suite",
+      "returncode": 0,
+      "seconds": 25.536065816879272
+    }
+  ],
+  "suite_policy": "Diagnostic only, run last; excluded from gate verdict",
+  "suite": {
+    "passed_tests": 162,
+    "passed_subtests": 3,
+    "failures": 0,
+    "errors": 0
+  },
+  "training": {
+    "steps_before": 4090,
+    "steps_after": 8180,
+    "steps_done": 4090,
+    "epochs_reached": 2,
+    "best_epoch": 2,
+    "best_selection": 0.40501882715357673,
+    "base_unchanged": true,
+    "stop_reason": "max_epochs",
+    "wall_used_seconds": 695.3215589523315,
+    "cumulative_training_wall_seconds": 1356.726681470871
+  },
+  "reproducibility": {
+    "passed": true,
+    "configuration_exact": true,
+    "selection": [
+      {
+        "epoch": 1,
+        "actual": 0.608724892967277,
+        "upper": 1.145403378340933,
+        "passed": true
+      },
+      {
+        "epoch": 2,
+        "actual": 0.40501882715357673,
+        "upper": 0.6283314689662721,
+        "passed": true
+      }
+    ],
+    "finite_metrics": true,
+    "exact_boundary_restore": true,
+    "journal_order": true
+  },
+  "evaluation": {
+    "complete": true,
+    "origin_count": 3,
+    "headlines": {
+      "C": {
+        "joint_es": 0.3147253725109194,
+        "vm_crps": 0.000870786273165893,
+        "vm_coverage90_pct": 100.0,
+        "pg_free_mae": 4.6361948247480465,
+        "p_imbalance": 1.1881204581723304e-13
+      },
+      "P": {
+        "joint_es": 0.6704509206819053,
+        "vm_crps": 0.0012688497944091197,
+        "vm_coverage90_pct": 0.0,
+        "pg_free_mae": 2.7589721998192918,
+        "p_imbalance": 0.044902088605535684
+      },
+      "P0": {
+        "joint_es": 0.67045090344007,
+        "vm_crps": 0.0012688497944091197,
+        "vm_coverage90_pct": 0.0,
+        "pg_free_mae": 2.7589721998192918,
+        "p_imbalance": 0.044902088605535684
+      },
+      "S": {
+        "joint_es": 0.5142757701415256,
+        "vm_crps": 0.000897020631738832,
+        "vm_coverage90_pct": 56.94444444444444,
+        "pg_free_mae": 2.7578474749585244,
+        "p_imbalance": 0.07230084423516121
+      },
+      "A": {
+        "joint_es": 0.3604963722557826,
+        "vm_crps": 0.0013214576247258139,
+        "vm_coverage90_pct": 22.22222222222222,
+        "pg_free_mae": 3.465277690988133,
+        "p_imbalance": 1.2843161470143925
+      },
+      "D": {
+        "joint_es": 0.6751529809578676,
+        "vm_crps": 0.0013693510822217333,
+        "vm_coverage90_pct": 19.444444444444446,
+        "pg_free_mae": 3.796695850050551,
+        "p_imbalance": 0.04615847270689218
+      }
+    },
+    "unavailable": {},
+    "same_input_all_true": true,
+    "same_input_solved": 15
+  },
+  "regression": {
+    "cli_passed": false,
+    "exit_code": 2,
+    "error": "Missing /lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/stage_a_v4/stage_a_followup/headline_components.json",
+    "persisted_scores_comparison": {
+      "passed": true,
+      "max_absolute_difference": 0.0,
+      "numeric_values": 18330,
+      "atol": 1e-07,
+      "rtol": 0,
+      "source": "Read-only comparison of JSON already produced on compute; no new model execution"
+    },
+    "reference_inputs_unchanged": true
+  },
+  "immutable_run_inputs_unchanged": {
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/campaign.json": true,
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/command.manifest.json": true,
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/chain.json": true,
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/config.json": true,
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/command.manifest.json": true,
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/boundary_checkpoint.json": true,
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/adapter/manifest.json": true,
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/adapter/cache/manifest.json": true
+  },
+  "latest_checkpoint_sha256": "cf89d5f6413d191cde556b6f2fa0c296ad43e8f10d45629a45d05911210f527c",
+  "best_checkpoint_sha256": "48871f50412f0850a160538f60ebe06c10fe32a78bc4e9740f103d436d07eb7f",
+  "automatic_followups": false,
+  "further_submissions_allowed": false,
+  "reserved_node_seconds_this_job": 3600,
+  "reserved_node_seconds_all_phase3_jobs": 18000,
+  "pbs_node_seconds_all_phase3_jobs": 2054,
+  "remaining_unrun": [
+    "Phase 2 50-hour audit/two-origin forward rerun on final CLI tree",
+    "Phase 2 recorded fleet-checkpoint scorer/loader rerun on final CLI tree"
+  ],
+  "merge_performed": false,
+  "tag_created": false,
+  "evidence_sha256": {
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/submission.json": "33858d197aa3d846d718e69343bd9f835fd5900ba8e3b86d28d162547ad51209",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/source_pin.json": "a62b8127d9dd22aae55c54e01dd82acf55519ee16de9c1f6116cf20b10fcbdf4",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/protocol.json": "b268ee9a71558d5fa5cd61ed28db84230b7674fefb8ac734b50bd8482a0328db",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/source_transition.json": "dac1d62c14053993f690c4c92c05da68a84eebe024367a8d19e47c381f8cb3aa",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/checkpoint_preflight.json": "0109c5d297122824da01a57733a321646fc54e6b423bfdf8be85d4fdd86b9ce4",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/gate.json": "351756d22a6c72816e6eb61790dd77e4a6c0a4db5843b3216518e5b2580dbb9b",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/scheduler.txt": "7c1af07f41d396c73f78d4cadb5115c9ee74b30901a026e51afbaeff7af75aa0",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/verify_reproducibility/gate.json": "ae7c9b0586452897d98928ef772ce28d611317638aed2dae655683afe8e3395a",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/evaluation/evaluation.json": "3b78be2dbe88d8292553a1a28e31dd6470553e40259aa3fe21a211d64efb645c",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/regression_scores_diagnostic.json": "5afca8fb0030d1ec7f7131c84a114bd0a144aefac3b5212bba1b123e56d58e60",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/suite.xml": "f8a1e2ba1cee2f701e06a2a7b49b18212ed7b8ee33230125590ea8db9b1645a9",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/boundary_resume.json": "fba880d911455f4dd68e10d594c813fc5651f40c6d9c0cbef56363cd8b8203a8",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/adapter/manifest.json": "f18a1012f47a68daed1710e7efa6b0fdc2233cbb30fc296c0be45a90e8ef20c5",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/adapter/status.json": "44e12320cfac29ed57cb8ab72e0c8dbe904a1532fbdce7bda6ec1b9b2e02be76",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/adapter/epochs.json": "4d23706e2efad57302a168cc4ab2d58305f11dc222644d390b3e21b8047f64f2",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/adapter/metrics.jsonl": "a39a61c7f7cf0ab97427889918afc9bdb25d850dd9adad5ca1d60c63024b5e45",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/adapter/latest.pt": "cf89d5f6413d191cde556b6f2fa0c296ad43e8f10d45629a45d05911210f527c",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/adapter/best.pt": "48871f50412f0850a160538f60ebe06c10fe32a78bc4e9740f103d436d07eb7f",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/adapter/restores/1792995641647198300.json": "09854997a6331dc0e6f5d0c2771fb6af9894c002b0579d2222ec82876dc9e0de",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/logs/evaluate.log": "a8e2e4504c77d8e0fb8299d7eb910eb10a5000b0a0157df6a797a9fd245157e0",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/logs/pbs.log": "eb91f77454271d53250418ec0012d44e9c6a01e8368f5f1a52801e3c6f1212d0",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/logs/regression.log": "9ff7e7e8dcddecc127b4870c7296a37c76f752d259adda0b17c58c47e9cc9e76",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/logs/report.log": "cd86199c51435821b60bf8172a2104f56e6560144b776719f4e71c0b5df84f34",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/logs/reproducibility.log": "cd86199c51435821b60bf8172a2104f56e6560144b776719f4e71c0b5df84f34",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/logs/resume.log": "2202c9204c44dacba7240295caaebfab676da3f7866a0411f7d2431d4667bf48",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/logs/suite.log": "aa42195805c30acb47514def78085ee429b48fd306ef7ebe5de6f8e4cc1fb0e0",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/summary/command.manifest.json": "5453109dd6ce4885df4277909a8f2fd7139ddbce624d6e3411daa8b67a6dc8df",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/summary/report.csv": "a6fa48abd6b3d36d9ff96050818fb32eb09c0f1cc3b8b1e9872859d683086ee9",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/summary/report.json": "c2d305374dd5ef76b049dc9c97c09182f8cfbe3168e43d3fa6555f7daa0a158e",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/summary/report.md": "532ab3d93d53ca53b1db3fade789e4dc387b69679f0210dab9f68ce143ff61db"
+  }
+}

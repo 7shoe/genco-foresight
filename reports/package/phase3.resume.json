@@ -1,0 +1,80 @@
+{
+  "schema": "power-fm-foresight.cli-restart-result.v1",
+  "status": "failed before resume; compute budget closed",
+  "passed": false,
+  "job_id": "8966414.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov",
+  "pbs_exit_status": 1,
+  "pbs_wall_seconds": 77,
+  "worker_seconds": 75.43116998672485,
+  "suite_command_seconds": 63.58576560020447,
+  "source_commit": "9482677785161c18b66ee68ad9a2cc0161bc29ec",
+  "harness_commit": "3d49d0a139debcc98dba5d7d8bda7bfe63478f02",
+  "test_fixture_correction_commit": "1f1aadf5fc717396747cd13e52d76455bd00c838",
+  "test_fixture_correction_verified": false,
+  "protocol_sha256": "b268ee9a71558d5fa5cd61ed28db84230b7674fefb8ac734b50bd8482a0328db",
+  "source_pin_sha256": "7abcc5663925abff74946e719c78b92747e2aec4c3f66c87f7bf9d764df66745",
+  "evidence_root": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1",
+  "suite": {
+    "passed_tests": 161,
+    "failed_tests": 1,
+    "passed_subtests": 3,
+    "failed_names": [
+      "test_train_wrapper_reads_authoritative_checkpoint_progress"
+    ],
+    "original_collision_regression": [
+      {
+        "test": "test_chain_reads_progress_from_committed_checkpoint[False]",
+        "passed": true
+      },
+      {
+        "test": "test_chain_reads_progress_from_committed_checkpoint[True]",
+        "passed": true
+      }
+    ]
+  },
+  "failure": "Test stub for build_cache did not accept deadline_epoch or return a mapping; failed before real resume command.",
+  "resume_started": false,
+  "training_steps_added": 0,
+  "completed_epochs": 0,
+  "initial_inputs_unchanged": {
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/campaign.json": true,
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/command.manifest.json": true,
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/chain.json": true,
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/config.json": true,
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/command.manifest.json": true,
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/boundary_checkpoint.json": true,
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/adapter/latest.pt": true,
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/adapter/manifest.json": true,
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/adapter/metrics.jsonl": true,
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/adapter/epochs.json": true,
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/adapter/status.json": true,
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/adapter/cache/manifest.json": true
+  },
+  "checkpoint_sha256": "b1c0724d11ddf43e2dca730a5c191be9bce69e037c0e8da0663d665562b5385d",
+  "outstanding": {
+    "resume_and_exact_restore": "not run\u2014compute budget closed",
+    "two_epoch_selection_acceptance": "not run\u2014compute budget closed",
+    "three_origin_evaluation": "not run\u2014compute budget closed",
+    "summary": "not run\u2014compute budget closed",
+    "regression": "not run\u2014compute budget closed",
+    "reproducibility": "not run\u2014compute budget closed"
+  },
+  "automatic_followups": false,
+  "further_submissions_allowed": false,
+  "reserved_node_seconds_this_job": 3600,
+  "reserved_node_seconds_all_phase3_jobs": 14400,
+  "pbs_node_seconds_all_phase3_jobs": 1162,
+  "evidence_sha256": {
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/protocol.json": "b268ee9a71558d5fa5cd61ed28db84230b7674fefb8ac734b50bd8482a0328db",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/source_pin.json": "7abcc5663925abff74946e719c78b92747e2aec4c3f66c87f7bf9d764df66745",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/submission.json": "9259831b478969683655dee78d1c394f8ef2d16d4d2087739deab1306a0bb5e3",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/gate.json": "5f89706f735c8e5ab75aaf1f9f8e0af19802709ee2c8b2a28d6529155c2009b3",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/suite.xml": "0cf7a27e2bcb7f2b56a39e29a890458e9e401ef3f0fe587682832d8d05f0849a",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/checkpoint_preflight.json": "0109c5d297122824da01a57733a321646fc54e6b423bfdf8be85d4fdd86b9ce4",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/logs/suite.log": "7aeac79f19cacfc980f808cb9c400c31880b9395e6f6efcb28ddd5b12479807f",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/logs/suite.command.json": "7e5ff0e3932043d6e471c4e1e113bfd380d3021fca0d5d959c55692aac730e1b",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/logs/pbs.log": "a2a593bbbdc7af6fef95475e3f163857eb7ef2e29bf7560fa71dcaa8db8adec3",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/scheduler.txt": "6cf42fe942c67501051be2b19513320226dc92fe750cb3f51016aad0ea8e9708",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/pre_resume/index.json": "20ba38659e03ccf2d60e422431d800d666b380e0be687019b70eda2576fd6375"
+  }
+}

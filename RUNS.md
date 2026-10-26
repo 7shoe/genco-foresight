@@ -633,3 +633,55 @@ The Phase 2 protocol is [recorded here](reports/package/phase2.protocol.json); r
 | --- | --- | --- | --- | --- | --- |
 | `package/phase2_20261026_v1` | `e3ab3757c8ac4b6cfc56909928a2a2317291594e` | `c764edc06f0c278b8664d0603bcf41feab1f040c14839c524d8cd0b195876c76` | case30 v4 + recorded fleet seed0; [protocol](reports/package/phase2.protocol.json) | verification passed | 8966222 |
 | `package/phase2_20261026_v1_final` | `5b0093d5285bf9f4fc5e7e5717e87b01469ae525` | `16de483ccd95ba760937406ca1593be76aa834bc234fef1ea0404f8daf5e69f2` | case30 v4 + recorded fleet seed0; [protocol](reports/package/phase2.protocol.json) | verification passed | 8966236 |
+
+## Phase 3 CLI verification — compute closed
+
+The [Phase 3 report](reports/package/phase3.md) and [incomplete gate](reports/package/phase3.json)
+record completed checks and all missing gates. This work is not release-accepted.
+
+| Directory under GENCO/runs | Source commit | Snapshot pin SHA256 | Config | Status | Jobs |
+| --- | --- | --- | --- | --- | --- |
+| `package/phase3_20261026_v1` | `85632d4067a24c7b4536a986201e41aa375aa796` | `131589c3620f84f37ec3fc8a7d45337cf5e18f4eb734e27f2984b1924d09cd0c` | [Phase 3 protocol](reports/package/phase3.protocol.json) | Initial install/suite/preparation passed; no training; coordinate-cache incompatibility found before training | 8966309 |
+| `package/phase3_20261026_v2` | `9fa77c7c0086eb30e3b33b6921a3d664f77b6cfc` | `2890d07d749685a05508e08a958308184cede2e6bc6bad0ea3a2349a27f1d422` | [config.json](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/config.json) | Failed CLI gate; install/suite/preparation passed; remaining evaluation/regression not run—compute budget closed | 8966340; 8966377 cancelled on hard stop |
+| `package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8` | `9fa77c7c0086eb30e3b33b6921a3d664f77b6cfc` | `2890d07d749685a05508e08a958308184cede2e6bc6bad0ea3a2349a27f1d422` | [chain config](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/config.json) | Verification prefix only: 4,090 steps, zero completed epochs; checkpoint retained; no resume or selection-ES verdict | 8966340 |
+| `package/phase3_resume_20261026_v1` | `9482677785161c18b66ee68ad9a2cc0161bc29ec`; external driver `3d49d0a` | `7abcc5663925abff74946e719c78b92747e2aec4c3f66c87f7bf9d764df66745` | [restart amendment](reports/package/phase3.resume.protocol.json); same case30 seed0 K8/B1/fp32/OFF chain | Failed suite before resume (161 passed, 1 failed, 3 subtests); checkpoint unchanged; all requested continuation gates unrun | 8966414 |
+
+8966377 had been submitted before the user's stop instruction and was cancelled
+before its resume command. No fourth allocation was submitted at that closure;
+the subsequent user amendment authorized 8966414 as one additional allocation.
+It used 77 seconds of PBS wall time and stopped before resuming. Source copies,
+venvs, prepared dataset cards and unused evaluation snapshots are components of
+these verification directories, not additional experiments. The checkpoint keeps
+its original manifest; full CLI acceptance remains unverified and no Phase 3
+changes were merged to main. The [restart outcome](reports/package/phase3.resume.json)
+records the later suite failure and the unverified test-only correction.
+
+### Resubmission 8966442
+
+| Directory under GENCO/runs | Source commit | Snapshot pin SHA256 | Config | Status | Job |
+| --- | --- | --- | --- | --- | --- |
+| `package/phase3_resume_20261026_v1/attempt2` | `1f1aadf5fc717396747cd13e52d76455bd00c838`; external driver `7d2a419` | `a62b8127d9dd22aae55c54e01dd82acf55519ee16de9c1f6116cf20b10fcbdf4` | Existing Phase 3 amendment; resume first, suite last and diagnostic | Resume, evaluation, summary and reproducibility passed; CLI regression failed on missing legacy headline metadata despite exact persisted scores; suite passed | 8966442 |
+
+The same case30 seed0 chain advanced from step 4,090 to 8,180, completing two
+epochs and selecting epoch 2 (selection ES 0.40501882715357673). No new training
+chain was created. The original checkpoint and journals remain in the parent
+`pre_resume` directory; active run artifacts now reflect the completed resume.
+The allocation used 892 seconds of PBS wall time. The suite reported 162 tests
+plus 3 subtests passed, verifying the test-stub correction. All 18,330 persisted
+regression score values match the recorded references exactly, but the CLI
+command failed before finalizing its headline report. The
+[latest gate](reports/package/phase3.resume2.json) therefore remains failed.
+No further job, merge or development tag was performed.
+
+### Phase 3 CPU closeout
+
+`package/phase3_closeout_cpu_20261026_v1` contains the corrected CLI score-only
+comparison and unit-test evidence, produced on the login node without a PBS job
+or model evaluation. Fix commits: `bcaef8a` and `351ca4b`. All six saved A/D score
+comparisons passed at unchanged atol 1e-7, rtol 0; maximum difference is 0 across
+18,330 values. The three targeted tests passed. Preparation headlines are
+optional and missing metadata is recorded as a note. The
+[final closeout gate](reports/package/phase3.closeout.json) accepts all five
+Phase 3 steps and carries accepted Phase 2 evidence forward without new reruns.
+Original job exits, the failed attempt-2 CLI record and all historical manifests
+remain intact. Bulk evidence and its hashes are linked by the closeout gate.

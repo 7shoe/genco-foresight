@@ -1,7 +1,7 @@
 """Probabilistic power-system forecasts with a frozen foundation model."""
 from importlib import import_module
 
-__version__ = "0.2.0"
+__version__ = "0.3.0.dev0"
 
 for _module in ("torch", "torch_geometric", "torch_scatter"):
     try:
