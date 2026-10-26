@@ -633,3 +633,20 @@ The Phase 2 protocol is [recorded here](reports/package/phase2.protocol.json); r
 | --- | --- | --- | --- | --- | --- |
 | `package/phase2_20261026_v1` | `e3ab3757c8ac4b6cfc56909928a2a2317291594e` | `c764edc06f0c278b8664d0603bcf41feab1f040c14839c524d8cd0b195876c76` | case30 v4 + recorded fleet seed0; [protocol](reports/package/phase2.protocol.json) | verification passed | 8966222 |
 | `package/phase2_20261026_v1_final` | `5b0093d5285bf9f4fc5e7e5717e87b01469ae525` | `16de483ccd95ba760937406ca1593be76aa834bc234fef1ea0404f8daf5e69f2` | case30 v4 + recorded fleet seed0; [protocol](reports/package/phase2.protocol.json) | verification passed | 8966236 |
+
+## Phase 3 CLI verification — compute closed
+
+The [Phase 3 report](reports/package/phase3.md) and [incomplete gate](reports/package/phase3.json)
+record completed checks and all missing gates. This work is not release-accepted.
+
+| Directory under GENCO/runs | Source commit | Snapshot pin SHA256 | Config | Status | Jobs |
+| --- | --- | --- | --- | --- | --- |
+| `package/phase3_20261026_v1` | `85632d4067a24c7b4536a986201e41aa375aa796` | `131589c3620f84f37ec3fc8a7d45337cf5e18f4eb734e27f2984b1924d09cd0c` | [Phase 3 protocol](reports/package/phase3.protocol.json) | Initial install/suite/preparation passed; no training; coordinate-cache incompatibility found before training | 8966309 |
+| `package/phase3_20261026_v2` | `9fa77c7c0086eb30e3b33b6921a3d664f77b6cfc` | `2890d07d749685a05508e08a958308184cede2e6bc6bad0ea3a2349a27f1d422` | [config.json](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/config.json) | Failed CLI gate; install/suite/preparation passed; remaining evaluation/regression not run—compute budget closed | 8966340; 8966377 cancelled on hard stop |
+| `package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8` | `9fa77c7c0086eb30e3b33b6921a3d664f77b6cfc` | `2890d07d749685a05508e08a958308184cede2e6bc6bad0ea3a2349a27f1d422` | [chain config](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/config.json) | Verification prefix only: 4,090 steps, zero completed epochs; checkpoint retained; no resume or selection-ES verdict | 8966340 |
+
+8966377 had been submitted before the user's stop instruction and was cancelled
+before its resume command. No fourth allocation was submitted. Source copies,
+venvs, prepared dataset cards and unused evaluation snapshots are components of
+these verification directories, not additional experiments. The checkpoint keeps
+its original manifest; later CLI fixes are unverified and were not merged to main.
