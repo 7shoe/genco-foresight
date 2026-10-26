@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "identity": "postfreeze_20261025_final",
+  "completed_utc": "2026-10-26T01:21:44.628522+00:00",
+  "compute_complete": true,
+  "passed": false,
+  "training_job": "8965746",
+  "training_exit_status": 143,
+  "optimizer_steps_added": 0,
+  "evaluation_job": "8965775",
+  "evaluation_exit_status": 0,
+  "queue_empty": true,
+  "no_further_submissions": true,
+  "release_finalization": "blocked by failed continuation gate",
+  "source_commit": "e2463b137d2bb03f35445a3403e3fb7ff5fe9647",
+  "evidence": {
+    "protocol.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/postfreeze_20261025_final/protocol.json",
+      "sha256": "d58e2c79ca1dac4b73d7d7b0998a2f3267bb882d83090016b03804d52ef50386"
+    },
+    "gate.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/postfreeze_20261025_final/gate.json",
+      "sha256": "e37e88b766d82df52b22af8e60090d9f25e2d7f13f9ffe8fe94f64bb7ac895e0"
+    },
+    "results.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/postfreeze_20261025_final/results.json",
+      "sha256": "6cdab942a32740fdecc60bb0a6916cccb05e0e6f15082fd099867356ff969e2b"
+    },
+    "final_job_accounting.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/postfreeze_20261025_final/final_job_accounting.json",
+      "sha256": "edf6890f4c40b64c0ed8f4364809ae522008cf97ad20653a0fcbb092fd3d81d2"
+    },
+    "failure_diagnosis.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/postfreeze_20261025_final/failure_diagnosis.json",
+      "sha256": "a1fab24b0c2c23df76de875b0691579d31b8634c32541b434ce287b038e8eca5"
+    },
+    "combined_mixture_sizes.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/postfreeze_20261025_final/combined_mixture_sizes.json",
+      "sha256": "ed06fbd79bfe172927946cbd9bc82b32a672ad4108205e51ad41e749587142d4"
+    },
+    "combined_mixture_sizes.md": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/postfreeze_20261025_final/combined_mixture_sizes.md",
+      "sha256": "251261bb61b4bd8bbd0930faf67fa9b05979e1c9188f2172261ad7d89eae3220"
+    },
+    "combined_mixture_sizes.png": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/postfreeze_20261025_final/combined_mixture_sizes.png",
+      "sha256": "6c9d28633b4cecc108817bb38ebe01cfa0a77ec23c2135d801a51d4d9536fa32"
+    },
+    "combined_mixture_sizes.pdf": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/postfreeze_20261025_final/combined_mixture_sizes.pdf",
+      "sha256": "5565f0d5d5fecf7474265276b85facc8ee0c1849d68c41e48f71313577a0b172"
+    },
+    "final_pilot_selection_curves.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/postfreeze_20261025_final/final_pilot_selection_curves.json",
+      "sha256": "496fec7de68fcc12d5eae08a7fc0f90ff2f1cfd767acfe6da1175b6a65c88566"
+    },
+    "handover.json": {
+      "path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/v2/postfreeze_20261025_final/handover.json",
+      "sha256": "8eb9ae85671451a1aef7e578e908e1395348d5f05235efe4554e08ade8db9187"
+    }
+  }
+}
