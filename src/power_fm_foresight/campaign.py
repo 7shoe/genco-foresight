@@ -257,8 +257,8 @@ def train_chain(campaign, chain, device_index, stop_after_steps=None):
             import torch
             old=Path(card['training_cache'])
             for item in read_json(old)['files'].values():
-                saved=torch.load(item['path'],mmap=True,map_location='cpu',weights_only=True)
-                if saved['key']['scales_sha256']!=sha256(cfg['stage_b']['coordinate_scales']):raise ValueError('Reused training cache coordinate scales differ')
+                cached_state=torch.load(item['path'],mmap=True,map_location='cpu',weights_only=True)
+                if cached_state['key']['scales_sha256']!=sha256(cfg['stage_b']['coordinate_scales']):raise ValueError('Reused training cache coordinate scales differ')
             shutil.copyfile(old,cache)
         else:
             import torch

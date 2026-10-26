@@ -125,15 +125,23 @@ def test_individual_chain_resume_keeps_tile(tmp_path,monkeypatch):
     assert seen==[3]
 
 
-def test_chain_reads_progress_from_committed_checkpoint(tmp_path,monkeypatch):
+@pytest.mark.parametrize('reuse_cache',[False,True])
+def test_chain_reads_progress_from_committed_checkpoint(tmp_path,monkeypatch,reuse_cache):
     import torch
     from power_fm_foresight import campaign, training
     opts=options(tmp_path,'--case','30','--seed','0')
     c=prepare_campaign(opts);chain=c['plan'][0];root=Path(c['root'])/chain['id']
     cfg=campaign.grid_config(chain['case'],opts['configuration'])
-    monkeypatch.setattr(campaign,'dataset_card',lambda *args:dict(config=cfg))
+    card=dict(config=cfg)
+    if reuse_cache:
+        scales=tmp_path/'scales.json';write_json(scales,{})
+        cfg['stage_b']['coordinate_scales']=str(scales)
+        tensor=tmp_path/'cache.pt';torch.save(dict(key=dict(scales_sha256=campaign.sha256(scales))),tensor)
+        cache=tmp_path/'cache.json';write_json(cache,dict(files=dict(train=dict(path=str(tensor)))))
+        card['training_cache']=str(cache)
+    else:write_json(root/'adapter/cache/manifest.json',{})
+    monkeypatch.setattr(campaign,'dataset_card',lambda *args:card)
     monkeypatch.setattr(campaign,'select_device',lambda *args:'cpu')
-    write_json(root/'adapter/cache/manifest.json',{})
     progress=dict(steps=4090,epoch=0,step_in_epoch=4090,finished=False,stop_reason='verification_step_limit',best_epoch=None)
     def run(*args,**kwargs):
         torch.save(dict(progress=progress),root/'adapter/latest.pt')
