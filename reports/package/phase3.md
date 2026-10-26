@@ -5,14 +5,15 @@ allocation to resume the intact step-4,090 checkpoint using `9482677`, finish tw
 epochs, and run the requested evaluation/report/regression/reproducibility checks.
 The [amendment](phase3.resume.protocol.json) declares this incident recovery to be
 the planned boundary restart. Its tolerances are unchanged. The original closure
-and failed-job evidence below remain historical records; the new gate is pending.
+and failed-job evidence below remain historical records. The new allocation also
+failed, in its suite before the resume command; results follow below.
 
 Ordinary CLI resume rejects the different package hash. A run-specific external
 driver admits only the recorded `9fa77c7` → `9482677` source pair and exact resume
 command. The changed package files are campaign, assessment, reporting and
 verification; every other package file, including model/loss/physics/state code,
 must be byte-identical. The driver retains the original campaign and checkpoint
-manifests, records both execution and creation identities in a new invocation,
+manifests and would record both execution and creation identities in a new invocation,
 and leaves the strict training-state restore checks unchanged. This exception is
 part of the declared verification harness, not a new public CLI flag or a change
 to `9482677`. Initial checkpoint, counters and journals are copied to `pre_resume`
@@ -24,6 +25,52 @@ New evidence root:
 [phase3_resume_20261026_v1](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1).
 Cap: one node, one tile, 3,600 seconds; 3,300-second guard; no follow-up submission.
 The original gate below is not retroactively marked passed.
+Submission: **8966414**, immutable package `9482677`, harness `3d49d0a`;
+protocol SHA256 `b268ee9a71558d5fa5cd61ed28db84230b7674fefb8ac734b50bd8482a0328db`.
+The new [restart gate](phase3.resume.json) records its outcome.
+
+## Restart allocation outcome: 8966414
+
+**Failed before resume, exit 1.** The driver ran the full suite before the requested
+resume sequence. That suite reported **161 passed, 1 failed, 3 subtests passed**.
+Its command took 63.586 seconds; total worker time was 75.431 seconds and PBS
+recorded **77 seconds (00:01:17)**. Under the predeclared stop-on-failure rule,
+none of the subsequent commands ran. The placement of the suite before resume
+was the verification driver's decision, not a failure of the saved checkpoint.
+
+The failing test was `test_train_wrapper_reads_authoritative_checkpoint_progress`.
+Its `build_cache` stub was `lambda *a: None`, whereas the deadline-aware caller
+passes `deadline_epoch=` and expects a mapping. It raised `TypeError` at that
+mocked call. Commit `1f1aadf` changes the stub to accept keyword arguments and
+return an empty mapping. This is a test-only correction; it has not been rerun.
+The two parameterized tests for the original cache-variable collision both
+passed on pinned source `9482677`.
+
+Checkpoint preflight passed: the saved counters remain step 4,090, epoch 0,
+step-in-epoch 4,090, and the embedded manifest equals the original run manifest.
+This CPU checkpoint inspection is not an actual model/optimizer/RNG restore.
+All 12 pinned initial inputs, including checkpoint, campaign, manifests and
+journals, have unchanged hashes. No training was restarted or repeated, no new
+epochs completed, and the run-specific source-admission bridge was not exercised.
+
+| Requested gate | Outcome |
+| --- | --- |
+| Full state restore and pending epoch-1 validation | not run—compute budget closed |
+| Epoch 2 training and validation | not run—compute budget closed |
+| Three-origin evaluation | not run—compute budget closed |
+| CLI summary | not run—compute budget closed |
+| Regression verification, 1e-7 | not run—compute budget closed |
+| Reproducibility against fleet seeds | not run—compute budget closed |
+
+The additional authorization was one allocation. No further submission,
+from-scratch rerun, merge or development tag was performed. Four Phase 3
+submissions in total reserved 14,400 node-seconds; their recorded PBS elapsed
+time totals 1,162 node-seconds. The amendment, original failed-job gate and
+original stop records remain unchanged. `phase3_resume_20261026_v1/STOP.json`
+closes this additional allocation. The restart gate records scheduler evidence,
+test XML, hashes and the preserved initial checkpoint location.
+
+## Original closeout before the restart authorization
 
 **Phase 3 did not pass.** PBS job **8966340 exited 1** after saving the
 step-4,090 checkpoint, when the CLI attempted to write chain status. There are

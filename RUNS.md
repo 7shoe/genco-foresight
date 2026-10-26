@@ -644,9 +644,14 @@ record completed checks and all missing gates. This work is not release-accepted
 | `package/phase3_20261026_v1` | `85632d4067a24c7b4536a986201e41aa375aa796` | `131589c3620f84f37ec3fc8a7d45337cf5e18f4eb734e27f2984b1924d09cd0c` | [Phase 3 protocol](reports/package/phase3.protocol.json) | Initial install/suite/preparation passed; no training; coordinate-cache incompatibility found before training | 8966309 |
 | `package/phase3_20261026_v2` | `9fa77c7c0086eb30e3b33b6921a3d664f77b6cfc` | `2890d07d749685a05508e08a958308184cede2e6bc6bad0ea3a2349a27f1d422` | [config.json](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/config.json) | Failed CLI gate; install/suite/preparation passed; remaining evaluation/regression not run—compute budget closed | 8966340; 8966377 cancelled on hard stop |
 | `package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8` | `9fa77c7c0086eb30e3b33b6921a3d664f77b6cfc` | `2890d07d749685a05508e08a958308184cede2e6bc6bad0ea3a2349a27f1d422` | [chain config](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_20261026_v2/campaign/case30_ieee/seed0/conditioned_lambda1_K8/config.json) | Verification prefix only: 4,090 steps, zero completed epochs; checkpoint retained; no resume or selection-ES verdict | 8966340 |
+| `package/phase3_resume_20261026_v1` | `9482677785161c18b66ee68ad9a2cc0161bc29ec`; external driver `3d49d0a` | `7abcc5663925abff74946e719c78b92747e2aec4c3f66c87f7bf9d764df66745` | [restart amendment](reports/package/phase3.resume.protocol.json); same case30 seed0 K8/B1/fp32/OFF chain | Failed suite before resume (161 passed, 1 failed, 3 subtests); checkpoint unchanged; all requested continuation gates unrun | 8966414 |
 
 8966377 had been submitted before the user's stop instruction and was cancelled
-before its resume command. No fourth allocation was submitted. Source copies,
+before its resume command. No fourth allocation was submitted at that closure;
+the subsequent user amendment authorized 8966414 as one additional allocation.
+It used 77 seconds of PBS wall time and stopped before resuming. Source copies,
 venvs, prepared dataset cards and unused evaluation snapshots are components of
 these verification directories, not additional experiments. The checkpoint keeps
-its original manifest; later CLI fixes are unverified and were not merged to main.
+its original manifest; full CLI acceptance remains unverified and no Phase 3
+changes were merged to main. The [restart outcome](reports/package/phase3.resume.json)
+records the later suite failure and the unverified test-only correction.
