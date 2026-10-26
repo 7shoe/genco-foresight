@@ -59,7 +59,11 @@ def baseline_inputs(cfg,net,out,origins):
         if protocol['dataset_manifest_sha256']!=sha256(Path(cfg['paths']['temporal_root'])/'manifest.json'):
             raise ValueError('Baseline dataset differs')
         if protocol['coordinate_scales_sha256']!=sha256(cfg['stage_b']['coordinate_scales']):raise ValueError('Baseline coordinate scales differ')
-        return RidgeForecaster(protocol.get('forecaster_path',old/'forecaster')),npz(protocol.get('pool_path',old/'controls/climatology_pool.npz')),old
+        forecaster=Path(protocol.get('forecaster_path',old/'forecaster'));pool=Path(protocol.get('pool_path',old/'controls/climatology_pool.npz'))
+        if protocol.get('forecaster_manifest_sha256') and sha256(forecaster/'manifest.json')!=protocol['forecaster_manifest_sha256']:
+            raise ValueError('Frozen forecaster manifest changed')
+        if protocol.get('pool_sha256') and sha256(pool)!=protocol['pool_sha256']:raise ValueError('Frozen climatology pool changed')
+        return RidgeForecaster(forecaster),npz(pool),old
     forecaster=out/'forecaster';prepare_ridge(cfg,net,forecaster)
     pool=out/'climatology_pool.npz'
     if not pool.exists():
@@ -96,6 +100,13 @@ def evaluate_one(path,out,options):
         origin_indices={o['id']:origin_indices[o['id']] for o in origins})
     protocol=dict(identity=identity,comparison=comparison,checkpoint_sha256=sha256(checkpoint),checkpoint=options['checkpoint'],
                   origins=origins,modes=options['modes'],same_input_audit='P/Ipopt identical inputs, leads 0/6/12/18/23')
+    baseline=execution['evaluation'].get('baseline_root')
+    if baseline:
+        old=Path(baseline);saved=read_json(old/'protocol.json')
+        forecaster=Path(saved.get('forecaster_path',old/'forecaster'))
+        inputs=[old/'protocol.json',Path(saved.get('pool_path',old/'controls/climatology_pool.npz')),
+                *(forecaster/n for n in ('manifest.json','coefficients.npz','residual_blocks.npz'))]
+        protocol['baseline_input_sha256']={str(p):sha256(p) for p in inputs}
     out.mkdir(parents=True,exist_ok=True)
     if (out/'protocol.json').exists() and read_json(out/'protocol.json')!=protocol:raise ValueError('Evaluation protocol changed')
     write_json(out/'protocol.json',protocol)
@@ -179,6 +190,7 @@ def evaluate_one(path,out,options):
         row=merged([read_json(p) for p in paths]);write_json(out/f'{mode}.json',row)
         report['headlines'][mode]=headline(row,scales,indices);report['modes'][mode]=str(out/f'{mode}.json')
     if sha256(checkpoint)!=protocol['checkpoint_sha256']:raise ValueError('Checkpoint changed during evaluation; use an immutable checkpoint and a new output')
+    if not all(sha256(p)==h for p,h in protocol.get('baseline_input_sha256',{}).items()):raise ValueError('Frozen baseline changed during evaluation')
     write_json(out/'report.json',report)
     return report
 

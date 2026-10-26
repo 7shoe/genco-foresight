@@ -85,6 +85,7 @@ def verify(options):
         for run in runs:
             checkpoint=Path(run_config(run,cfg)['paths']['training_run'])/'best.pt';hashes[str(checkpoint)]=sha256(checkpoint)
         for origin in p['origins']:
+            target=Path(p['saved_evaluation'])/'origins'/origin/'targets.npz';hashes[str(target)]=sha256(target)
             for mode in p['modes']:
                 path=Path(p['saved_evaluation'])/'origins'/origin/f'{mode}_scores.json';hashes[str(path)]=sha256(path)
         write_json(out/'inputs.json',hashes)
