@@ -179,7 +179,7 @@ def test_train_wrapper_reads_authoritative_checkpoint_progress(tmp_path,monkeypa
     card=dict(config=cfg)
     monkeypatch.setattr(campaign,'dataset_card',lambda *a:card)
     monkeypatch.setattr(campaign,'select_device',lambda *a:'cpu')
-    monkeypatch.setattr(data,'build_cache',lambda *a:None)
+    monkeypatch.setattr(data,'build_cache',lambda *a,**kw:{})
     progress=dict(steps=4090,epoch=0,step_in_epoch=4090,finished=False,
                   stop_reason='verification_step_limit',best_epoch=None)
     def run(cfg,device,stop_after_steps):
