@@ -1,6 +1,6 @@
 # Report index
 
-- [Phase 3 pff CLI](package/phase3.md): incomplete; 8966340 failed after saving step 4,090, and authorized restart allocation 8966414 failed its suite before resume; compute closed, no merge or development tag.
+- [Phase 3 pff CLI](package/phase3.md): 8966442 resumed successfully and passed evaluation/reproducibility plus the diagnostic suite; regression scores match exactly, but its CLI command failed on missing historical headline metadata; no merge or development tag.
 - [Phase 2 Python package](package/phase2.md): pure implementation relocation, compatibility shims, install matrix and passing compute gates; `v0.2.1-dev`.
 
 - [Final main consolidation and release verification](v2/final_consolidation.md): history merge, passing compute regression/full suite, complete run index and branch archival.

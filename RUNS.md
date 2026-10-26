@@ -655,3 +655,20 @@ these verification directories, not additional experiments. The checkpoint keeps
 its original manifest; full CLI acceptance remains unverified and no Phase 3
 changes were merged to main. The [restart outcome](reports/package/phase3.resume.json)
 records the later suite failure and the unverified test-only correction.
+
+### Resubmission 8966442
+
+| Directory under GENCO/runs | Source commit | Snapshot pin SHA256 | Config | Status | Job |
+| --- | --- | --- | --- | --- | --- |
+| `package/phase3_resume_20261026_v1/attempt2` | `1f1aadf5fc717396747cd13e52d76455bd00c838`; external driver `7d2a419` | `a62b8127d9dd22aae55c54e01dd82acf55519ee16de9c1f6116cf20b10fcbdf4` | Existing Phase 3 amendment; resume first, suite last and diagnostic | Resume, evaluation, summary and reproducibility passed; CLI regression failed on missing legacy headline metadata despite exact persisted scores; suite passed | 8966442 |
+
+The same case30 seed0 chain advanced from step 4,090 to 8,180, completing two
+epochs and selecting epoch 2 (selection ES 0.40501882715357673). No new training
+chain was created. The original checkpoint and journals remain in the parent
+`pre_resume` directory; active run artifacts now reflect the completed resume.
+The allocation used 892 seconds of PBS wall time. The suite reported 162 tests
+plus 3 subtests passed, verifying the test-stub correction. All 18,330 persisted
+regression score values match the recorded references exactly, but the CLI
+command failed before finalizing its headline report. The
+[latest gate](reports/package/phase3.resume2.json) therefore remains failed.
+No further job, merge or development tag was performed.

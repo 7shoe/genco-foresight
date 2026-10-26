@@ -1,4 +1,78 @@
-# Phase 3: pff CLI — incomplete, compute budget closed
+# Phase 3: pff CLI — regression command incomplete
+
+**Resubmission 8966442:** subsequently authorized from `1f1aadf`, using the same
+Phase 3 amendment and thresholds. Per the user, execution order is resume,
+evaluate, report, regression/reproducibility, then the suite. The suite is a
+diagnostic and cannot change the Gate 2 verdict. This attempt completed; its
+[result record](phase3.resume2.json) is separate from the earlier failures.
+
+## Latest outcome: 8966442
+
+**Gate 2 remains failed because the regression CLI exited 2.** Resume, evaluation,
+summary and reproducibility succeeded. The final diagnostic suite passed
+**162 tests plus 3 subtests**, with no failures, errors or skips. PBS recorded
+**892 seconds (14m52s)** and exit 1; worker time was 889.579 seconds.
+
+| Command | Result | Command wall seconds |
+| --- | --- | ---: |
+| Resume from step 4,090; finish epoch-1 validation and epoch 2 | Passed; 4,090 additional updates, 8,180 total | 747.755 |
+| Evaluate three origins, C/P/P0/S/A/D, 64 samples | Passed; all 18 origin/mode score records written | 55.820 |
+| Report summary, Markdown/JSON/CSV | Passed | 6.591 |
+| Verify regression | Failed during headline summary assembly; numerical outputs retained | 30.668 |
+| Verify reproducibility | Passed | 6.840 |
+| Suite, last and diagnostic only | Passed; excluded from Gate 2 verdict | 25.536 |
+
+The exact restore audit passed for model, optimizer, scheduler and RNG. The
+original manifest, counters, committed journal prefix and order all passed the
+reproducibility check. All persisted training metrics are finite; the frozen
+backbone stayed unchanged. The run stopped at `max_epochs=2`, selecting epoch 2.
+No from-scratch training occurred. Inner training-worker wall time was 695.322
+seconds; cumulative training-worker wall time including 8966340 is 1,356.727
+seconds. These differ from full CLI-command and allocation cost shown above.
+
+| Epoch | Selection ES | Fixed fleet-max + 0.005 ceiling | Result |
+| --- | ---: | ---: | --- |
+| 1 | 0.608724892967277 | 1.145403378340933 | Passed |
+| 2 | 0.40501882715357673 | 0.6283314689662721 | Passed |
+
+The three-origin evaluation used `test_00_0072`, `test_00_0096` and
+`test_00_0120`. The same-input P/Ipopt audit resolved all 15 of 15 declared solves,
+with identical demand inputs. The [summary](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/summary/report.md)
+contains separate seed and mean rows; this one-seed, three-origin check is not a
+full test-partition estimate or a three-seed experiment.
+
+Regression failed because the historical `adapter_v4` configuration points to
+`runs/stage_a_v4/stage_a_followup/headline_components.json`, which does not exist.
+The evaluation wrapper assumes this preparation metadata exists when assembling
+headlines. It had already computed all six A/D score files over the three
+declared origins. A read-only comparison of those existing JSON files with the
+recorded references, using the unchanged `differences` function and the declared
+absolute tolerance 1e-7, found **zero maximum difference across 18,330 numeric
+values**, with categorical fields matching and pinned reference inputs unchanged.
+That [diagnostic](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2/regression_diagnostic.json)
+passes numerical equivalence, but does **not** relabel the failed CLI command as
+passed. No model evaluation was repeated on the login node and no historical
+headline artifact was fabricated or edited.
+
+The amended protocol was reused byte-for-byte (SHA256
+`b268ee9a71558d5fa5cd61ed28db84230b7674fefb8ac734b50bd8482a0328db`).
+The user's later order changes only command scheduling and suite treatment.
+Execution used package/test source `1f1aadf` and external driver `7d2a419`; its
+package bytes are identical to the amendment's `9482677` package identity.
+The source-pin SHA256 is `a62b8127d9dd22aae55c54e01dd82acf55519ee16de9c1f6116cf20b10fcbdf4`.
+Evidence is under
+[attempt2](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase3_resume_20261026_v1/attempt2),
+including frozen final checkpoint copies, restore receipt, scheduler output,
+command logs and gates. The original step-4,090 files are preserved under the
+parent `pre_resume` directory; its `index.json` maps their former live paths.
+Earlier gate hashes remain historical and are not rewritten as the chain advances.
+
+This fifth Phase 3 submission brings cumulative reserved node time to 18,000
+seconds and recorded PBS elapsed time to 2,054 seconds. No follow-up job, merge,
+tag or Phase 4 work was performed. The remaining CLI integration failure is
+recorded, not waived. Phase 2's separate 50-hour/two-origin and two-checkpoint
+reruns were not added to this requested sequence.
+
 
 **Restart amendment, 2026-10-26:** the user subsequently authorized one debug
 allocation to resume the intact step-4,090 checkpoint using `9482677`, finish two
@@ -212,6 +286,8 @@ budget before any fourth submission. No further submissions are authorized.
 Work remains committed on `cli`. `main` remains at
 `31445dc60b3b2ac41ce237f94d9bf0bc53adb4d1` (`v0.2.1-dev`). Existing tags are
 unchanged. No `v0.3.0-dev` tag, merge, push, publishing, or Phase 4 work was done.
-The CLI is not release-accepted; evaluation, regression, full restart acceptance
-and the later fixes remain unverified. CUDA and fresh large-grid generation were
-not exercised by this acceptance run.
+The CLI is not release-accepted: 8966442 subsequently verified evaluation,
+reproducibility, exact restart and the corrected suite, but the regression CLI
+still fails on missing historical headline metadata. Its persisted numerical
+scores match exactly, as recorded above. CUDA and fresh large-grid generation
+were not exercised by this acceptance run.
