@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "power-fm-foresight"
-version = "0.3.0.dev0"
+version = "0.3.1"
 description = "Probabilistic power-system forecasts with a frozen GENCO model"
 readme = "README.md"
 requires-python = ">=3.10"

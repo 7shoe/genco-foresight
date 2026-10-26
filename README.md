@@ -1,6 +1,6 @@
-# GENCO Foresight: Package `power-fm-foresight`
+# Package `power-fm-foresight`
 
-<img align="left" width="50%" src="./assets/graph_predict.png" alt="GENCO Foresight prediction graph">
+<img align="left" width="50%" src="https://raw.githubusercontent.com/7shoe/lumina-sdk/main/assets/graph_predict.png" alt="GENCO Foresight prediction graph">
 
 <p>• <b>MODEL</b>: Extends pre-trained GENCO from AC-OPF solver to a probabilistic forecaster</p>
 <br>
