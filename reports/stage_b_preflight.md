@@ -1,6 +1,6 @@
 # Stage B amendments and adapter performance gate
 
-The user amendments are frozen in [config.yaml](../config.yaml) and
+The user amendments are frozen in [configs/v3.yaml](../configs/v3.yaml) and
 [stage_b_settings.json](stage_b_settings.json). Headline events are hourly and
 daily voltage stress at buses 1, 9, 11, 13, 15, 21, and 22. Continuous diagnostics
 are PIT and 50/90% coverage/width for Vm at those buses and line-1 loading.

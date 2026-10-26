@@ -131,7 +131,7 @@ Run forecast/hybrid modules on allocated compute nodes. Analysis and rendering
 reuse saved artifacts. Bulk outputs remain under the configured Lustre root.
 
 ```bash
-export GENCO_CONFIG="$PWD/config.yaml"
+export GENCO_CONFIG="$PWD/configs/v3.yaml"
 python -m scripts.forecast_partition --partition risk_calibration
 python -m scripts.calibrate_stage_c
 python -m scripts.hybrid_stage_c
