@@ -1,4 +1,4 @@
-# GENCO Foresight
+# GENCO Foresight: Package `power-fm-foresight`
 
 <img align="left" width="50%" src="./assets/graph_predict.png" alt="GENCO Foresight prediction graph">
 
