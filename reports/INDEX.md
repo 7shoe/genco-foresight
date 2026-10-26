@@ -1,5 +1,7 @@
 # Report index
 
+- [Phase 2 Python package](package/phase2.md): pure implementation relocation, compatibility shims, install matrix and passing compute gates; `v0.2.1-dev`.
+
 - [Final main consolidation and release verification](v2/final_consolidation.md): history merge, passing compute regression/full suite, complete run index and branch archival.
 - [Earlier filesystem consolidation and preservation](v2/repository_consolidation.md): historical record of worktree removal and original edit preservation.
 - [Run locations and final results](../RUNS.md): fleet, ensemble, ablation, pilot and final evaluation artifacts.

@@ -1,6 +1,6 @@
 # Phase 2: importable package
 
-Status: implementation prepared; compute gates pending. No merge or new tag yet.
+Status: **PASS**. Reviewed code commit `5b0093d5285bf9f4fc5e7e5717e87b01469ae525`; merged to main and tagged `v0.2.1-dev` locally. Distribution version remains 0.2.0. No CLI added.
 
 The scientific implementations move to `power_fm_foresight` version 0.2.0.
 The public modules are `grids`, `genco`, `temporal`, `scoring`, `solver`, `data`,
@@ -8,7 +8,7 @@ and `training`. Private modules preserve original globals and function boundarie
 The A0 flag, numerical operations, RNG ordering, masks and resume rejection remain.
 
 [Protocol](phase2.protocol.json) fixes the tests, origins, tolerances and resource cap
-before verification. Bulk evidence: `/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase2_20261026_v1`.
+before verification. Bulk evidence: [final gate](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase2_20261026_v1_final/gate.json), [first gate](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase2_20261026_v1/gate.json).
 Maximum: two debug allocations, one node and one hour each; no training.
 
 ## Moves
@@ -37,6 +37,8 @@ Maximum: two debug allocations, one node and one hour each; no training.
 | `data/networks/**` | `src/power_fm_foresight/resources/networks/**` (case30 and license copied) |
 
 The exact driver map and one-line shim list are in [moves.json](moves.json).
+The old asset command dispatches to `experiments/assets.py`; its reusable functions
+live in `_data/assets.py`. Scientific code never imports the command wrapper.
 Shims emit `DeprecationWarning` and alias module identity, including private names.
 Legacy executable module paths dispatch to their experiment driver. These aliases
 remain in the checkout; the wheel contains only the new package. Old PBS paths are
@@ -73,13 +75,40 @@ The mixture helper contains the existing concatenation expression unchanged.
 An AST comparison found 439 top-level definitions unchanged after ignoring imports.
 Nine reviewed exceptions cover configuration/resource paths, manifest source paths,
 the extracted mixture call and an import inside a subprocess source string.
-The full case30 regression and saved scorer comparisons remain required evidence.
+The compute gates below verify the case30 regression and saved scorer comparisons.
 
 ## Gates
 
-Pending: full 140-test/3-subtest suite; 50-hour audit and 2-origin forward regression;
-3-origin released/fleet scorer and loader equivalence; fresh editable installations
-with and without the existing torch stack; wheel contents and static path/import checks.
+| Gate | Result |
+| --- | --- |
+| Full suite | 140 passed + 3 subtests; zero failures/skips |
+| case30 v4 audit | 50 hours passed; maximum difference from recorded audit `0.0` |
+| adapter_v4 forward | Two origins, A/D, 64 trajectories; maximum array difference `0.0` (bit-identical) |
+| Package loader/scorer | Released adapter_v4 and fleet case30 seed0, three origins each, A/D: 12 comparisons; maximum absolute difference `3.5527136788005009e-15`, threshold `1e-7` |
+| Fresh editable install | Import succeeded with the existing stack; isolated environment without torch failed with the README install-matrix pointer |
+| Wheel | Only the new package and its resources; no experiment drivers or torch/PyG/scatter requirements |
+| Static checks | No `/lus/flare` strings under src; no package imports of experiments; 439 unchanged definitions |
+
+Both allocations passed. The second verifies the final public scorer relocation and
+the last direct-package test imports. Same predeclared protocol, inputs and tolerances;
+no acceptance thresholds changed. The first used `e3ab375`, the final used `5b0093d`.
+
+| Job | Installation | Full suite | Regression | Three-origin scorer | Total worker |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 8966222 | 89.01 s | 26.70 s | 58.55 s | 23.29 s | 200.16 s |
+| 8966236 | 44.49 s | 20.42 s | 30.40 s | 22.09 s | 119.51 s |
+
+Both jobs used debug, one node, one isolated XPU tile, and a one-hour wall limit.
+Reserved cumulative budget: 7,200 node-seconds (the declared maximum); measured
+verification worker time: 319.67 seconds. No training ran.
+The positive fresh venv references the vendor site-packages read-only; the negative
+venv contains only build tools and this package. No vendor packages were replaced.
+
+The [machine-readable gate](phase2.json) records evidence paths and SHA256 hashes,
+including [source pin](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase2_20261026_v1_final/source_pin.json), [AST audit](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase2_20261026_v1_final/ast.json),
+[reference hashes](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase2_20261026_v1_final/reference_hashes.json), and [budget ledger](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase2_20261026_v1/budget.json).
+The protocol SHA256 is `10daabc5d474e5659c046f333546e1e985edb622104240c14bddd0b1dfd8a47c`.
+
 
 ## Limitations
 

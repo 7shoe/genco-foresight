@@ -1,0 +1,69 @@
+{
+  "schema": "power-fm-foresight.package-gate.v1",
+  "passed": true,
+  "version": "0.2.0",
+  "base_tag": "v0.2.0",
+  "target_tag": "v0.2.1-dev",
+  "source_commit": "5b0093d5285bf9f4fc5e7e5717e87b01469ae525",
+  "protocol_sha256": "10daabc5d474e5659c046f333546e1e985edb622104240c14bddd0b1dfd8a47c",
+  "gate_path": "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase2_20261026_v1_final/gate.json",
+  "gate_sha256": "97264ccad041caa7bff3d594fd20bddd3d0690e32ab4d2a367facb5d682de621",
+  "source_pin_sha256": "16de483ccd95ba760937406ca1593be76aa834bc234fef1ea0404f8daf5e69f2",
+  "suite": {
+    "tests": 140,
+    "subtests": 3,
+    "failures": 0,
+    "skips": 0
+  },
+  "audit": {
+    "hours": 50,
+    "max_absolute_difference": 0.0
+  },
+  "forward": {
+    "origins": 2,
+    "modes": [
+      "A",
+      "D"
+    ],
+    "max_absolute_difference": 0.0
+  },
+  "scorer_loader": {
+    "checkpoints": 2,
+    "origins_per_checkpoint": 3,
+    "comparisons": 12,
+    "absolute_tolerance": 1e-07,
+    "max_absolute_difference": 3.552713678800501e-15
+  },
+  "installation": {
+    "editable_with_existing_torch_stack": true,
+    "without_torch_diagnostic": true,
+    "wheel_resources": true,
+    "experiments_excluded": true,
+    "torch_stack_not_in_dependencies": true
+  },
+  "static": {
+    "no_lustre_paths": true,
+    "no_experiment_imports": true,
+    "unchanged_definitions": 439,
+    "reviewed_relocation_exceptions": 9
+  },
+  "jobs": [
+    "8966222.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov",
+    "8966236.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov"
+  ],
+  "cumulative_worker_seconds": 319.6657614707947,
+  "cumulative_reserved_node_seconds": 7200,
+  "evidence": {
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase2_20261026_v1/gate.json": "2df8eaff41592df836b3312f68f47442988ed98a91e84da8b53e21a31452bc7b",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase2_20261026_v1/budget.json": "e4769b41b859b61b76ec11cfa5688c796ac5774a8d285e2eba31457deb121007",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase2_20261026_v1_final/gate.json": "97264ccad041caa7bff3d594fd20bddd3d0690e32ab4d2a367facb5d682de621",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase2_20261026_v1_final/source_pin.json": "16de483ccd95ba760937406ca1593be76aa834bc234fef1ea0404f8daf5e69f2",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase2_20261026_v1_final/ast.json": "7769273eaddaf91fe55eed49730aaa9c484e065f587c2f665395436c7c6d3161",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase2_20261026_v1_final/reference_hashes.json": "682157dc89a3554e1be71fdf3c6b5ce4c8a461e21f7d606b13aed7b976431a1f",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase2_20261026_v1_final/installation.json": "1d5c0d4c395e6616bfee6fa773405f57fe1c3424551c6be17acab08a3c69ae2f",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase2_20261026_v1_final/suite.xml": "7b19a2cca8c888af27e91f2e296dcbfbed6e1a37d15108f9f7a85b24a974d19c",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase2_20261026_v1_final/scorer_loader/gate.json": "aeb5c1a2c7322e4675173e42650fddb5c63c808a554b90b69cfc04fc4f70e429",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase2_20261026_v1_final/regression/audit.json": "a47196a60f8635aad113be33e28bf85f9d70883290cb76ef3925477adf9bf513",
+    "/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/package/phase2_20261026_v1_final/regression/forward.json": "4bff19cffddc2c17cc997e82b2895d1725bd90f833a572a2d9acc628c9921ccc"
+  }
+}

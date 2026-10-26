@@ -182,7 +182,7 @@
     "data.coordinates": "power_fm_foresight._data.coordinates",
     "data.loader.network": "power_fm_foresight._data.network",
     "data.loader.dataset": "power_fm_foresight._data.dataset",
-    "data.download.prepare": "power_fm_foresight._data.assets",
+    "data.download.prepare": "experiments.assets",
     "data.synthetic.generate": "experiments.data_generation",
     "training.loop": "power_fm_foresight._training.loop",
     "training.state": "power_fm_foresight._training.state",
