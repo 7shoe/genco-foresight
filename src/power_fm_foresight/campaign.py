@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import time
 
 from omegaconf import OmegaConf
 
@@ -198,6 +199,28 @@ def select_device(device, index=0):
     return parsed.type
 
 
+def allocation_deadline(configuration):
+    if 'PBS_WALLTIME' not in os.environ:return None
+    from .training import walltime_seconds
+    start=float(os.environ.get('GENCO_JOB_START_EPOCH',time.time()))
+    return start+min(configuration['stage_b']['job_training_guard_seconds'],walltime_seconds(os.environ['PBS_WALLTIME'])-300)
+
+
+def execute_chain(campaign, chain, device_index, stop_after_steps, deadline):
+    previous={k:os.environ.get(k) for k in ('GENCO_JOB_START_EPOCH','PBS_WALLTIME')}
+    started=time.time()
+    if deadline is not None and deadline-started<60:return None
+    try:
+        # Charge each chain for its own active worker time, keeping the allocation deadline.
+        os.environ['GENCO_JOB_START_EPOCH']=str(started)
+        if deadline is not None:os.environ['PBS_WALLTIME']=str(max(300,int(deadline-started)+300))
+        return train_chain(campaign,chain,device_index,stop_after_steps)
+    finally:
+        for key,value in previous.items():
+            if value is None:os.environ.pop(key,None)
+            else:os.environ[key]=value
+
+
 def train_chain(campaign, chain, device_index, stop_after_steps=None):
     from .training import run
     from .data import build_cache
@@ -240,7 +263,11 @@ def train_chain(campaign, chain, device_index, stop_after_steps=None):
         else:
             import torch
             torch.use_deterministic_algorithms(True)
-            build_cache(cfg,device)
+            prepared=build_cache(cfg,device,deadline_epoch=allocation_deadline(cfg))
+            if prepared.get('incomplete'):
+                progress=dict(steps=0,epoch=0,finished=False,stop_reason='cache_allocation_guard',best_epoch=None)
+                write_json(root/'chain.status.json',progress)
+                return progress
     boundary=root/'boundary_checkpoint.json'
     receipt=read_json(boundary) if boundary.exists() else None
     run(cfg,device,stop_after_steps=stop_after_steps)
@@ -271,18 +298,19 @@ def run_campaign(campaign, parallel=1, stop_after_steps=None):
         if device=='cpu':raise ValueError('Parallel chains require accelerator tiles')
         if options['device_index']+parallel>getattr(torch,device).device_count():raise ValueError('Not enough visible tiles for --parallel')
         if device=='xpu' and os.environ.get('ZE_FLAT_DEVICE_HIERARCHY')!='FLAT':raise ValueError('Set ZE_FLAT_DEVICE_HIERARCHY=FLAT')
-    results=[]
+    results=[];deadline=allocation_deadline(options['configuration'])
     def assigned_tile(chain, offset):
         saved=Path(campaign['root'])/chain['id']/'chain.json'
         return read_json(saved)['device_index'] if saved.exists() else options['device_index']+offset
     # Each wave owns disjoint tiles; workers never share a chain or optimizer.
     for lo in range(0,len(campaign['plan']),parallel):
+        if deadline is not None and deadline-time.time()<60:break
         wave=campaign['plan'][lo:lo+parallel]
         if parallel==1:
-            results.append(train_chain(campaign,wave[0],assigned_tile(wave[0],0),stop_after_steps))
+            results.append(execute_chain(campaign,wave[0],assigned_tile(wave[0],0),stop_after_steps,deadline))
         else:
             with ProcessPoolExecutor(max_workers=parallel,mp_context=multiprocessing.get_context('spawn')) as pool:
-                futures=[pool.submit(train_chain,campaign,c,assigned_tile(c,i),stop_after_steps) for i,c in enumerate(wave)]
+                futures=[pool.submit(execute_chain,campaign,c,assigned_tile(c,i),stop_after_steps,deadline) for i,c in enumerate(wave)]
                 results.extend(f.result() for f in futures)
     return results
 

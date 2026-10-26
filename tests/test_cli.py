@@ -144,6 +144,25 @@ def test_chain_reads_progress_from_committed_checkpoint(tmp_path,monkeypatch):
     assert read_json(root/'boundary_checkpoint.json')['step_in_epoch']==4090
 
 
+def test_sequential_chain_budgets_exclude_previous_chain_time(tmp_path,monkeypatch):
+    from power_fm_foresight import campaign
+    c=prepare_campaign(options(tmp_path));c['plan']=c['plan'][:2]
+    monkeypatch.setenv('PBS_WALLTIME','3600');monkeypatch.setenv('GENCO_JOB_START_EPOCH','1000')
+    now=[1000.];monkeypatch.setattr(campaign.time,'time',lambda:now[0])
+    starts=[];deadlines=[]
+    def run(*args):
+        starts.append(float(campaign.os.environ['GENCO_JOB_START_EPOCH']))
+        deadlines.append(campaign.allocation_deadline(c['options']['configuration']))
+        now[0]+=100
+    monkeypatch.setattr(campaign,'train_chain',run)
+    campaign.run_campaign(c)
+    assert starts==[1000.,1100.] and deadlines==[4300.,4300.]
+    assert campaign.os.environ['GENCO_JOB_START_EPOCH']=='1000'
+    now[0]=4290.
+    campaign.run_campaign(c)
+    assert len(starts)==2
+
+
 def test_train_wrapper_reads_authoritative_checkpoint_progress(tmp_path,monkeypatch):
     import torch
     from power_fm_foresight import campaign, data, training
@@ -188,6 +207,13 @@ def test_report_reads_only_persisted_results(tmp_path,monkeypatch):
     assert rows[0]['budget_capped'] and rows[0]['vm_crps'] is None
     assert rows[1]['row_type']=='mean_sd' and rows[1]['joint_es_sd'] is None
     assert all((tmp_path/'report'/f'report.{suffix}').exists() for suffix in ('md','json','csv'))
+
+
+def test_status_uses_persisted_training_counters(tmp_path):
+    from power_fm_foresight.reporting import status_rows
+    write_json(tmp_path/'status.json',dict(status='continue',steps_after=4090,epochs_reached=0,stop_reason='job_walltime_guard'))
+    row=status_rows([tmp_path])[0]
+    assert row['steps']==4090 and row['epochs']==0 and row['status']=='continue'
 
 
 def test_ensemble_group_order_and_compatibility():

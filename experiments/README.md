@@ -54,6 +54,8 @@ adapter/backbone, optimizer and RNG stream. `--parallel N` runs independent chai
 on distinct visible tiles; it is not sample-parallel training. With no parallel
 flag the chains run sequentially. `--dry-run` records and prints the plan without
 loading data or a model; execute that saved plan with `--resume`.
+Each chain is charged only for its own active worker time. A campaign leaves
+unstarted chains pending when an allocation approaches its shared walltime guard.
 
 ```bash
 pff train --case 14 30 57 118 --dataset "$PFF_ROOT/runs/cli/data" --seed 0 1 2 \

@@ -34,7 +34,7 @@ def status_rows(paths):
         status=read_json(adapter/'status.json') if (adapter/'status.json').exists() else {}
         chain=read_json(path/'chain.json') if (path/'chain.json').exists() else {}
         rows.append(dict(run=str(path),status=status.get('status','not started'),epochs=status.get('epochs_reached'),
-            steps=status.get('steps'),best_epoch=status.get('best_epoch'),selection_es=status.get('best_selection'),
+            steps=status.get('steps_after',status.get('steps')),best_epoch=status.get('best_epoch'),selection_es=status.get('best_selection'),
             stop_reason=status.get('stop_reason'),pilot=chain.get('pilot',False),label=chain.get('label',''),
             budget_capped=status.get('stop_reason') in ('training_budget','six_hour_budget')))
     return rows

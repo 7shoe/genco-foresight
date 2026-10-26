@@ -59,8 +59,9 @@ def main():
             for node in ast.walk(ast.parse(path.read_text())):
                 if isinstance(node,ast.ImportFrom):assert not (node.module or '').startswith(('experiments','scripts'))
                 if isinstance(node,ast.Import):assert not any(n.name.startswith(('experiments','scripts')) for n in node.names)
-    py=str(root/'venvs/with_stack/bin/python')
-    pff=str(root/'venvs/with_stack/bin/pff')
+    installation=root/'final_install' if args.phase=='results' else root
+    py=str(installation/'venvs/with_stack/bin/python')
+    pff=str(installation/'venvs/with_stack/bin/pff')
     env=dict(os.environ,PYTHONDONTWRITEBYTECODE='1',PFF_ROOT=str(root.parents[2]))
     env.pop('GENCO_CONFIG',None)
     env['PYTHONPATH']=os.pathsep.join((str(source/'src'),str(source)))
@@ -84,6 +85,8 @@ def main():
             ('reproducibility',[pff,'verify','--check','reproducibility','--protocol',str(root/'reproducibility.json'),
                                 '--runs',str(root/'campaign'),'--out',str(root/'verify_reproducibility')],120)],
         'results':[
+            ('installation',[sys.executable,str(source/'experiments/package/install_gate.py'),'--root',str(installation),'--source',str(source)],300),
+            ('suite',[py,'-m','pytest','-q','-ra','-p','no:cacheprovider','tests','--basetemp',str(root/'tmp/final_suite'),'--junitxml',str(root/'final_suite.xml')],900),
             ('evaluate',[pff,'evaluate','--config',str(root/'config.json'),'--runs',str(root/'campaign'),
                          '--device','xpu:0','--out',str(root/'evaluation')],900),
             ('report',[pff,'report','--runs',str(root/'evaluation'),'--kind','summary',
