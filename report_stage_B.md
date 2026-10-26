@@ -260,7 +260,7 @@ T = G/runs/adapter_v3
 
 | Review question | Evidence |
 |---|---|
-| Frozen inputs, scales and method identity | `B/protocol.json`, `B/forecaster/manifest.json`, `B/controls/protocol.json`; [configuration](config.yaml), [forecaster](training/forecaster.py), [adapter](models/temporal.py) |
+| Frozen inputs, scales and method identity | `B/protocol.json`, `B/forecaster/manifest.json`, `B/controls/protocol.json`; [configuration](configs/v3.yaml), [forecaster](training/forecaster.py), [adapter](models/temporal.py) |
 | All variables, counts, widths, PIT and saved samples | `B/{C,P,P0,S,A,D}.json`; `B/origins/<id>/`, `B/controls/origins/<id>/`; [full report](/lus/flare/projects/FRAME-IDP/siebenschuh/GENCO/runs/stage_b/full_report.md) |
 | Numerical references and raw/refined errors | `B/origins/<id>/solver_references.json`, `*_audit.json`, `*_solver_subset.npz` |
 | Probe comparison, coefficients and targets | `B/probe/{protocol,report}.json`, `coefficients/`, `predictions_h*.npz` |
