@@ -1,0 +1,22 @@
+{
+  "schema": "pff-verification.v1",
+  "check": "reproducibility",
+  "configuration": "${oc.env:PFF_ROOT}/runs/package/phase3_20261026_v1/config.json",
+  "dataset": "${oc.env:PFF_ROOT}/runs/package/phase3_20261026_v1/datasets",
+  "reference_runs": [
+    "${oc.env:PFF_ROOT}/runs/v2/fleet_20261025_off_v1/case30_ieee/seed0/adapter",
+    "${oc.env:PFF_ROOT}/runs/v2/fleet_20261025_off_v1/case30_ieee/seed1/adapter",
+    "${oc.env:PFF_ROOT}/runs/v2/fleet_20261025_off_v1/case30_ieee/seed2/adapter"
+  ],
+  "training": {"case": [30], "seed": [0], "recipe": "v4-off", "max_epochs": 2, "device": "xpu", "device_index": 0},
+  "restart_after_steps": 4090,
+  "restart_position": "Before epoch-1 validation; checkpoint-authoritative journal, optimizer, model, scheduler, counters and RNG",
+  "epochs": [1, 2],
+  "rule": "candidate selection ES <= max of recorded fleet seeds at that epoch + 0.005",
+  "slack": 0.005,
+  "justification": "User-declared one-sided non-inferiority; improvements pass. The loss curve is diagnostic, not an acceptance gate.",
+  "loss_curve": {"cadence_steps": 100, "comparison": "Common persisted optimizer steps", "relative_denominator_floor": 1e-12, "gate": "All persisted metrics finite"},
+  "exact_boundary_restore": true,
+  "stopping_epoch": "Not tested in two epochs",
+  "resource_cap": {"seconds_per_allocation": 3600, "maximum_allocations": 3, "tiles": 1}
+}

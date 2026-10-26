@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+#PBS -N pff-cli-gate
+#PBS -A EpiCalib
+#PBS -q debug
+#PBS -l select=1
+#PBS -l walltime=01:00:00
+#PBS -l filesystems=home:flare
+#PBS -j oe
+#PBS -m n
+set -euo pipefail
+export GENCO_V2_JOB_START="$(date +%s)"
+cd "${GENCO_V2_ROOT:?}"
+set +u
+if ! type module >/dev/null 2>&1; then source /etc/profile; fi
+module --quiet reset
+module load oneapi/release/2026.1.0 mpich/prd/5.0.0.aurora_test.87e2045 gcc/14.3.0
+module load libfabric/2.3.1 cray-pals/1.8.0 cray-libpals/1.8.0 intel_gpu_umd_aicoe/2026.06.19
+module load hdf5/1.14.6 pti-gpu/0.17.0 miniforge3/25.11.0-1 frameworks/2026.1.0
+source /lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/bin/activate
+set -u
+export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
+export PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PYTHONHASHSEED=42
+export ZE_FLAT_DEVICE_HIERARCHY=FLAT ZE_AFFINITY_MASK=0
+export TMPDIR="${GENCO_V2_ROOT:?}/tmp"
+mkdir -p "$TMPDIR"
+v2_python=/lus/flare/projects/FRAME-IDP/siebenschuh/envs/reason_venv_2026.1.0/bin/python
+mpiexec --pmi=pmix --envall -n 1 --ppn 1 --cpu-bind none \
+    "$v2_python" -u "$GENCO_V2_ROOT/source/experiments/package/phase3_worker.py" \
+    --root "$GENCO_V2_ROOT" --phase "${PFF_GATE_PHASE:?}"

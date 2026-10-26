@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "power-fm-foresight"
-version = "0.2.0"
+version = "0.3.0.dev0"
 description = "Probabilistic power-system forecasts with a frozen GENCO model"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -13,6 +13,10 @@ dependencies = [
   "numpy", "pandas", "PyYAML", "scipy", "matplotlib", "huggingface_hub", "pyarrow",
   "OmegaConf>=2.3,<2.4", "gridfm-datakit==1.1.0", "matpowercaseframes", "requests",
 ]
+
+[project.scripts]
+pff = "power_fm_foresight.cli:main"
+power-fm-foresight = "power_fm_foresight.cli:main"
 
 [project.optional-dependencies]
 cuda = []
@@ -23,4 +27,4 @@ where = ["src"]
 include = ["power_fm_foresight*"]
 
 [tool.setuptools.package-data]
-power_fm_foresight = ["resources/*.yaml", "resources/julia/*", "resources/networks/*"]
+power_fm_foresight = ["resources/*.yaml", "resources/protocols/*.json", "resources/julia/*", "resources/networks/*"]

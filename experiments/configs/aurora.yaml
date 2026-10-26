@@ -1,0 +1,9 @@
+# Storage and executables are supplied by the existing Aurora environment.
+paths:
+  opfdata_root: ${oc.env:PFF_OPFDATA_ROOT}
+  n1_cache: ${paths.opfdata_root}/processed/N1/pglib_opf_case30_ieee
+  t1_cache: ${paths.opfdata_root}/processed/T1/pglib_opf_case30_ieee
+  n1_splits: ${paths.opfdata_root}/processed/N1/splits/pglib_opf_case30_ieee
+cli:
+  train:
+    device: xpu

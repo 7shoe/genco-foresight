@@ -6,6 +6,7 @@ from pathlib import Path
 import subprocess
 import sys
 import sysconfig
+import tomllib
 import zipfile
 
 
@@ -37,7 +38,7 @@ def main():
                                 cwd=a.root, env=env, capture_output=True, text=True)
         print(name, result.returncode, result.stdout, result.stderr, flush=True)
         if system:
-            assert result.returncode == 0 and result.stdout.strip() == '0.2.0'
+            assert result.returncode == 0 and result.stdout.strip() == tomllib.loads((a.source/'pyproject.toml').read_text())['project']['version']
             code = '''from power_fm_foresight import grids, genco, temporal, data, solver, scoring, training
 import importlib, json, sys, warnings
 from pathlib import Path
