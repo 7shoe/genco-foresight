@@ -125,6 +125,25 @@ def test_individual_chain_resume_keeps_tile(tmp_path,monkeypatch):
     assert seen==[3]
 
 
+def test_chain_reads_progress_from_committed_checkpoint(tmp_path,monkeypatch):
+    import torch
+    from power_fm_foresight import campaign, training
+    opts=options(tmp_path,'--case','30','--seed','0')
+    c=prepare_campaign(opts);chain=c['plan'][0];root=Path(c['root'])/chain['id']
+    cfg=campaign.grid_config(chain['case'],opts['configuration'])
+    monkeypatch.setattr(campaign,'dataset_card',lambda *args:dict(config=cfg))
+    monkeypatch.setattr(campaign,'select_device',lambda *args:'cpu')
+    write_json(root/'adapter/cache/manifest.json',{})
+    progress=dict(steps=4090,epoch=0,step_in_epoch=4090,finished=False,stop_reason='verification_step_limit',best_epoch=None)
+    def run(*args,**kwargs):
+        torch.save(dict(progress=progress),root/'adapter/latest.pt')
+        (root/'adapter/metrics.jsonl').write_text('')
+        return dict(status='continue',steps_after=4090)
+    monkeypatch.setattr(training,'run',run)
+    assert campaign.train_chain(c,chain,0,4090)==progress
+    assert read_json(root/'boundary_checkpoint.json')['step_in_epoch']==4090
+
+
 def test_train_wrapper_reads_authoritative_checkpoint_progress(tmp_path,monkeypatch):
     import torch
     from power_fm_foresight import campaign, data, training

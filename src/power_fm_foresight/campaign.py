@@ -243,7 +243,9 @@ def train_chain(campaign, chain, device_index, stop_after_steps=None):
             build_cache(cfg,device)
     boundary=root/'boundary_checkpoint.json'
     receipt=read_json(boundary) if boundary.exists() else None
-    progress=run(cfg,device,stop_after_steps=stop_after_steps)
+    run(cfg,device,stop_after_steps=stop_after_steps)
+    import torch
+    progress=torch.load(root/'adapter/latest.pt',map_location='cpu',weights_only=True)['progress']
     journal=root/'adapter/metrics.jsonl'
     if stop_after_steps is not None and progress['steps']==stop_after_steps and not receipt:
         payload=journal.read_bytes()
